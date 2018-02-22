@@ -67,7 +67,7 @@ setup(
     author_email='kitchen.andy@gmail.com',
     description='Oz Prototype',
     long_description='',
-    ext_modules=[CMakeExtension('oz/oz')],
+    ext_modules=[CMakeExtension('oz/_ext')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     packages=[

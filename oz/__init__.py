@@ -1,2 +1,2 @@
-from .oz import *
-from .oz import __version__
+from ._ext import *
+from ._ext import __version__
