@@ -3,6 +3,7 @@ from copy import copy
 
 import oz
 
+# g = oz.RockPaperScissors()
 g = oz.KuhnPoker()
 
 def print_indent(n, s):

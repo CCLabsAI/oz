@@ -1,10 +1,17 @@
 #include <cassert>
 #include <stdexcept>
 #include <vector>
+#include <string>
 #include <sstream>
 
 
 struct KuhnPoker {
+  enum class Player {
+    Chance = -1,
+    P1 = 1,
+    P2 = 2
+  };
+
   enum class Action {
     // Player Actions
     Pass = 1,
@@ -24,12 +31,6 @@ struct KuhnPoker {
     Jack = 1,
     Queen,
     King,
-  };
-
-  enum class Player {
-    Chance = -1,
-    P1 = 0,
-    P2 = 1
   };
 
   struct Infoset {
