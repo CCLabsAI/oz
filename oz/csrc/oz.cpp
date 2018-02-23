@@ -22,6 +22,8 @@ PYBIND11_MODULE(_ext, m) {
       .def("act", &KuhnPoker::act)
       .def("legal_actions", &KuhnPoker::legal_actions)
       .def("reward", &KuhnPoker::reward)
+      .def("infoset", (KuhnPoker::Infoset (KuhnPoker::*)(KuhnPoker::Player) const) &KuhnPoker::infoset)
+      .def("infoset", (KuhnPoker::Infoset (KuhnPoker::*)() const) &KuhnPoker::infoset)
       .def_property_readonly("player", [](const KuhnPoker& self) {
           return self.player;
         })
@@ -45,7 +47,24 @@ PYBIND11_MODULE(_ext, m) {
             self.folded(KuhnPoker::Player::P1),
             self.folded(KuhnPoker::Player::P2)
           };
+        })
+      .def("__copy__", [](const KuhnPoker& self) {
+          return KuhnPoker(self);
         });
+
+  py::class_<KuhnPoker::Infoset>(py_kuhn_poker, "Infoset")
+      .def("__str__", &KuhnPoker::Infoset::str)
+      .def("__eq__",
+        [](const KuhnPoker::Infoset& self, const KuhnPoker::Infoset& other) {
+          return self == other;
+        }
+      )
+      .def("__repr__",
+        [](const KuhnPoker::Infoset &self) {
+            return "<oz.KuhnPoker.Infoset '" + self.str() + "'>";
+        }
+      );
+
 
   py::enum_<KuhnPoker::Action>(py_kuhn_poker, "Action")
       .value("Pass", KuhnPoker::Action::Pass)

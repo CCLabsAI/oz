@@ -1,11 +1,12 @@
+import sys
+from copy import copy
+
 import oz
 
 g = oz.KuhnPoker()
 
 def print_indent(n, s):
     print("\t"*n + s)
-
-nodes = {}
 
 n_nodes = 0
 
@@ -15,39 +16,56 @@ def gen_node():
     n_nodes = n_nodes + 1
     return name
 
+node_infoset = {}
+
 def dot_game(g, node=gen_node(), h=[]):
-    global nodes
-    node_meta = nodes.setdefault(node, {})
-    node_meta["history"] = h
-    node_meta["player"] = g.player
+    if (not g.is_terminal()) and (g.player != g.Player.Chance):
+        infoset = g.infoset(g.player)
+        ls = node_infoset.setdefault(infoset, [])
+        ls.append(node)
+
     if g.is_terminal():
-        nodes.setdefault(node, {})["reward"] = g.reward()
+        l = '{} [label="{}" shape=plaintext]'.format(node, g.reward())
+        print_indent(1, l)
     else:
-        for a in g.legal_actions():
-            node_a = gen_node()
-            label = str(a).split(".")[-1]
-            l = '{} -> {} [label="{}"]'.format(node, node_a, label)
-            print_indent(1, l)
-            g_a = oz.KuhnPoker(g)
-            g_a.act(a)
-            dot_game(g_a, node_a, h + [a])
-
-print("digraph {")
-
-dot_game(g)
-
-
-for node, meta in nodes.items():
-    if 'reward' in meta:
-        print_indent(1, '{} [label="{}" shape=plaintext]'.format(node, meta["reward"]))
-    else:
-        if meta['player'] == oz.KuhnPoker.Player.P1:
+        player = g.player
+        if player == g.Player.P1:
             shape_str = 'triangle'
-        elif meta['player'] == oz.KuhnPoker.Player.P2:
+        elif player == g.Player.P2:
             shape_str = 'invtriangle'
-        elif meta['player'] == oz.KuhnPoker.Player.Chance:
+        elif player == g.Player.Chance:
             shape_str = 'circle'
 
-        print_indent(1, '{} [label="" shape={}]'.format(node, shape_str))
+        props = 'label="" shape={}'.format(shape_str)
+        print_indent(1, '{} [{}]'.format(node, props))
 
-print("}")
+        for a in g.legal_actions():
+            node_a = gen_node()
+            g_a = copy(g)
+            g_a.act(a)
+            label = str(a).split(".")[-1]
+            props = 'headport=_ tailport=c label="{}"'.format(label)
+            if not g_a.is_terminal():
+                props += ' weight=2'
+            else:
+                props += ' weight=1'
+            l = '{} -> {} [{}]'.format(node, node_a, props)
+            print_indent(1, l)
+            dot_game(g_a, node_a, h + [a])
+
+print('digraph {')
+
+print_indent(1, 'graph [nodesep=0.2 ranksep=1.5 splines=true]')
+
+print_indent(1, 'node [height=.5 width=.5]')
+dot_game(g)
+
+for infoset, nodes in node_infoset.items():
+    print_indent(1, 'subgraph "cluster_infoset_{}" {{'.format(infoset))
+    print_indent(2, 'label="{}"'.format(infoset))
+    print_indent(2, 'style=dashed')
+    for node in nodes:
+        print_indent(2, node)
+    print_indent(1, '}')
+
+print('}')

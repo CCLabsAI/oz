@@ -1,6 +1,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <vector>
+#include <sstream>
 
 
 struct KuhnPoker {
@@ -31,6 +32,41 @@ struct KuhnPoker {
     P2 = 1
   };
 
+  struct Infoset {
+    const Card hand;
+    const std::vector<Action> history;
+
+    std::string str() const {
+      std::stringstream ss;
+
+      if (hand == Card::Jack) {
+        ss << "J";
+      }
+      else if (hand == Card::Queen) {
+        ss << "Q";
+      }
+      else if (hand == Card::King) {
+        ss << "K";
+      }
+
+      if (!history.empty()) {
+        ss << "/";
+      }
+
+      for (const auto& a : history) {
+        if (a == Action::Bet) {
+          ss << "b";
+        }
+        else if (a == Action::Pass) {
+          ss << "p";
+        }
+        else { assert (false); }
+      }
+
+      return ss.str();
+    }
+  };
+
   static constexpr int N_PLAYERS = 2;
   static constexpr int ANTE = 1;
   static constexpr Action CHANCE_START  = Action::JQ;
@@ -41,6 +77,8 @@ struct KuhnPoker {
   Card hand_[N_PLAYERS];
   int pot_[N_PLAYERS];
   Player player;
+
+  std::vector<Action> history;
 
   KuhnPoker():
       showdown { false },
@@ -54,6 +92,17 @@ struct KuhnPoker {
     return showdown || 
       folded(Player::P1) || 
       folded(Player::P2);
+  }
+
+  Infoset infoset(Player p) const {
+    return Infoset {
+      hand(p),
+      history
+    };
+  }
+
+  Infoset infoset() const {
+    return infoset(player);
   }
 
   int reward() const {
@@ -71,7 +120,7 @@ struct KuhnPoker {
       winner = Player::P1;
     }
     else {
-      assert(false);
+      assert (false);
       return 0;
     }
 
@@ -82,7 +131,7 @@ struct KuhnPoker {
       return -pot(Player::P1);
     }
     else {
-      assert(false);
+      assert (false);
       return 0;
     }
   }
@@ -105,12 +154,15 @@ struct KuhnPoker {
   }
 
   void act(Action a) {
+    if (player != Player::Chance) {
+      history.push_back(a);
+    }
+
     if (player == Player::Chance) {
       deal_hand(a);
       player = Player::P1;
     }
-
-    if (player == Player::P1 && a == Action::Pass) {
+    else if (player == Player::P1 && a == Action::Pass) {
       if (pot(Player::P2) > ANTE) {
         folded(Player::P1) = true;
       }
@@ -173,7 +225,7 @@ struct KuhnPoker {
         break;
 
       default:
-        assert(false);
+        assert (false);
     }
   }
 
@@ -195,3 +247,8 @@ struct KuhnPoker {
   bool  folded(Player p) const { return folded_[player_idx(p)]; }
   bool& folded(Player p) { return folded_[player_idx(p)]; }
 };
+
+inline bool operator==(const KuhnPoker::Infoset& lhs, const KuhnPoker::Infoset& rhs) {
+  return lhs.hand == rhs.hand &&
+         lhs.history == rhs.history;
+}
