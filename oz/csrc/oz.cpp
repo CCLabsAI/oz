@@ -46,8 +46,8 @@ void def_rock_paper_scissors(py::module m) {
       .def("__eq__", [](const Infoset& self, const Infoset& other) {
           return self == other;
         })
-      .def("__repr__", [](const Infoset &self) {
-          return "<oz.RockPaperScissors.Infoset '" + self.str() + "'>";
+      .def("__hash__", [](const Infoset& self) {
+          return py::hash(py::str(self.str()));
         });
 
   py::enum_<Action>(py_rps, "Action")
@@ -86,22 +86,22 @@ void def_kuhn_poker(py::module m) {
           return self.showdown;
         })
       .def_property_readonly("hand", [](const KuhnPoker& self) {
-          return std::pair<Card,Card> {
+          return py::make_tuple(
             self.hand(Player::P1),
             self.hand(Player::P2)
-          };
+          );
         })
       .def_property_readonly("pot", [](const KuhnPoker& self) {
-          return std::pair<int,int> {
+          return py::make_tuple(
             self.pot(Player::P1),
             self.pot(Player::P2)
-          };
+          );
         })
       .def_property_readonly("folded", [](const KuhnPoker& self) {
-          return std::pair<bool,bool> {
+          return py::make_tuple(
             self.folded(Player::P1),
             self.folded(Player::P2)
-          };
+          );
         });
 
   py::class_<Infoset>(py_kuhn_poker, "Infoset")
@@ -109,8 +109,8 @@ void def_kuhn_poker(py::module m) {
       .def("__eq__", [](const Infoset& self, const Infoset& other) {
           return self == other;
         })
-      .def("__repr__", [](const Infoset &self) {
-          return "<oz.KuhnPoker.Infoset '" + self.str() + "'>";
+      .def("__hash__", [](const Infoset& self) {
+          return py::hash(py::str(self.str()));
         });
 
   py::enum_<Player>(py_kuhn_poker, "Player")
