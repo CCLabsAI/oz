@@ -2,12 +2,17 @@
 #include <pybind11/stl.h>
 
 #include "rock_paper_scissors.h"
+#include "flip_guess.h"
 #include "kuhn.h"
 
 namespace py = pybind11;
 
+
+template<class Game> py::module def_game(py::module m, const char* name);
+
 void def_rock_paper_scissors(py::module m);
 void def_kuhn_poker(py::module m);
+void def_flip_guess(py::module m);
 
 PYBIND11_MODULE(_ext, m) {
   m.doc() = "oz c++ extensions";
@@ -18,30 +23,31 @@ PYBIND11_MODULE(_ext, m) {
 
   def_rock_paper_scissors(m);
   def_kuhn_poker(m);
+  def_flip_guess(m);
 }
 
-void def_rock_paper_scissors(py::module m) {
-  using Player = RockPaperScissors::Player;
-  using Action = RockPaperScissors::Action;
-  using Infoset = RockPaperScissors::Infoset;
+template<class Game>
+py::module def_game(py::module m, const char* name) {
+  using Player = typename Game::Player;
+  using Infoset = typename Game::Infoset;
 
-  py::class_<RockPaperScissors> py_rps(m, "RockPaperScissors");
+  py::class_<Game> m_game(m, name);
 
-  py_rps
+  m_game
       .def(py::init<>())
-      .def(py::init<const RockPaperScissors&>())
-      .def("__copy__", [](const RockPaperScissors& self) { return RockPaperScissors(self); })
-      .def("is_terminal", &RockPaperScissors::is_terminal)
-      .def("act", &RockPaperScissors::act)
-      .def("legal_actions", &RockPaperScissors::legal_actions)
-      .def("reward", &RockPaperScissors::reward)
-      .def("infoset", (Infoset (RockPaperScissors::*)(Player) const) &RockPaperScissors::infoset)
-      .def("infoset", (Infoset (RockPaperScissors::*)() const) &RockPaperScissors::infoset)
-      .def_property_readonly("player", [](const RockPaperScissors& self) {
+      .def(py::init<const Game&>())
+      .def("__copy__", [](const Game& self) { return Game(self); })
+      .def("is_terminal", &Game::is_terminal)
+      .def("act", &Game::act)
+      .def("legal_actions", &Game::legal_actions)
+      .def("reward", &Game::reward)
+      .def("infoset", (Infoset (Game::*)(Player) const) &Game::infoset)
+      .def("infoset", (Infoset (Game::*)() const) &Game::infoset)
+      .def_property_readonly("player", [](const Game& self) {
           return self.player;
         });
 
-  py::class_<Infoset>(py_rps, "Infoset")
+  py::class_<Infoset>(m_game, "Infoset")
       .def("__str__", &Infoset::str)
       .def("__eq__", [](const Infoset& self, const Infoset& other) {
           return self == other;
@@ -50,15 +56,35 @@ void def_rock_paper_scissors(py::module m) {
           return py::hash(py::str(self.str()));
         });
 
-  py::enum_<Action>(py_rps, "Action")
-      .value("Rock", Action::Rock)
-      .value("Paper", Action::Paper)
-      .value("Scissors", Action::Scissors);
-
-  py::enum_<Player>(py_rps, "Player")
+  py::enum_<Player>(m_game, "Player")
       .value("Chance", Player::Chance)
       .value("P1", Player::P1)
       .value("P2", Player::P2);
+
+  return m_game;
+}
+
+void def_flip_guess(py::module m) {
+  using Action = FlipGuess::Action;
+
+  py::module m_game = def_game<FlipGuess>(m, "FlipGuess");
+
+  py::enum_<Action>(m_game, "Action")
+      .value("Heads", Action::Heads)
+      .value("Tails", Action::Tails)
+      .value("Left", Action::Left)
+      .value("Right", Action::Right);
+}
+
+void def_rock_paper_scissors(py::module m) {
+  using Action = RockPaperScissors::Action;
+
+  py::module m_rps = def_game<RockPaperScissors>(m, "RockPaperScissors");
+
+  py::enum_<Action>(m_rps, "Action")
+      .value("Rock", Action::Rock)
+      .value("Paper", Action::Paper)
+      .value("Scissors", Action::Scissors);
 }
 
 void def_kuhn_poker(py::module m) {
