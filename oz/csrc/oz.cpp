@@ -8,7 +8,8 @@
 namespace py = pybind11;
 
 
-template<class Game> py::module def_game(py::module m, const char* name);
+template<class Game> py::class_<Game>
+def_game(py::module m, const char* name);
 
 void def_rock_paper_scissors(py::module m);
 void def_kuhn_poker(py::module m);
@@ -26,8 +27,8 @@ PYBIND11_MODULE(_ext, m) {
   def_flip_guess(m);
 }
 
-template<class Game>
-py::module def_game(py::module m, const char* name) {
+template<class Game> auto
+def_game(py::module m, const char* name) -> py::class_<Game> {
   using Player = typename Game::Player;
   using Infoset = typename Game::Infoset;
 
@@ -79,9 +80,9 @@ void def_flip_guess(py::module m) {
 void def_rock_paper_scissors(py::module m) {
   using Action = RockPaperScissors::Action;
 
-  py::module m_rps = def_game<RockPaperScissors>(m, "RockPaperScissors");
+  py::module m_game = def_game<RockPaperScissors>(m, "RockPaperScissors");
 
-  py::enum_<Action>(m_rps, "Action")
+  py::enum_<Action>(m_game, "Action")
       .value("Rock", Action::Rock)
       .value("Paper", Action::Paper)
       .value("Scissors", Action::Scissors);
@@ -90,21 +91,12 @@ void def_rock_paper_scissors(py::module m) {
 void def_kuhn_poker(py::module m) {
   using Player = KuhnPoker::Player;
   using Action = KuhnPoker::Action;
-  using Infoset = KuhnPoker::Infoset;
   using Card = KuhnPoker::Card;
 
-  py::class_<KuhnPoker> py_kuhn_poker(m, "KuhnPoker");
+  py::class_<KuhnPoker> m_kuhn_poker =
+    def_game<KuhnPoker>(m, "KuhnPoker");
 
-  py_kuhn_poker
-      .def(py::init<>())
-      .def(py::init<const KuhnPoker&>())
-      .def("__copy__", [](const KuhnPoker& self) { return KuhnPoker(self); })
-      .def("is_terminal", &KuhnPoker::is_terminal)
-      .def("act", &KuhnPoker::act)
-      .def("legal_actions", &KuhnPoker::legal_actions)
-      .def("reward", &KuhnPoker::reward)
-      .def("infoset", (Infoset (KuhnPoker::*)(Player) const) &KuhnPoker::infoset)
-      .def("infoset", (Infoset (KuhnPoker::*)() const) &KuhnPoker::infoset)
+  m_kuhn_poker
       .def_property_readonly("player", [](const KuhnPoker& self) {
           return self.player;
         })
@@ -130,21 +122,7 @@ void def_kuhn_poker(py::module m) {
           );
         });
 
-  py::class_<Infoset>(py_kuhn_poker, "Infoset")
-      .def("__str__", &Infoset::str)
-      .def("__eq__", [](const Infoset& self, const Infoset& other) {
-          return self == other;
-        })
-      .def("__hash__", [](const Infoset& self) {
-          return py::hash(py::str(self.str()));
-        });
-
-  py::enum_<Player>(py_kuhn_poker, "Player")
-      .value("Chance", Player::Chance)
-      .value("P1", Player::P1)
-      .value("P2", Player::P2);
-
-  py::enum_<Action>(py_kuhn_poker, "Action")
+  py::enum_<Action>(m_kuhn_poker, "Action")
       .value("Pass", Action::Pass)
       .value("Bet", Action::Bet)
       .value("JQ", Action::JQ)
@@ -154,7 +132,7 @@ void def_kuhn_poker(py::module m) {
       .value("KJ", Action::KJ)
       .value("KQ", Action::KQ);
 
-  py::enum_<Card>(py_kuhn_poker, "Card")
+  py::enum_<Card>(m_kuhn_poker, "Card")
       .value("NA", Card::NA)
       .value("Jack", Card::Jack)
       .value("Queen", Card::Queen)
