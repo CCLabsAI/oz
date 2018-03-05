@@ -1,19 +1,29 @@
 from copy import copy
 import random
+from enum import Enum
+
+class Action(Enum):
+    Check = 'check_or_call'
+    Call  = Check
+    Bet   = 'bet_or_raise'
+    Raise = Bet
+    Fold  = 'fold'
+    Next  = 'next_round'
+
+class Card(Enum):
+    Jack = 1
+    Queen = 2
+    King = 3
 
 class LedukPoker():
     ANTE = 1
     RAISE_PER_ROUND = [2, 4]
-    MAX_RAISE_PER_ROUND = [2, 2]
+    MAX_RAISES_PER_ROUND = [2, 2]
     MAX_ROUNDS = 2
     PAIR_RANK = 10
 
-    JACK = 1
-    QUEEN = 2
-    KING = 3
-    CARD_NAMES = {JACK: 'J', QUEEN: 'Q', KING: 'K'}
-
-    DECK = [JACK, QUEEN, KING] * 2
+    CARD_NAMES = {Card.Jack: 'J', Card.Queen: 'Q', Card.King: 'K'}
+    DECK = [Card.Jack, Card.Queen, Card.King] * 2
 
     def __init__(self):
         self.player = 0
@@ -57,20 +67,19 @@ class LedukPoker():
         """
         self.history.append(a)
 
-        if a == 'fold':
+        if a == Action.Fold:
             self.folded[self.player] = True
 
-        elif a == 'check_or_call':
+        elif a == Action.Call:
             self.pot[self.player] = self.pot[self._other_player()]
 
-            if self.raises > 0 or self.checked:
+            if self.checked or self.raises > 0:
                 self._start_next_round()
-                self.pot[self.player] = self.pot[self._other_player()]
             else:
                 self.checked = True
 
-        elif a == 'bet_or_raise':
-            if self.raises >= self.MAX_RAISE_PER_ROUND[self.round]:
+        elif a == Action.Bet:
+            if self.raises >= self.MAX_RAISES_PER_ROUND[self.round]:
                 raise ValueError("maximum raises reached")
 
             other_pot = self.pot[self._other_player()]
@@ -93,13 +102,13 @@ class LedukPoker():
     def history_short(self):
         s = "/"
         for a in self.history:
-            if a == 'bet_or_raise':
+            if a == Action.Bet:
                 s += 'r'
-            elif a == 'check_or_call':
+            elif a == Action.Call:
                 s += 'c'
-            elif a == 'fold':
+            elif a == Action.Fold:
                 s += 'f'
-            elif a == 'next_round':
+            elif a == Action.Next:
                 s += '/'
         return s
 
@@ -133,7 +142,7 @@ class LedukPoker():
             return 0
 
     def _start_next_round(self):
-        self.history.append('next_round')
+        self.history.append(Action.Next)
         self.raises = 0
         self.checked = False
         if self.round == 0:
@@ -141,7 +150,7 @@ class LedukPoker():
         self.round += 1
 
     def _rank_hand(self, card, board):
-        rank = card
+        rank = card.value
         if card == board:
             rank += self.PAIR_RANK
         return rank
