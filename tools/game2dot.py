@@ -1,10 +1,9 @@
 import sys
 from copy import copy
 
-import oz
+import oz.games.leduk
 
-# g = oz.RockPaperScissors()
-g = oz.KuhnPoker()
+g = oz.games.leduk.LedukPoker()
 
 infoset_style = 'cluster'
 # infoset_style = 'edge'
@@ -23,7 +22,7 @@ def gen_node():
 
 def print_dot(g, node=gen_node(), h=[]):
     if not g.is_terminal() and g.player != g.Player.Chance:
-        infoset = g.infoset(g.player)
+        infoset = g.infoset()
         ls = infoset_nodes.setdefault(infoset, [])
         ls.append(node)
 
