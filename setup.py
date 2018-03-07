@@ -3,7 +3,7 @@ Oz Prototype
 '''
 
 from setuptools import setup
-from cmake_ext import CMakeExtension, CMakeBuild
+from cmake.setuptools import CMakeExtension, CMakeBuild
 
 setup(
     name='oz',
