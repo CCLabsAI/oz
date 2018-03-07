@@ -1,13 +1,13 @@
-from oz.game.leduk import LedukPoker
+from oz.game.leduk import LedukPoker, Action
 
 g = LedukPoker()
 
-g.act('bet_or_raise')
+g.act(Action.Raise)
 
-g.pretty_print()
+g.pretty_print_state()
 
-g.act('check_or_call')
+g.act(Action.Call)
 
-g.pretty_print()
+g.pretty_print_state()
 
 print("infoset: ", g.infoset())

@@ -26,7 +26,7 @@ class TestLedukPoker(unittest.TestCase):
 
     def test_check(self):
         g = LedukPoker()
-        g.act(Action.Call)
+        g.act(Action.Check)
         g.act(Action.Call)
         self.assertEqual(g.pot[0], 1)
         self.assertEqual(g.pot[1], 1)
@@ -71,6 +71,17 @@ class TestLedukPoker(unittest.TestCase):
             g._rank_hand(card=Card.Queen, board=Card.King))
 
     def test_reward(self):
+        # P1 Win
+        g = LedukPoker()
+        g.act(Action.Bet)
+        g.act(Action.Call)
+        g.act(Action.Bet)
+        g.act(Action.Call)
+        g.hand[0] = Card.King
+        g.hand[1] = Card.Queen
+        g.board = Card.Jack
+        self.assertEqual(g.reward(), 7)
+
         # P2 Win
         g = LedukPoker()
         g.act(Action.Bet)
@@ -84,17 +95,6 @@ class TestLedukPoker(unittest.TestCase):
         g.board = Card.Queen
         self.assertEqual(g.reward(), -13)
 
-        # P1 Win
-        g = LedukPoker()
-        g.act(Action.Bet)
-        g.act(Action.Call)
-        g.act(Action.Bet)
-        g.act(Action.Call)
-        g.hand[0] = Card.King
-        g.hand[1] = Card.Queen
-        g.board = Card.Jack
-        self.assertEqual(g.reward(), 7)
-
         # Draw
         g = LedukPoker()
         g.act(Action.Bet)
@@ -105,3 +105,18 @@ class TestLedukPoker(unittest.TestCase):
         g.hand[1] = Card.Queen
         g.board = Card.King
         self.assertEqual(g.reward(), 0)
+
+    def test_legal_actions(self):
+        g = LedukPoker()
+        g.act(Action.Call)
+        actions = g.legal_actions()
+        self.assertIn(Action.Call, actions)
+        self.assertIn(Action.Fold, actions)
+        self.assertIn(Action.Raise, actions)
+
+        g = LedukPoker()
+        g.act(Action.Call)
+        g.act(Action.Raise)
+        g.act(Action.Raise)
+        actions = g.legal_actions()
+        self.assertNotIn(Action.Raise, actions)

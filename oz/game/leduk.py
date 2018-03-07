@@ -1,28 +1,35 @@
 from copy import copy
+
 import random
 from enum import Enum
 
 class Action(Enum):
-    Check = 'check_or_call'
-    Call  = Check
-    Bet   = 'bet_or_raise'
-    Raise = Bet
-    Fold  = 'fold'
-    Next  = 'next_round'
+    Call  = 'c'
+    Raise = 'r'
+    Fold  = 'f'
+    NextRound = '/'
+
+Action.Bet = Action.Raise
+Action.Check = Action.Call
+
+Action.player_actions = [Action.Call, Action.Raise, Action.Fold]
 
 class Card(Enum):
     Jack = 1
     Queen = 2
     King = 3
 
+    @property
+    def short_name(self):
+        return self.name[0]
+
 class LedukPoker():
     ANTE = 1
     RAISE_PER_ROUND = [2, 4]
-    MAX_RAISES_PER_ROUND = [2, 2]
-    MAX_ROUNDS = 2
+    MAX_RAISES = 2
+    N_ROUNDS = 2
     PAIR_RANK = 10
 
-    CARD_NAMES = {Card.Jack: 'J', Card.Queen: 'Q', Card.King: 'K'}
     DECK = [Card.Jack, Card.Queen, Card.King] * 2
 
     def __init__(self):
@@ -47,81 +54,60 @@ class LedukPoker():
         self.board = self.deck.pop()
 
     def is_terminal(self):
-        """Is the game finished"""
-        return self.folded[0] or self.folded[1] or self.round == self.MAX_ROUNDS
-
-    def player(self):
-        """who is the current player"""
-        if self.player == 0:
-            return 'P1'
-        else:
-            return 'P2'
+        """Is the game finished?"""
+        return \
+            self.folded[0] or \
+            self.folded[1] or \
+            self.round == self.N_ROUNDS
 
     def legal_actions(self):
         """a list of legal actions for the current player"""
-        return ['pass', 'bet']
+        actions = [Action.Fold, Action.Call]
+        if self.raises < self.MAX_RAISES:
+            actions.append(Action.Raise)
+        return actions
 
     def act(self, a):
-        """
-        perform an action
-        """
+        """perform an action"""
         self.history.append(a)
 
         if a == Action.Fold:
             self.folded[self.player] = True
 
         elif a == Action.Call:
-            self.pot[self.player] = self.pot[self._other_player()]
+            self.pot[self.player] = self.pot[self._other_player]
 
             if self.checked or self.raises > 0:
                 self._start_next_round()
             else:
                 self.checked = True
 
-        elif a == Action.Bet:
-            if self.raises >= self.MAX_RAISES_PER_ROUND[self.round]:
-                raise ValueError("maximum raises reached")
+        elif a == Action.Raise:
+            if self.raises >= self.MAX_RAISES:
+                raise ValueError('maximum raises reached')
 
-            other_pot = self.pot[self._other_player()]
+            other_pot = self.pot[self._other_player]
             self.pot[self.player] = other_pot + self.RAISE_PER_ROUND[self.round]
             self.raises += 1
 
         else:
-            raise ValueError("'{}' is not a valid action".format(a))
+            raise ValueError('"{}" is not a valid action'.format(a))
 
-        self.player = self._other_player()
+        self.player = self._other_player
 
 
     def infoset(self):
-        """return the current infoset wrt the current player"""
-        card_info = self.CARD_NAMES[self.hand[self.player]]
+        """return the current infoset for the current player"""
+        card_info = self.hand[self.player].short_name
         if self.board is not None:
-            card_info += self.CARD_NAMES[self.board]
+            card_info += self.board.short_name
         return "{}:{}".format(card_info, self.history_short())
-
-    def history_short(self):
-        s = "/"
-        for a in self.history:
-            if a == Action.Bet:
-                s += 'r'
-            elif a == Action.Call:
-                s += 'c'
-            elif a == Action.Fold:
-                s += 'f'
-            elif a == Action.Next:
-                s += '/'
-        return s
-
-    def pretty_print(self):
-        print("pot: {}".format(self.pot))
-        print("hand: [{}, {}]".format(
-            self.CARD_NAMES[self.hand[0]],
-            self.CARD_NAMES[self.hand[1]]
-        ))
-        print("history: {}".format(self.history_short()))
 
     def reward(self):
         """return the reward at the current node"""
+        if not self.is_terminal():
+            raise RuntimeError('tried to get reward from unfinished game')
+
         if self.folded[0]:
             return -self.pot[0]
         elif self.folded[1]:
@@ -135,6 +121,29 @@ class LedukPoker():
             else:
                 return -self.pot[0]
 
+    def history_short(self):
+        return "".join([a.value for a in self.history])
+
+    def pretty_print_state(self):
+        print('pot: {}'.format(self.pot))
+        print('hands: [{}, {}]'.format(
+            self.hand[0].short_name,
+            self.hand[1].short_name
+        ))
+        if self.board is not None:
+            print('board card: {}'.format(self.board.short_name))
+        print('history: {}'.format(self.history_short()))
+
+    def pretty_print_infoset(self):
+        print('hand: {}'.format(self.hand[self.player].short_name))
+        if self.board is not None:
+            print('board card: {}'.format(self.board.short_name))
+        print('pot: ${}'.format(self.pot[0] + self.pot[1]))
+        if self.checked or self.raises > 0:
+            print('to call: ${}'.format(self.pot[self._other_player] - self.pot[self.player]))
+        print('history: {}'.format(self.history_short()))
+
+    @property
     def _other_player(self):
         if self.player == 0:
             return 1
@@ -142,7 +151,7 @@ class LedukPoker():
             return 0
 
     def _start_next_round(self):
-        self.history.append(Action.Next)
+        self.history.append(Action.NextRound)
         self.raises = 0
         self.checked = False
         if self.round == 0:
