@@ -3,16 +3,19 @@ from copy import copy
 import random
 from enum import Enum
 
+
 class Action(Enum):
-    Call  = 'c'
+    Call = 'c'
     Raise = 'r'
-    Fold  = 'f'
+    Fold = 'f'
     NextRound = '/'
+
 
 Action.Bet = Action.Raise
 Action.Check = Action.Call
 
 Action.player_actions = [Action.Call, Action.Raise, Action.Fold]
+
 
 class Card(Enum):
     Jack = 1
@@ -23,7 +26,8 @@ class Card(Enum):
     def short_name(self):
         return self.name[0]
 
-class LedukPoker():
+
+class LedukPoker:
     ANTE = 1
     RAISE_PER_ROUND = [2, 4]
     MAX_RAISES = 2
@@ -94,7 +98,6 @@ class LedukPoker():
             raise ValueError('"{}" is not a valid action'.format(a))
 
         self.player = self._other_player
-
 
     def infoset(self):
         """return the current infoset for the current player"""

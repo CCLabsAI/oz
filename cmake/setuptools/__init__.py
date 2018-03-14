@@ -1,12 +1,9 @@
 import os
-import re
 import sys
-import platform
 import subprocess
 
-from setuptools import setup, Extension
+from setuptools import Extension
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
 
 
 class CMakeExtension(Extension):
@@ -18,7 +15,7 @@ class CMakeExtension(Extension):
 class CMakeBuild(build_ext):
     def run(self):
         try:
-            out = subprocess.check_output(['cmake', '--version'])
+            subprocess.check_output(['cmake', '--version'])
         except OSError:
             raise RuntimeError(
               "CMake must be installed to build the following extensions: " +
@@ -43,7 +40,7 @@ class CMakeBuild(build_ext):
                       '--', '-j8']
 
         env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
+        env['CXXFLAGS'] = '{} -DVERSION_INFO={}'.format(
           env.get('CXXFLAGS', ''),
           self.distribution.get_version())
 

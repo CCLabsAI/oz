@@ -1,6 +1,7 @@
 import unittest
 from .context import oz
 
+
 class TestLedukPoker(unittest.TestCase):
 
     def test_init(self):

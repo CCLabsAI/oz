@@ -1,7 +1,7 @@
 import unittest
-from .context import oz
 
 from oz.game.leduk import LedukPoker, Action, Card
+
 
 class TestLedukPoker(unittest.TestCase):
 

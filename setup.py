@@ -1,6 +1,6 @@
-'''
+"""
 Oz Prototype
-'''
+"""
 
 from setuptools import setup
 from cmake.setuptools import CMakeExtension, CMakeBuild

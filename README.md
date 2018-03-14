@@ -4,7 +4,7 @@ To install:
 $ python setup.py
 ```
 
-To install build in debug mode and install in development mode:
+To build in debug mode and install in development mode:
 
 ```shell
 $ python setup.py build --debug develop
