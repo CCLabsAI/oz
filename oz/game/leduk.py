@@ -34,7 +34,23 @@ class LedukPoker:
     N_ROUNDS = 2
     PAIR_RANK = 10
 
+    FOLD_CALL = [Action.Fold, Action.Call]
+    FOLD_CALL_RAISE = [Action.Fold, Action.Call, Action.Raise]
+
     DECK = [Card.Jack, Card.Queen, Card.King] * 2
+
+    __slots__ = (
+        'player',
+        'hand',
+        'board',
+        'pot',
+        'round',
+        'checked',
+        'raises',
+        'history',
+        'folded',
+        'deck'
+    )
 
     def __init__(self):
         self.player = 0
@@ -66,10 +82,10 @@ class LedukPoker:
 
     def legal_actions(self):
         """a list of legal actions for the current player"""
-        actions = [Action.Fold, Action.Call]
         if self.raises < self.MAX_RAISES:
-            actions.append(Action.Raise)
-        return actions
+            return self.FOLD_CALL_RAISE
+        else:
+            return self.FOLD_CALL
 
     def act(self, a):
         """perform an action"""
