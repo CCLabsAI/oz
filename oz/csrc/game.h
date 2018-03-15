@@ -1,6 +1,7 @@
 #ifndef OZ_GAME_H
 #define OZ_GAME_H
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -14,24 +15,19 @@ enum class Player {
   P2 = 2
 };
 
-class Game {
-  virtual reward_t reward() = 0;
-  virtual Player player() = 0;
-};
-
 struct Infoset {
 
 };
 
 struct Action {
-
+  intptr_t data;
 };
 
 class History {
  public:
+  History act(Action a);
   Infoset infoset(Player p) const;
   Player player() const;
-  History act(Action a);
   bool is_terminal() const;
   value_t utility() const;
 };
