@@ -1,64 +1,101 @@
 CHANCE = 0
 
 
-def sample(h, I, i, eps):
+def sample(h, context, infoset, sigma, s1, s2, i):
+    # TODO implement targeting
+    eps = context.eps
+    player = h.player
+    if player == i:
+        a, s1_eps, s2_eps = sigma.sample_eps(infoset, eps)
+        return a, s1_eps*s1, s2_eps*s2
+    else:
+        a = sigma.sample(infoset)
+        return a, s1, s2
+
+
+def playout(h, s, sigma):
     return ..., ..., ...
 
 
-def playout(h, s):
-    return ..., ..., ...
-
-
-def regret_matching(r):
+def regret_matching_policy(r):
     return ...
 
 
-def sample_chance(h):
+def uniform_policy(I):
+    return ...
+
+
+def sample_chance(h, context):
     return ..., ..., ...
 
 
-def update_regret(tree, info, action, z):
+def update_regret(tree, info, action, r):
     pass
 
 
-def update_average_strategy(tree, info, action, z):
+def update_average_strategy(tree, info, action, s):
     pass
 
 
-def oss(tree, ctx, h, pi_i, pi_x, s1, s2, i):
-    delta = ctx.delta
-    P = h.player()
-    Px = ...
-    if h.is_terminal():
-        return 1, delta*s1 + (1 - delta)*s2, h.utility()
-    elif P == CHANCE:
-        (a, rho1, rho2) = sample_chance(h)
-        return oss(tree, ctx, h+a, pi_i, rho2*pi_x, rho1*s1, rho2*s2, i)
+def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
+    delta = context.delta
+    player = h.current_player
 
-    I = h.infoset()
-    (a, s1_prime, s2_prime) = sample(h, I, i, ctx.eps)
-    if I not in tree:
-        tree.append(I)
-        sigma = ...
-        (x, l, u) = playout(h + a, delta*s1 + (1 - delta)*s2)
+    if h.is_terminal:
+        l = delta*s1 + (1.-delta)*s2
+        u = h.utility
+        return 1, l, u
+
+    elif player == CHANCE:
+        (a, rho1, rho2) = sample_chance(h, context)
+        (x, l, u) = oss(h >> a, context, tree,
+                        pi_i, rho2*pi_o,
+                        rho1*s1, rho2*s2, i)
+        return rho2*x, l, u
+
+    infoset = h.infoset()
+    in_tree = infoset in tree
+
+    if not in_tree:
+        node = tree.create_node(infoset)
+        sigma = context.sigma_playout
     else:
-        sigma = regret_matching(tree.regret(I))
-        pi_prime_P = sigma(I, a) * pi(P)
-        pi_prime_Px = pi(Px)
-        (x, l, u) = oss(tree, ctx, h+a, pi_prime_P, pi_prime_Px,
+        node = tree.lookup_node(infoset)
+        # sigma = regret_matching_policy(node.cumulative_regret)
+        sigma = node.sigma_regret_matching()
+
+    (a, s1_prime, s2_prime) = sample(h, context, infoset, sigma,
+                                     s1, s2, i)
+
+    pr_a = sigma(infoset, a)
+    if not in_tree:
+        q = delta*s1 + (1.-delta)*s2
+        (x, l, u) = playout(h >> a, pr_a * q, sigma)
+    else:
+        if player == i:
+            pi_prime_i = pr_a * pi_i
+            pi_prime_o = pi_o
+        else:
+            pi_prime_i = pi_i
+            pi_prime_o = pr_a * pi_o
+        (x, l, u) = oss(h >> a, context, tree,
+                        pi_prime_i, pi_prime_o,
                         s1_prime, s2_prime, i)
 
     c = x
-    x = x * sigma(I, a)
-    for a_prime in I.actions:
-        if h.player() == i:
-            W = u*pi_x / l
+    x = x * sigma(infoset, a)
+
+    for a_prime in infoset.actions:
+        if player == i:
+            w = u*pi_o / l
             if a_prime == a:
-                update_regret(tree, I, a_prime, (c - x)*W)
+                r = (c - x)*w
             else:
-                update_regret(tree, I, a_prime, - x*W)
+                r = - x*w
+            node.update_regret(a_prime, r)
         else:
-            z = (1./(delta*s1 + (1-delta)*s2))*pi_x*sigma(I, a_prime)
-            update_average_strategy(tree, I, a_prime, z)
+            q = delta*s1 + (1.-delta)*s2
+            s = (1./q) * pi_o * sigma(infoset, a_prime)
+            node.update_average_strategy(a_prime, s)
 
     return x, l, u
