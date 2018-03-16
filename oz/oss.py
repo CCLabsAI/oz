@@ -1,8 +1,8 @@
-CHANCE = 0
+import random
 
 
 def sample(h, context, infoset, sigma, s1, s2, i):
-    # TODO implement targeting
+    # FIXME implement targeting
     # a, rho1, rho2 = sigma.sample_targeted(context, infoset, eps)
     # return a, rho1*s1, rho2*s2
     player = h.current_player
@@ -16,7 +16,11 @@ def sample(h, context, infoset, sigma, s1, s2, i):
 
 
 def sample_chance(h, context):
-    return ..., ..., ...
+    # FIXME use real probabilities
+    actions = h.infoset().actions
+    a = random.sample(actions)
+    pr_a = 1./len(actions)
+    return a, pr_a, pr_a
 
 
 def playout(h, s, sigma):
@@ -55,7 +59,7 @@ def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
         u = h.utility()
         return 1, l, u
 
-    elif player == CHANCE:
+    elif player == h.Player.Chance:
         (a, rho1, rho2) = sample_chance(h, context)
         (x, l, u) = oss(h >> a, context, tree,
                         pi_i, rho2*pi_o,

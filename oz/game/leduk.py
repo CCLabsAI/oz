@@ -18,6 +18,7 @@ Action.player_actions = [Action.Call, Action.Raise, Action.Fold]
 
 
 class Card(Enum):
+    NA = None
     Jack = 1
     Queen = 2
     King = 3
@@ -54,7 +55,7 @@ class LedukPoker:
 
     def __init__(self):
         self.player = 0
-        self.hand = [None, None]
+        self.hand = [Card.NA, Card.NA]
         self.board = None
         self.pot = [self.ANTE, self.ANTE]
         self.round = 0

@@ -1,9 +1,11 @@
 import sys
 from copy import copy
 
-import oz.games.leduk
+import oz.game.flipguess
+import oz.game.kuhn
 
-g = oz.games.leduk.LedukPoker()
+g = oz.game.flipguess.FlipGuess()
+# g = oz.game.kuhn.KuhnPoker()
 
 infoset_style = 'cluster'
 # infoset_style = 'edge'
@@ -11,14 +13,17 @@ infoset_style = 'cluster'
 infoset_nodes = {}
 n_nodes = 0
 
+
 def print_indent(n, s):
     print("\t"*n + str(s))
+
 
 def gen_node():
     global n_nodes
     name = "state{}".format(n_nodes)
     n_nodes = n_nodes + 1
     return name
+
 
 def print_dot(g, node=gen_node(), h=[]):
     if not g.is_terminal() and g.player != g.Player.Chance:
@@ -27,7 +32,7 @@ def print_dot(g, node=gen_node(), h=[]):
         ls.append(node)
 
     if g.is_terminal():
-        r = g.reward()
+        r = g.utility()
         l = '{} [label="{}" shape=plaintext]'.format(node, r)
         print_indent(1, l)
     else:
@@ -42,11 +47,11 @@ def print_dot(g, node=gen_node(), h=[]):
         props = 'label="" shape={}'.format(shape_str)
         print_indent(1, '{} [{}]'.format(node, props))
 
-        for a in g.legal_actions():
+        for a in g.infoset().actions:
             node_a = gen_node()
             g_a = copy(g)
             g_a.act(a)
-            label = str(a).split(".")[-1]
+            label = a.name
             props = 'headport=_ tailport=c label="{}" len=1.5'.format(label)
             if not g_a.is_terminal():
                 props += ' weight=4'
@@ -55,6 +60,7 @@ def print_dot(g, node=gen_node(), h=[]):
             l = '{} -> {} [{}]'.format(node, node_a, props)
             print_indent(1, l)
             print_dot(g_a, node_a, h + [a])
+
 
 def print_infoset_clusters(infoset_nodes):
     for infoset, nodes in infoset_nodes.items():
@@ -65,11 +71,13 @@ def print_infoset_clusters(infoset_nodes):
             print_indent(2, node)
         print_indent(1, '}')
 
+
 def print_infoset_edges(infoset_nodes):
     for infoset, nodes in infoset_nodes.items():
         for a, b in zip(nodes, nodes[1:]):
             props = 'dir=none style=dashed label="{}" weight=1 len=1'.format(infoset)
             print_indent(1, '{} -> {} [{}]'.format(a, b, props))
+
 
 print_indent(0, 'digraph {')
 

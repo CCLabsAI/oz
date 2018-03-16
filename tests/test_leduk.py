@@ -1,4 +1,5 @@
 import unittest
+from .context import oz
 
 from oz.game.leduk import LedukPoker, Action, Card
 
@@ -7,6 +8,7 @@ class TestLedukPoker(unittest.TestCase):
 
     def test_init(self):
         g = LedukPoker()
+        self.assertIsNotNone(g)
 
     def test_deal(self):
         g = LedukPoker()
