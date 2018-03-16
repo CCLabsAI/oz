@@ -4,8 +4,8 @@ from copy import copy
 import oz.game.flipguess
 import oz.game.kuhn
 
-g = oz.game.flipguess.FlipGuess()
-# g = oz.game.kuhn.KuhnPoker()
+# g = oz.game.flipguess.FlipGuess()
+g = oz.game.kuhn.KuhnPoker()
 
 infoset_style = 'cluster'
 # infoset_style = 'edge'

@@ -35,7 +35,7 @@ class FlipGuess:
 
     def utility(self):
         assert self.is_terminal()
-        if self.heads:
+        if self.heads and self.p1_choice == Action.Left:
             return 1
         elif self.p1_choice == self.p2_choice:
             return 3
@@ -52,7 +52,6 @@ class FlipGuess:
         if self.player == Player.Chance:
             if a == Action.Heads:
                 self.heads = True
-                self.finished = True
             elif a == Action.Tails:
                 self.heads = False
             else:
@@ -62,6 +61,8 @@ class FlipGuess:
         elif self.player == Player.P1:
             self.p1_choice = a
             self.player = Player.P2
+            if self.heads:
+                self.finished = True
 
         elif self.player == Player.P2:
             self.p2_choice = a

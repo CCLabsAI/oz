@@ -34,7 +34,7 @@ _P2 = 1
 
 class KuhnPoker:
     Player = Player
-    POT_MAX = 2
+    Action = Action
 
     def __init__(self):
         self.history = []
@@ -94,7 +94,7 @@ class KuhnPoker:
                 else:
                     self.pot[_P1] = self.pot[_P2]
             elif a == Action.Bet:
-                if self.pot[_P2] >= self.POT_MAX:
+                if self.pot[_P2] >= 2:
                     self.pot[_P1] = self.pot[_P2]
                     self.finished = True
                 else:
@@ -109,7 +109,7 @@ class KuhnPoker:
                     self.pot[_P2] = self.pot[_P1]
                 self.finished = True
             elif a == Action.Bet:
-                if self.pot[_P1] >= self.POT_MAX:
+                if self.pot[_P1] >= 2:
                     self.pot[_P2] = self.pot[_P1]
                     self.finished = True
                 else:
