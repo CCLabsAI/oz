@@ -90,6 +90,12 @@ class FlipGuess:
         def __str__(self):
             return self.player.name
 
+        def __eq__(self, other):
+            return self.player == other.player
+
+        def __hash__(self):
+            return hash(self.player)
+
     class ChanceInfoset:
         actions = Action.chance_actions
         probs = Action.chance_probs

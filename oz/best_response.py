@@ -6,7 +6,7 @@ def exploitability(h, sigma):
     depths = infoset_depths(h)
     v1 = gebr(h, h.Player.P1, sigma, depths)
     v2 = gebr(h, h.Player.P2, sigma, depths)
-    return v1 - v2  # FIXME utility should br w.r.t the current player
+    return v1 + v2
 
 
 def gebr(h, i, sigma, depths=None):
@@ -19,6 +19,7 @@ def gebr(h, i, sigma, depths=None):
     for d in depths:
         gebr_pass2(h, i, d, 0, 1.0, sigma, t, b)
 
+    # final pass will max at every depth, so: d == -1
     v = gebr_pass2(h, i, -1, 0, 1.0, sigma, t, b)
     return v
 
@@ -28,7 +29,7 @@ def gebr_pass2(h, i, d, l, pi_o, sigma, t, b):
     infoset = h.infoset()
 
     if h.is_terminal():
-        return h.utility()
+        return h.utility(i)
 
     if player == h.Player.Chance:
         v_chance = 0.0
@@ -39,16 +40,12 @@ def gebr_pass2(h, i, d, l, pi_o, sigma, t, b):
         return v_chance
 
     if player == i and l > d:
-        def f(a):
+        def val(a):
             t_a = t[(str(infoset), a)]
             b_a = b[(str(infoset), a)]
             return t_a / b_a if b_a > 0 else 0
 
-        if player == h.player.P1:
-            a = max(infoset.actions, key=f)
-        else:
-            a = min(infoset.actions, key=f)
-
+        a = max(infoset.actions, key=val)
         return gebr_pass2(copy(h) >> a, i, d, l + 1, pi_o,
                           sigma, t, b)
 
