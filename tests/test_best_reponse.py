@@ -54,13 +54,13 @@ class TestBestResponse(unittest.TestCase):
         h = FlipGuess()
         sigma_uniform = SigmaUniform()
         v2 = best_response.gebr(h, h.Player.P2, sigma_uniform)
-        self.assertEqual(v2, 1)
+        self.assertEqual(-v2, 1)
 
     def test_gebr_kuhn(self):
         h = KuhnPoker()
         sigma = SigmaKuhn()
         v2 = best_response.gebr(h, h.Player.P2, sigma)
-        self.assertAlmostEqual(v2, (1./3)*1 + (1./3)*-2)
+        self.assertAlmostEqual(-v2, (1./3)*1 + (1./3)*-2)
 
     def test_exploitability(self):
         h = FlipGuess()

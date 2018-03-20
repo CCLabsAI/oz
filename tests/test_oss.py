@@ -2,23 +2,23 @@ import unittest
 from .context import oz
 
 from enum import Enum
-import random
+from copy import copy
 import oz.oss as oss
 from oz.game.flipguess import FlipGuess
+
 
 class TerminalHistory:
     class Player(Enum):
         Chance = 0
 
-    @property
-    def current_player(self):
-        return self.Player.Chance
+    def __init__(self):
+        self.player = self.Player.Chance
 
     def is_terminal(self):
         return True
 
-    def utility(self):
-        return 1.
+    def utility(self, player):
+        return 1
 
 
 class TestContext:
@@ -30,16 +30,8 @@ class TestTree:
     pass
 
 
-class UniformSigma:
-    def sample_prob(self, infoset):
-        actions = infoset.actions
-        a = random.choice(actions)
-        pr_a = 1./len(actions)
-        return a, pr_a
-
-
 class TestPlayoutSigma:
-    def sample_prob(self, infoset):
+    def sample_pr(self, infoset):
         actions = infoset.actions
         tails = FlipGuess.Action.Tails
         left = FlipGuess.Action.Left
@@ -49,6 +41,7 @@ class TestPlayoutSigma:
             return left, .5
         else:
             raise RuntimeError
+
 
 class TestOSS(unittest.TestCase):
 
@@ -68,3 +61,19 @@ class TestOSS(unittest.TestCase):
         self.assertEqual(x, x_target)
         self.assertEqual(l, s*x_target)
         self.assertEqual(u, 3)
+
+    def test_flipguess(self):
+        h = FlipGuess()
+        tree = oss.Tree()
+        context = oss.Context()
+
+        for i in range(10000):
+            oss.oss(copy(h), context, tree, 1, 1, 1, 1, h.Player.P1)
+            oss.oss(copy(h), context, tree, 1, 1, 1, 1, h.Player.P2)
+
+        self.assertEqual(len(tree.nodes), 2)
+
+        node = tree.nodes[FlipGuess.PlayerInfoset(FlipGuess.Player.P2)]
+        nl = node.average_strategy[FlipGuess.Action.Left]
+        nr = node.average_strategy[FlipGuess.Action.Right]
+        self.assertAlmostEqual(nl / (nl + nr), 1./3, places=2)
