@@ -58,7 +58,7 @@ class KuhnPoker:
     def is_terminal(self):
         return self.finished
 
-    def utility(self):
+    def _utility(self):
         assert self.is_terminal()
         if self.folded[_P1]:
             return -self.pot[_P1]
@@ -69,6 +69,12 @@ class KuhnPoker:
                 return self.pot[_P2]
             else:
                 return -self.pot[_P1]
+
+    def utility(self, target_player=Player.P1):
+        if target_player == Player.P1:
+            return self._utility()
+        else:
+            return -self._utility()
 
     def infoset(self):
         if self.player == Player.Chance:

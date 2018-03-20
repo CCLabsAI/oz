@@ -33,7 +33,13 @@ class FlipGuess:
     def is_terminal(self):
         return self.finished
 
-    def utility(self):
+    def utility(self, player=Player.P1):
+        if player == Player.P1:
+            return self._utility()
+        else:
+            return -self._utility()
+
+    def _utility(self):
         assert self.is_terminal()
         if self.heads and self.p1_choice == Action.Left:
             return 1
