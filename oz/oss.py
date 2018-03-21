@@ -1,4 +1,5 @@
 import random
+from copy import copy
 from collections import defaultdict
 
 
@@ -95,6 +96,40 @@ class SigmaRegretMatching:
         return a, pr_a_eps
 
 
+class SigmaAverageStrategy:
+    def __init__(self, tree):
+        self.tree = tree
+
+    def pr(self, infoset, a):
+        node = self.tree.nodes[infoset]
+        total = sum(node.average_strategy.values())
+        return float(node.average_strategy[a]) / total
+
+    def sample_pr(self, infoset):
+        node = self.tree.nodes[infoset]
+        average_strategy = node.average_strategy
+        actions = average_strategy.keys()
+        values = average_strategy.values()
+        total = sum(node.average_strategy.values())
+        a = random.choices(actions, weights=values)[0]
+        pr_a = average_strategy[a] / total
+        return a, pr_a
+
+    def sample_eps(self, infoset, eps):
+        node = self.tree.nodes[infoset]
+        average_strategy = node.average_strategy
+        actions = average_strategy.keys()
+        values = average_strategy.values()
+        total = sum(values)
+        if random.random() > eps:
+            a = random.choices(actions, weights=values)[0]
+        else:
+            a = random.choice(actions)
+        pr_a = average_strategy[a] / total
+        pr_a_eps = eps*(1./len(actions)) + (1-eps)*pr_a
+        return a, pr_a_eps
+
+
 class Tree:
     class Node:
         def __init__(self):
@@ -125,12 +160,15 @@ class Tree:
             self.nodes[infoset] = node
             return node, True
 
+    def sigma_average_strategy(self):
+        return SigmaAverageStrategy(self)
+
 
 class Context:
-    def __init__(self):
+    def __init__(self, eps=0.5, sigma=0.4):
         self.sigma_playout = SigmaUniform()
-        self.eps = 0.2
-        self.delta = 0.4
+        self.eps = eps
+        self.delta = sigma
 
 
 def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
@@ -196,3 +234,9 @@ def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
             node.update_average_strategy(a_prime, s)
 
     return x, l, u
+
+
+def solve(h, context, tree, n_iter):
+    for i in range(n_iter):
+        oss(copy(h), context, tree, 1, 1, 1, 1, h.Player.P1)
+        oss(copy(h), context, tree, 1, 1, 1, 1, h.Player.P2)

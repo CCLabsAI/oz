@@ -1,6 +1,7 @@
 from enum import Enum
 from copy import copy
 
+
 class Player(Enum):
     Chance = 0
     P1 = 1
@@ -78,7 +79,7 @@ class KuhnPoker:
 
     def infoset(self):
         if self.player == Player.Chance:
-            return self.ChanceInfoset()
+            return self.chance_infoset
         else:
             if self.player == Player.P1:
                 card = self.hand[_P1]
@@ -132,7 +133,7 @@ class KuhnPoker:
         def __init__(self, player, card, history):
             self.player = player
             self.card = card
-            self.history = history
+            self.history = tuple(history[1:])
 
         def __str__(self):
             s = self.card.name[0]
@@ -142,7 +143,16 @@ class KuhnPoker:
                 s += '/' + ''.join(acts)
             return s
 
+        def __eq__(self, other):
+            return self.player == other.player and \
+                    self.card == other.card and \
+                    self.history == other.history
+
+        def __hash__(self):
+            return hash((self.player, self.card, self.history))
 
     class ChanceInfoset:
         actions = list(ChanceAction)
         probs = [1./6]*len(actions)
+
+    chance_infoset = ChanceInfoset()
