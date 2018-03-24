@@ -67,7 +67,7 @@ class TestOSS(unittest.TestCase):
         oss.solve(h, context, tree, n_iter=20000)
         self.assertEqual(len(tree.nodes), 2)
 
-        node = tree.nodes[FlipGuess.P2_Infoset]
+        node = tree.nodes[FlipGuess.PlayerInfoset(FlipGuess.Player.P2)]
         nl = node.average_strategy[FlipGuess.Action.Left]
         nr = node.average_strategy[FlipGuess.Action.Right]
         self.assertAlmostEqual(nl / (nl + nr), 1./3, places=2)

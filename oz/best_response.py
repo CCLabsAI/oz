@@ -19,7 +19,7 @@ def gebr(h, i, sigma, depths=None):
     for d in depths:
         gebr_pass2(h, i, d, 0, 1.0, sigma, t, b)
 
-    # final pass will max at every depth, so: d == -1
+    # final pass should maximize at every depth, so: d == -1
     v = gebr_pass2(h, i, -1, 0, 1.0, sigma, t, b)
     return v
 
@@ -31,7 +31,7 @@ def gebr_pass2(h, i, d, l, pi_o, sigma, t, b):
     if h.is_terminal():
         return h.utility(i)
 
-    if player == h.Player.Chance:
+    if player is h.Player.Chance:
         v_chance = 0.0
         for a, pr_a in zip(infoset.actions, infoset.probs):
             v_a = gebr_pass2(copy(h) >> a, i, d, l + 1, pi_o * pr_a,
@@ -41,8 +41,8 @@ def gebr_pass2(h, i, d, l, pi_o, sigma, t, b):
 
     if player == i and l > d:
         def val(a):
-            t_a = t[(str(infoset), a)]
-            b_a = b[(str(infoset), a)]
+            t_a = t[(infoset, a)]
+            b_a = b[(infoset, a)]
             return t_a / b_a if b_a > 0 else 0
 
         a = max(infoset.actions, key=val)
@@ -61,8 +61,8 @@ def gebr_pass2(h, i, d, l, pi_o, sigma, t, b):
         if player != i:
             v = v + sigma.pr(infoset, a)*v_prime
         elif player == i and l == d:
-            t[(str(infoset), a)] += v_prime*pi_o
-            b[(str(infoset), a)] += pi_o
+            t[(infoset, a)] += v_prime*pi_o
+            b[(infoset, a)] += pi_o
 
     return v
 
