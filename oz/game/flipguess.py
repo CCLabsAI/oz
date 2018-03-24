@@ -23,7 +23,7 @@ class FlipGuess:
     Player = Player
     Action = Action
 
-    def __init__(self):
+    def __init__(self, rng=None):
         self.finished = False
         self.heads = None
         self.p1_choice = None
@@ -51,8 +51,10 @@ class FlipGuess:
     def infoset(self):
         if self.player == Player.Chance:
             return self.ChanceInfoset()
-        else:
-            return self.PlayerInfoset(self.player)
+        elif self.player == Player.P1:
+            return self.P1_Infoset
+        elif self.player == Player.P2:
+            return self.P2_Infoset
 
     def act(self, a):
         if self.player == Player.Chance:
@@ -81,20 +83,29 @@ class FlipGuess:
         self.act(a)
         return self
 
+    # class PlayerInfoset:
+    #     actions = Action.player_actions
+    #
+    #     def __init__(self, player):
+    #         self.player = player
+    #
+    #     def __str__(self):
+    #         return self.player.name
+    #
+    #     def __eq__(self, other):
+    #         return self.player == other.player
+    #
+    #     def __hash__(self):
+    #         return hash(self.player)
+
     class PlayerInfoset:
         actions = Action.player_actions
 
         def __init__(self, player):
             self.player = player
 
-        def __str__(self):
-            return self.player.name
-
-        def __eq__(self, other):
-            return self.player == other.player
-
-        def __hash__(self):
-            return hash(self.player)
+    P1_Infoset = PlayerInfoset(Player.P1)
+    P2_Infoset = PlayerInfoset(Player.P2)
 
     class ChanceInfoset:
         actions = Action.chance_actions

@@ -1,5 +1,5 @@
 import unittest
-from .context import oz
+# from .context import oz
 
 from enum import Enum
 from copy import copy
@@ -27,15 +27,6 @@ class TerminalHistory:
         return 1
 
 
-class TestContext:
-    def __init__(self):
-        self.delta = .8
-
-
-class TestTree:
-    pass
-
-
 class TestPlayoutSigma:
     def sample_pr(self, infoset):
         actions = infoset.actions
@@ -53,8 +44,8 @@ class TestOSS(unittest.TestCase):
 
     def test_terminal(self):
         h = TerminalHistory()
-        context = TestContext()
-        tree = TestTree()
+        context = oss.Context()
+        tree = oss.Tree()
         x, l, u = oss.oss(h, context, tree, 1, 1, 1, 1, 0)
         self.assertEqual(x, 1)
 
@@ -70,30 +61,30 @@ class TestOSS(unittest.TestCase):
 
     def test_flipguess(self):
         h = FlipGuess()
+        context = oss.Context(seed=0)
         tree = oss.Tree()
-        context = oss.Context()
 
-        oss.solve(h, context, tree, n_iter=10000)
+        oss.solve(h, context, tree, n_iter=20000)
         self.assertEqual(len(tree.nodes), 2)
 
-        node = tree.nodes[FlipGuess.PlayerInfoset(FlipGuess.Player.P2)]
+        node = tree.nodes[FlipGuess.P2_Infoset]
         nl = node.average_strategy[FlipGuess.Action.Left]
         nr = node.average_strategy[FlipGuess.Action.Right]
         self.assertAlmostEqual(nl / (nl + nr), 1./3, places=2)
 
     def test_flipguess_exploitability(self):
         h = FlipGuess()
-        context = oss.Context()
+        context = oss.Context(seed=0)
         tree = oss.Tree()
+
+        oss.solve(h, context, tree, n_iter=100)
+
+        sigma = tree.sigma_average_strategy(rng=context.rng)
+        ex1 = best_response.exploitability(h, sigma)
 
         oss.solve(h, context, tree, n_iter=1000)
 
-        sigma = tree.sigma_average_strategy()
-        ex1 = best_response.exploitability(h, sigma)
-
-        oss.solve(h, context, tree, n_iter=10000)
-
-        sigma = tree.sigma_average_strategy()
+        sigma = tree.sigma_average_strategy(rng=context.rng)
         ex2 = best_response.exploitability(h, sigma)
 
         self.assertLess(ex2, ex1)
@@ -106,15 +97,17 @@ class TestOSS(unittest.TestCase):
         for i in range(10):
             oss.solve(h, context, tree, n_iter=1000)
             if len(tree.nodes) >= 12:
-                sigma = tree.sigma_average_strategy()
-                ex = best_response.exploitability(h, sigma)
-                print('kuhn ex:', ex)
+                sigma = tree.sigma_average_strategy(rng=context.rng)
+                # ex = best_response.exploitability(h, sigma)
+                # print('kuhn ex:', ex)
 
         self.assertEqual(len(tree.nodes), 12)
+
+        ex = best_response.exploitability(h, sigma)
         self.assertLess(ex, 0.1)
 
-        for infoset in tree.nodes:
-            print(infoset)
-            for a in infoset.actions:
-                print("\t{}: {}".format(a.value, sigma.pr(infoset, a)))
+        # for infoset in tree.nodes:
+        #     print(infoset)
+        #     for a in infoset.actions:
+        #         print("\t{}: {}".format(a.value, sigma.pr(infoset, a)))
 

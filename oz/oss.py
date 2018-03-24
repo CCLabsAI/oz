@@ -20,8 +20,9 @@ def sample(h, context, infoset, sigma, s1, s2, i):
 
 def sample_chance(h, context):
     # FIXME use real probabilities
+    rng = context.rng
     actions = h.infoset().actions
-    a = np.random.choice(actions)
+    a = rng.choice(actions)
     pr_a = 1./len(actions)
     return a, pr_a, pr_a
 
@@ -38,13 +39,9 @@ def playout(h, s, sigma):
 
 
 def _regret_to_pr(regrets):
-    total = 0
+    total = sum(v for v in regrets.values() if v > 0)
+
     probs = {}
-
-    for a, r in regrets.items():
-        if r > 0:
-            total += r
-
     if total > 0:
         for a, r in regrets.items():
             if r > 0:
@@ -60,13 +57,17 @@ def _regret_to_pr(regrets):
 
 
 class SigmaUniform:
+    def __init__(self, rng):
+        self._rng = rng
+
     def pr(self, infoset, a):
         actions = infoset.actions
         return 1./len(actions)
 
     def sample_pr(self, infoset):
+        rng = self._rng
         actions = infoset.actions
-        a = np.random.choice(actions)
+        a = rng.choice(actions)
         pr_a = 1./len(actions)
         return a, pr_a
 
@@ -75,31 +76,39 @@ class SigmaUniform:
 
 
 class SigmaRegretMatching:
-    def __init__(self, regrets):
+    def __init__(self, regrets, rng):
         self.regrets = regrets
-        self._pr = _regret_to_pr(regrets)
-        self._action_list = list(self._pr.keys())
-        self._prob_list = list(self._pr.values())
+        self._rng = rng
+        pr = _regret_to_pr(regrets)
+        actions = list(pr.keys())
+        actions.sort(key=lambda x: x.name)
+        probs = [pr[a] for a in actions]
+        self._pr = pr
+        self._actions = actions
+        self._probs = probs
 
     def pr(self, infoset, a):
         return self._pr[a]
 
     def sample_pr(self, infoset):
-        a = np.random.choice(self._action_list, p=self._prob_list)
+        rng = self._rng
+        a = rng.choice(self._actions, p=self._probs)
         return a, self._pr[a]
 
     def sample_eps(self, infoset, eps):
-        if np.random.random() > eps:
-            a = np.random.choice(self._action_list, p=self._prob_list)
+        rng = self._rng
+        if rng.rand() > eps:
+            a = rng.choice(self._actions, p=self._probs)
         else:
-            a = np.random.choice(self._action_list)
-        pr_a_eps = eps*(1./len(self._action_list)) + (1-eps)*self._pr[a]
+            a = rng.choice(self._actions)
+        pr_a_eps = eps*(1./len(self._actions)) + (1-eps)*self._pr[a]
         return a, pr_a_eps
 
 
 class SigmaAverageStrategy:
-    def __init__(self, tree):
+    def __init__(self, tree, rng):
         self.tree = tree
+        self._rng = rng
 
     def pr(self, infoset, a):
         node = self.tree.nodes[infoset]
@@ -107,27 +116,29 @@ class SigmaAverageStrategy:
         return float(node.average_strategy[a]) / total
 
     def sample_pr(self, infoset):
+        rng = self._rng
         node = self.tree.nodes[infoset]
         average_strategy = node.average_strategy
         actions = average_strategy.keys()
         values = average_strategy.values()
         total = sum(values)
         probs = [v / total for v in values]
-        a = np.random.choices(actions, p=probs)
+        a = rng.choice(actions, p=probs)
         pr_a = average_strategy[a] / total
         return a, pr_a
 
     def sample_eps(self, infoset, eps):
+        rng = self._rng
         node = self.tree.nodes[infoset]
         average_strategy = node.average_strategy
         actions = average_strategy.keys()
         values = average_strategy.values()
         total = sum(values)
-        if np.random.random() > eps:
+        if rng.rand() > eps:
             probs = [v / total for v in values]
-            a = np.random.choices(actions, weights=probs)[0]
+            a = rng.choice(actions, p=probs)
         else:
-            a = np.random.choice(actions)
+            a = rng.choice(actions)
         pr_a = average_strategy[a] / total
         pr_a_eps = eps*(1./len(actions)) + (1-eps)*pr_a
         return a, pr_a_eps
@@ -139,12 +150,12 @@ class Tree:
             self.regrets = defaultdict(float)
             self.average_strategy = defaultdict(float)
 
-        def sigma_regret_matching(self):
+        def sigma_regret_matching(self, rng):
             # TODO Make this less ugly
             if len(self.regrets) > 0:
-                return SigmaRegretMatching(self.regrets)
+                return SigmaRegretMatching(self.regrets, rng=rng)
             else:
-                return SigmaUniform()
+                return SigmaUniform(rng=rng)
 
         def update_regret(self, a, r):
             self.regrets[a] += r
@@ -163,19 +174,21 @@ class Tree:
             self.nodes[infoset] = node
             return node, True
 
-    def sigma_average_strategy(self):
-        return SigmaAverageStrategy(self)
+    def sigma_average_strategy(self, rng):
+        return SigmaAverageStrategy(self, rng)
 
 
 class Context:
-    def __init__(self, eps=0.5, sigma=0.4):
-        self.sigma_playout = SigmaUniform()
+    def __init__(self, eps=0.5, sigma=0.4, seed=None):
+        self.rng = numpy.random.RandomState(seed=seed)
+        self.sigma_playout = SigmaUniform(rng=self.rng)
         self.eps = eps
         self.delta = sigma
 
 
 def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
     delta = context.delta
+    rng = context.rng
     player = h.player
 
     if h.is_terminal():
@@ -196,7 +209,7 @@ def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
     if out_of_tree:
         sigma = context.sigma_playout
     else:
-        sigma = node.sigma_regret_matching()
+        sigma = node.sigma_regret_matching(rng)
 
     (a, s1_prime, s2_prime) = sample(h, context, infoset, sigma,
                                      s1, s2, i)
