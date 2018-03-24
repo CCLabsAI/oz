@@ -3,12 +3,14 @@ from copy import copy
 
 import oz.game.flipguess
 import oz.game.kuhn
+import oz.game.leduk
 
 # g = oz.game.flipguess.FlipGuess()
-g = oz.game.kuhn.KuhnPoker()
+# g = oz.game.kuhn.KuhnPoker()
+g = oz.game.leduk.LedukPoker()
 
-infoset_style = 'cluster'
-# infoset_style = 'edge'
+# infoset_style = 'cluster'
+infoset_style = 'edge'
 
 infoset_nodes = {}
 n_nodes = 0
@@ -25,7 +27,10 @@ def gen_node():
     return name
 
 
-def print_dot(g, node=gen_node(), h=[]):
+def print_dot(g, d, node=gen_node(), h=[]):
+    if d <= 0:
+        return
+
     if not g.is_terminal() and g.player != g.Player.Chance:
         infoset = g.infoset()
         ls = infoset_nodes.setdefault(infoset, [])
@@ -43,6 +48,8 @@ def print_dot(g, node=gen_node(), h=[]):
             shape_str = 'invtriangle'
         elif player == g.Player.Chance:
             shape_str = 'circle'
+        else:
+            raise ValueError('"{}" is not a valid player'.format(player))
 
         props = 'label="" shape={}'.format(shape_str)
         print_indent(1, '{} [{}]'.format(node, props))
@@ -59,7 +66,7 @@ def print_dot(g, node=gen_node(), h=[]):
                 props += ' weight=2'
             l = '{} -> {} [{}]'.format(node, node_a, props)
             print_indent(1, l)
-            print_dot(g_a, node_a, h + [a])
+            print_dot(g_a, d-1, node_a, h + [a])
 
 
 def print_infoset_clusters(infoset_nodes):
@@ -84,7 +91,7 @@ print_indent(0, 'digraph {')
 print_indent(1, 'graph [nodesep=0.2 ranksep=1.5 splines=true]')
 print_indent(1, 'node [height=.5 width=.5]')
 
-print_dot(g)
+print_dot(g, d=25)
 
 if infoset_style == 'cluster':
     print_infoset_clusters(infoset_nodes)

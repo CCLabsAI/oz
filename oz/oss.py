@@ -19,11 +19,13 @@ def sample(h, context, infoset, sigma, s1, s2, i):
 
 
 def sample_chance(h, context):
-    # FIXME use real probabilities
     rng = context.rng
-    actions = h.infoset().actions
-    a = rng.choice(actions)
-    pr_a = 1./len(actions)
+    infoset = h.infoset()
+    actions = infoset.actions
+    probs = infoset.probs
+    i = rng.choice(len(actions), p=probs)
+    a = actions[i]
+    pr_a = probs[i]
     return a, pr_a, pr_a
 
 
@@ -110,22 +112,44 @@ class SigmaAverageStrategy:
         self.tree = tree
         self._rng = rng
 
-    def pr(self, infoset, a):
-        node = self.tree.nodes[infoset]
-        total = sum(node.average_strategy.values())
-        return float(node.average_strategy[a]) / total
-
-    def sample_pr(self, infoset):
+    def pr(self, infoset, a, uniform_fallback=True):
         rng = self._rng
-        node = self.tree.nodes[infoset]
-        average_strategy = node.average_strategy
-        actions = average_strategy.keys()
-        values = average_strategy.values()
-        total = sum(values)
-        probs = [v / total for v in values]
-        a = rng.choice(actions, p=probs)
-        pr_a = average_strategy[a] / total
-        return a, pr_a
+        if uniform_fallback:
+            node = self.tree.nodes.get(infoset)
+        else:
+            node = self.tree.nodes[infoset]
+
+        if node is not None:
+            total = sum(node.average_strategy.values())
+            if total == 0.0:
+                actions = infoset.actions
+                return 1. / len(actions)
+            return float(node.average_strategy[a]) / total
+        else:
+            actions = infoset.actions
+            return 1. / len(actions)
+
+    def sample_pr(self, infoset, uniform_fallback=True):
+        rng = self._rng
+        if uniform_fallback:
+            node = self.tree.nodes.get(infoset)
+        else:
+            node = self.tree.nodes[infoset]
+
+        if node is not None:
+            average_strategy = node.average_strategy
+            actions = average_strategy.keys()
+            values = average_strategy.values()
+            total = sum(values)
+            probs = [v / total for v in values]
+            a = rng.choice(actions, p=probs)
+            pr_a = average_strategy[a] / total
+            return a, pr_a
+        else:
+            actions = infoset.actions
+            a = rng.choice(actions)
+            pr_a = 1. / len(actions)
+            return a, pr_a
 
     def sample_eps(self, infoset, eps):
         rng = self._rng

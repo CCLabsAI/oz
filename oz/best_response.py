@@ -25,11 +25,11 @@ def gebr(h, i, sigma, depths=None):
 
 
 def gebr_pass2(h, i, d, l, pi_o, sigma, t, b):
-    player = h.player
-    infoset = h.infoset()
-
     if h.is_terminal():
         return h.utility(i)
+
+    player = h.player
+    infoset = h.infoset()
 
     if player is h.Player.Chance:
         v_chance = 0.0
