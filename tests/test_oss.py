@@ -10,6 +10,8 @@ from oz.game.kuhn import KuhnPoker
 from oz import oss
 from oz import best_response
 
+import numpy.random
+
 
 class TerminalHistory:
     class Player(Enum):
@@ -66,14 +68,12 @@ class TestOSS(unittest.TestCase):
         self.assertEqual(l, s*x_target)
         self.assertEqual(u, 3)
 
-    @unittest.skip("currently unreliable")
     def test_flipguess(self):
         h = FlipGuess()
         tree = oss.Tree()
         context = oss.Context()
 
-        # TODO make this test more reliable
-        oss.solve(h, context, tree, n_iter=20000)
+        oss.solve(h, context, tree, n_iter=10000)
         self.assertEqual(len(tree.nodes), 2)
 
         node = tree.nodes[FlipGuess.PlayerInfoset(FlipGuess.Player.P2)]

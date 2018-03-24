@@ -23,6 +23,7 @@ setup(
     ],
     install_requires=[
       'torch>=0.3.0',
+      'numpy>=1.9.0',
       'termcolor'
     ],
 )

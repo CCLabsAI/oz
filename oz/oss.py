@@ -1,7 +1,8 @@
-import random
 from copy import copy
 from collections import defaultdict
 
+import numpy.random
+import numpy as np
 
 def sample(h, context, infoset, sigma, s1, s2, i):
     # FIXME implement targeting
@@ -20,7 +21,7 @@ def sample(h, context, infoset, sigma, s1, s2, i):
 def sample_chance(h, context):
     # FIXME use real probabilities
     actions = h.infoset().actions
-    a = random.choice(actions)
+    a = np.random.choice(actions)
     pr_a = 1./len(actions)
     return a, pr_a, pr_a
 
@@ -65,7 +66,7 @@ class SigmaUniform:
 
     def sample_pr(self, infoset):
         actions = infoset.actions
-        a = random.choice(actions)
+        a = np.random.choice(actions)
         pr_a = 1./len(actions)
         return a, pr_a
 
@@ -84,14 +85,14 @@ class SigmaRegretMatching:
         return self._pr[a]
 
     def sample_pr(self, infoset):
-        a = random.choices(self._action_list, weights=self._prob_list)[0]
+        a = np.random.choice(self._action_list, p=self._prob_list)
         return a, self._pr[a]
 
     def sample_eps(self, infoset, eps):
-        if random.random() > eps:
-            a = random.choices(self._action_list, weights=self._prob_list)[0]
+        if np.random.random() > eps:
+            a = np.random.choice(self._action_list, p=self._prob_list)
         else:
-            a = random.choice(self._action_list)
+            a = np.random.choice(self._action_list)
         pr_a_eps = eps*(1./len(self._action_list)) + (1-eps)*self._pr[a]
         return a, pr_a_eps
 
@@ -110,8 +111,9 @@ class SigmaAverageStrategy:
         average_strategy = node.average_strategy
         actions = average_strategy.keys()
         values = average_strategy.values()
-        total = sum(node.average_strategy.values())
-        a = random.choices(actions, weights=values)[0]
+        total = sum(values)
+        probs = [v / total for v in values]
+        a = np.random.choices(actions, p=probs)
         pr_a = average_strategy[a] / total
         return a, pr_a
 
@@ -121,10 +123,11 @@ class SigmaAverageStrategy:
         actions = average_strategy.keys()
         values = average_strategy.values()
         total = sum(values)
-        if random.random() > eps:
-            a = random.choices(actions, weights=values)[0]
+        if np.random.random() > eps:
+            probs = [v / total for v in values]
+            a = np.random.choices(actions, weights=probs)[0]
         else:
-            a = random.choice(actions)
+            a = np.random.choice(actions)
         pr_a = average_strategy[a] / total
         pr_a_eps = eps*(1./len(actions)) + (1-eps)*pr_a
         return a, pr_a_eps

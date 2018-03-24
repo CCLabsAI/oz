@@ -1,7 +1,6 @@
 import unittest
 # from .context import oz
 
-import random
 from oz.game.flipguess import FlipGuess
 from oz.game.kuhn import KuhnPoker
 
