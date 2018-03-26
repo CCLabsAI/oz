@@ -45,4 +45,4 @@ auto OSS::walk(History h,
   return {1, 1, 0};
 }
 
-#endif //OZ_OSS_H
+#endif // OZ_OSS_H
