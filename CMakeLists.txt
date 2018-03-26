@@ -12,5 +12,5 @@ find_package(PyTorch 0.3.0 REQUIRED)
 
 add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
 
-pybind11_add_module(_ext "oz/csrc/oz.cpp")
+pybind11_add_module(_ext "oz/csrc/oz.cpp" "oz/csrc/misc/oss.cpp")
 target_include_directories(_ext PRIVATE "${PYTORCH_INCLUDE_DIR}" "lib/torch-stub/include")

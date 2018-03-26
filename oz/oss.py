@@ -30,6 +30,7 @@ def sample_chance(h, context):
 
 
 def playout(h, s, sigma):
+    # FIXME chance player
     x = 1.
     while not h.is_terminal():
         infoset = h.infoset()
