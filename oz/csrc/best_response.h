@@ -1,0 +1,4 @@
+#ifndef OZ_BEST_RESPONSE_H
+#define OZ_BEST_RESPONSE_H
+
+#endif // OZ_BEST_RESPONSE_H
