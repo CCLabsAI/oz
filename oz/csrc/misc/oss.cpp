@@ -80,7 +80,9 @@ auto oss_t::walk(history_t h,
       pi_prime_o = pr_a*pi_i;
     }
 
-    walk_ret_t ret = walk(h >> a, pi_prime_i, pi_prime_o, s1_prime, s2_prime, i);
+    walk_ret_t ret = walk(h >> a,
+                          pi_prime_i, pi_prime_o,
+                          s1_prime, s2_prime, i);
     x = ret.x, l = ret.l, u = ret.u;
   }
 

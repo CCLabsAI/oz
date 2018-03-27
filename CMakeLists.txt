@@ -11,6 +11,19 @@ find_package(PythonInterp 3.4 REQUIRED)
 find_package(PyTorch 0.3.0 REQUIRED)
 
 add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
+include_directories("lib/catch/include")
 
-pybind11_add_module(_ext "oz/csrc/oz.cpp" "oz/csrc/misc/oss.cpp")
-target_include_directories(_ext PRIVATE "${PYTORCH_INCLUDE_DIR}" "lib/torch-stub/include")
+add_executable("tests"
+        "oz/csrc/tests/tests.cpp"
+        "oz/csrc/tests/test_flipguess.cpp"
+        )
+
+pybind11_add_module(_ext
+        "oz/csrc/oz.cpp"
+        "oz/csrc/misc/oss.cpp"
+        "oz/csrc/oss.cpp"
+        "oz/csrc/best_response.cpp"
+        )
+#pybind11_add_module(_ext "oz/csrc/oz.cpp")
+
+target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}" "lib/torch-stub/include")
