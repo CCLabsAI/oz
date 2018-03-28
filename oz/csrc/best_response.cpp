@@ -25,20 +25,20 @@ auto gebr(history_t h, player_t i,
 
 auto gebr(history_t h, player_t i,
           sigma_t sigma, vector<int> depths) -> value_t {
-  br_stats_t t, b;
+  q_stats_t tb;
 
   for(const auto& d : depths) {
-    gebr_pass2(h, i, d, 0, 1.0, sigma, t, b);
+    gebr_pass2(h, i, d, 0, 1.0, sigma, tb);
   }
 
   // final pass should maximize at every depth, so: d = -1
-  value_t v = gebr_pass2(move(h), i, -1, 0, 1.0, move(sigma), t, b);
+  value_t v = gebr_pass2(move(h), i, -1, 0, 1.0, move(sigma), tb);
   return v;
 }
 
 auto gebr_pass2(history_t h, player_t i,
                 int d, int l, prob_t pi_o,
-                sigma_t sigma, br_stats_t& t, br_stats_t& b) -> value_t {
+                sigma_t sigma, q_stats_t& tb) -> value_t {
   if (h.is_terminal()) {
     return h.utility(i);
   }
@@ -55,7 +55,7 @@ auto gebr_pass2(history_t h, player_t i,
       auto pr_a = (prob_t) 1/actions.size(); // FIXME
       value_t v_a = gebr_pass2(h >> a, i,
                                d, l+1, pi_o*pr_a,
-                               sigma, t, b);
+                               sigma, tb);
       v_chance += pr_a*v_a;
     }
 
@@ -64,16 +64,13 @@ auto gebr_pass2(history_t h, player_t i,
 
   if (player == i && l > d) {
     auto value_fn = [&](const action_t& a) -> value_t {
-      value_t t_a = t.at({infoset.str(), a});
-      value_t b_a = b.at({infoset.str(), a});
-
-      return b_a > 0 ? t_a / b_a : 0;
+      return tb.at({ infoset.str(), a }).v();
     };
 
     auto a_best = max_element_by(begin(actions), end(actions), value_fn);
     return gebr_pass2(h >> *a_best, i,
                       d, l+1, pi_o,
-                      sigma, t, b);
+                      sigma, tb);
   }
 
   value_t v = 0;
@@ -85,14 +82,15 @@ auto gebr_pass2(history_t h, player_t i,
 
     value_t v_prime = gebr_pass2(h >> a, i,
                                  d, l+1, pi_prime_o,
-                                 sigma, t, b);
+                                 sigma, tb);
 
     if (player != i) {
       v += sigma.pr(infoset, a) * v_prime;
     }
     else if (player == i && l == d) {
-      t[{infoset.str(), a}] += v_prime*pi_o;
-      b[{infoset.str(), a}] += pi_o;
+      auto& q = tb[{ infoset.str(), a }];
+      q.t += v_prime*pi_o;
+      q.b += pi_o;
     }
   }
 

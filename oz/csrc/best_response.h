@@ -7,7 +7,14 @@
 
 namespace oz {
 
-using br_stats_t = std::unordered_map<std::pair<std::string, action_t>, value_t>;
+struct q_val_t {
+  value_t t = 0;
+  value_t b = 0;
+  value_t v() { return b > 0 ? t / b : 0; }
+};
+
+using q_info_t = std::pair<std::string, action_t>;
+using q_stats_t = std::unordered_map<q_info_t, q_val_t>;
 
 value_t exploitability(history_t h, sigma_t sigma);
 
@@ -19,7 +26,7 @@ value_t gebr(history_t h, player_t i,
 
 value_t gebr_pass2(history_t h, player_t i,
                    int d, int l, prob_t pi_o,
-                   sigma_t sigma, br_stats_t& t, br_stats_t& b);
+                   sigma_t sigma, q_stats_t& tb);
 
 std::vector<int> infoset_depths(history_t h);
 

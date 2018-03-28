@@ -56,7 +56,7 @@ TEST_CASE("best response map lookup", "[best_response]") {
   auto infoset = h.infoset();
   auto a1 = infoset.actions()[0];
   auto a2 = infoset.actions()[1];
-  br_stats_t m;
+  std::unordered_map<std::pair<std::string, action_t>, value_t > m;
 
   m[{infoset.str(), a1}] += 1;
   m[{infoset.str(), a1}] += 1;
@@ -69,10 +69,10 @@ TEST_CASE("best response run gebr2", "[best_response]") {
   auto h = make_history<flipguess_t>();
   auto sigma = make_sigma<sigma_uniform_t>();
 
-  br_stats_t t, b;
-  gebr_pass2(move(h), P1, 1, 0, 1.0, sigma, t, b);
+  q_stats_t tb;
+  gebr_pass2(move(h), P1, 1, 0, 1.0, sigma, tb);
 
-  REQUIRE(!t.empty());
+  REQUIRE(!tb.empty());
 }
 
 TEST_CASE("best response run gebr p1", "[best_response]") {
