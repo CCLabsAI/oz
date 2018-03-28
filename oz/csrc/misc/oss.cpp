@@ -17,11 +17,11 @@ auto oss_t::playout(history_t h, prob_t s, sigma_t sigma) -> walk_ret_t {
   while (!h.is_terminal()) {
     action_prob_t ap = sample_action(h, sigma);
     h.act(ap.a);
-    x = x*ap.pr_a;
+    x = x * ap.pr_a;
   }
 
   value_t u = h.utility();
-  return { x, s*x, u };
+  return { x, s * x, u };
 }
 
 auto oss_t::walk(history_t h,
@@ -29,7 +29,7 @@ auto oss_t::walk(history_t h,
                  prob_t s1, prob_t s2, player_t i) -> walk_ret_t {
 
   if (h.is_terminal()) {
-    prob_t l = delta_*s1 + (1 - delta_)*s2;
+    prob_t l = delta_ * s1 + (1 - delta_) * s2;
     value_t u = h.utility();
     return { 1, l, u };
   }
@@ -39,8 +39,8 @@ auto oss_t::walk(history_t h,
     action_t a = ap.a;
     prob_t rho1 = ap.s1, rho2 = ap.s2;
 
-    walk_ret_t r = walk(h >> a, pi_i, rho2*pi_o, rho1*s1, rho2*s2, i);
-    return { rho2*r.x, r.l, r.u };
+    walk_ret_t r = walk(h >> a, pi_i, rho2 * pi_o, rho1 * s1, rho2 * s2, i);
+    return { rho2 * r.x, r.l, r.u };
   }
 
   infoset_t infoset = h.infoset();
@@ -65,19 +65,19 @@ auto oss_t::walk(history_t h,
 
   prob_t x, l, u, c;
   if (out_of_tree) {
-    prob_t q = delta_*s1 + (1 - delta_)*s2;
-    walk_ret_t ret = playout(h >> a, pr_a*q, sigma);
+    prob_t q = delta_ * s1 + (1 - delta_) * s2;
+    walk_ret_t ret = playout(h >> a, pr_a * q, sigma);
     x = ret.x, l = ret.l, u = ret.u;
   }
   else {
     prob_t pi_prime_i, pi_prime_o;
     if (h.player() == i) {
-      pi_prime_i = pr_a*pi_i;
+      pi_prime_i = pr_a * pi_i;
       pi_prime_o = pi_o;
     }
     else {
       pi_prime_i = pi_i;
-      pi_prime_o = pr_a*pi_i;
+      pi_prime_o = pr_a * pi_i;
     }
 
     walk_ret_t ret = walk(h >> a,
@@ -87,26 +87,26 @@ auto oss_t::walk(history_t h,
   }
 
   c = x;
-  x = pr_a*x;
+  x = pr_a * x;
 
   if (h.player() == i) {
-    value_t w = u*pi_o/l;
-    for (const auto &a_prime : infoset.actions()) {
+    value_t w = u * pi_o / l;
+    for (const auto& a_prime : infoset.actions()) {
       value_t r;
       if (a_prime == a) {
-        r = (c - x)*w;
+        r = (c - x) * w;
       }
       else {
-        r = -x*w;
+        r = -x * w;
       }
 
       node.update_regret(a_prime, r);
     }
   }
   else {
-    prob_t q = delta_*s1 + (1 - delta_)*s2;
-    for (const auto &a_prime : infoset.actions()) {
-      value_t s = (1/q)*pi_o*sigma.pr(infoset, a_prime);
+    prob_t q = delta_ * s1 + (1 - delta_) * s2;
+    for (const auto& a_prime : infoset.actions()) {
+      value_t s = (1 / q) * pi_o * sigma.pr(infoset, a_prime);
       node.update_average_strategy(a_prime, s);
     }
   }

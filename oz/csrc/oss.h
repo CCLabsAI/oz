@@ -17,8 +17,8 @@ struct action_prob_t {
 
 class history_t {
  public:
-  history_t(const history_t& that): self_(that.self_->clone()) { };
-  history_t(history_t&& that) noexcept: self_(move(that.self_)) { };
+  history_t(const history_t& that) : self_(that.self_->clone()) {};
+  history_t(history_t&& that) noexcept: self_(move(that.self_)) {};
 
   void act(action_t a) { self_->act(a); }
   infoset_t infoset() const { return self_->infoset(); }
@@ -36,15 +36,15 @@ class history_t {
  private:
   using ptr_t = std::unique_ptr<game_t>;
 
-  explicit history_t(ptr_t game): self_(move(game)) { };
-  template <class Infoset, typename... Args>
-    friend history_t make_history(Args&&... args);
+  explicit history_t(ptr_t game) : self_(move(game)) {};
+  template<class Infoset, typename... Args>
+  friend history_t make_history(Args&& ... args);
 
   ptr_t self_;
 };
 
-template <class Game, typename... Args>
-auto make_history(Args&&... args) -> history_t {
+template<class Game, typename... Args>
+auto make_history(Args&& ... args) -> history_t {
   return history_t(history_t::ptr_t {
       new Game(std::forward<Args>(args)...)
   });
@@ -71,15 +71,15 @@ class sigma_t {
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
 
-  explicit sigma_t(ptr_t self): self_(std::move(self)) { };
-  template <class Sigma, typename... Args>
-    friend sigma_t make_sigma(Args&&... args);
+  explicit sigma_t(ptr_t self) : self_(std::move(self)) {};
+  template<class Sigma, typename... Args>
+  friend sigma_t make_sigma(Args&& ... args);
 
   ptr_t self_;
 };
 
-template <class Sigma, typename... Args>
-sigma_t make_sigma(Args&&... args) {
+template<class Sigma, typename... Args>
+sigma_t make_sigma(Args&& ... args) {
   return sigma_t(std::make_shared<Sigma>(std::forward<Args>(args)...));
 };
 
@@ -124,7 +124,7 @@ class oss_t {
     void walk(tree_t tree);
     void unwind(tree_t tree, suffix_prob_t prob);
 
-    enum {IN_TREE, ROLLOUT_EVAL, PRIOR_EVAL, TERMINAL, FINISHED} state_;
+    enum { IN_TREE, ROLLOUT_EVAL, PRIOR_EVAL, TERMINAL, FINISHED } state_;
 
     player_t search_player_;
     prefix_prob_t prefix_prob_;

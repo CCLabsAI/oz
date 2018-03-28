@@ -24,8 +24,8 @@ constexpr player_t P2 = player_t::P2;
 
 class action_t {
  public:
-  action_t(): index_(-1) { };
-  explicit action_t(int index): index_(index) { };
+  action_t() : index_(-1) {};
+  explicit action_t(int index) : index_(index) {};
 
   int index() const { return index_; };
 
@@ -45,20 +45,19 @@ class infoset_t {
 
   std::vector<action_t> actions() const { return self_->actions(); }
   std::string str() const { return self_->str(); }
-  virtual bool is_equal(const infoset_t& that) const
-    { return self_->is_equal(*that.self_); };
+  virtual bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
   virtual size_t hash() const { return self_->hash(); };
 
  private:
-  explicit infoset_t(concept_t* self): self_(self) {};
-  template <class Infoset, typename... Args>
-    friend infoset_t make_infoset(Args&&... args);
+  explicit infoset_t(concept_t *self) : self_(self) {};
+  template<class Infoset, typename... Args>
+  friend infoset_t make_infoset(Args&& ... args);
 
   std::shared_ptr<const concept_t> self_;
 };
 
-template <class Infoset, typename... Args>
-auto make_infoset(Args&&... args) -> infoset_t {
+template<class Infoset, typename... Args>
+auto make_infoset(Args&& ... args) -> infoset_t {
   return infoset_t(new Infoset(std::forward<Args>(args)...));
 }
 
@@ -73,19 +72,19 @@ class game_t {
   virtual ~game_t() = default;
 };
 
-inline bool operator==(const infoset_t &a, const infoset_t &b) {
+inline bool operator ==(const infoset_t& a, const infoset_t& b) {
   return a.is_equal(b);
 }
 
-inline bool operator!=(const infoset_t &a, const infoset_t &b) {
+inline bool operator !=(const infoset_t& a, const infoset_t& b) {
   return !(a == b);
 }
 
-inline bool operator==(const action_t &a, const action_t &b) {
+inline bool operator ==(const action_t& a, const action_t& b) {
   return a.index() == b.index();
 }
 
-inline bool operator!=(const action_t &a, const action_t &b) {
+inline bool operator !=(const action_t& a, const action_t& b) {
   return !(a == b);
 }
 
@@ -95,18 +94,17 @@ namespace std {
 
 template<>
 struct hash<oz::action_t> {
-  inline size_t operator ()(const oz::action_t &a) const {
+  inline size_t operator ()(const oz::action_t& a) const {
     return hash<int>()(a.index());
   }
 };
 
-template <>
+template<>
 struct hash<oz::infoset_t> {
-  inline size_t operator ()(const oz::infoset_t &a) const {
+  inline size_t operator ()(const oz::infoset_t& a) const {
     return a.hash();
   }
 };
-
 
 } // namespace std
 

@@ -17,13 +17,13 @@ class flipguess_t : public game_t {
 
   class infoset_t : public oz::infoset_t::concept_t {
    public:
-    explicit infoset_t(player_t player): player_(player) { };
+    explicit infoset_t(player_t player) : player_(player) {};
 
     std::vector<oz::action_t> actions() const override;
     std::string str() const override;
     bool is_equal(const oz::infoset_t::concept_t& that) const override;
     virtual size_t hash() const override {
-      return std::hash<player_t >()(player_);
+      return std::hash<player_t>()(player_);
     };
 
    private:

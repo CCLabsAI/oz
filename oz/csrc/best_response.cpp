@@ -26,7 +26,7 @@ auto gebr(history_t h, player_t i,
           sigma_t sigma, vector<int> depths) -> value_t {
   q_stats_t tb;
 
-  for(const auto& d : depths) {
+  for (const auto& d : depths) {
     gebr_pass2(h, i, d, 0, 1.0, sigma, tb);
   }
 
@@ -51,11 +51,11 @@ auto gebr_pass2(history_t h, player_t i,
   if (player == CHANCE) {
     value_t v_chance = 0;
     for (const auto& a : actions) {
-      auto pr_a = (prob_t) 1/actions.size(); // FIXME
+      auto pr_a = (prob_t) 1 / actions.size(); // FIXME
       value_t v_a = gebr_pass2(h >> a, i,
-                               d, l+1, pi_o*pr_a,
+                               d, l + 1, pi_o * pr_a,
                                sigma, tb);
-      v_chance += pr_a*v_a;
+      v_chance += pr_a * v_a;
     }
 
     return v_chance;
@@ -68,7 +68,7 @@ auto gebr_pass2(history_t h, player_t i,
 
     auto a_best = max_element_by(begin(actions), end(actions), value_fn);
     return gebr_pass2(h >> *a_best, i,
-                      d, l+1, pi_o,
+                      d, l + 1, pi_o,
                       sigma, tb);
   }
 
@@ -80,7 +80,7 @@ auto gebr_pass2(history_t h, player_t i,
     }
 
     value_t v_prime = gebr_pass2(h >> a, i,
-                                 d, l+1, pi_prime_o,
+                                 d, l + 1, pi_prime_o,
                                  sigma, tb);
 
     if (player != i) {
@@ -88,7 +88,7 @@ auto gebr_pass2(history_t h, player_t i,
     }
     else if (player == i && l == d) {
       auto& q = tb[{ infoset, a }];
-      q.t += v_prime*pi_o;
+      q.t += v_prime * pi_o;
       q.b += pi_o;
     }
   }

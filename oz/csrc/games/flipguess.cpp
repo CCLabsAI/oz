@@ -90,8 +90,7 @@ auto flipguess_t::infoset_t::str() const -> string {
 }
 
 auto flipguess_t::infoset_t::is_equal(const oz::infoset_t::concept_t& that)
-  const -> bool
-{
+const -> bool {
   if (typeid(*this) == typeid(that)) {
     auto that_ = static_cast<const flipguess_t::infoset_t&>(that);
     return player_ == that_.player_;

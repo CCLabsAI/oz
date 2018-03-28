@@ -35,16 +35,14 @@ PYBIND11_MODULE(_ext, m) {
 
   py::class_<oz::infoset_t>(m, "Infoset")
       .def_property_readonly("actions", &oz::infoset_t::actions)
-      .def("__str__", &oz::infoset_t::str)
-      ;
+      .def("__str__", &oz::infoset_t::str);
 
   py::class_<oz::game_t>(m, "Game")
       .def("act", &oz::game_t::act)
       .def("infoset", &oz::game_t::infoset)
       .def("player", &oz::game_t::player)
       .def("is_terminal", &oz::game_t::is_terminal)
-      .def("utility", &oz::game_t::utility)
-      ;
+      .def("utility", &oz::game_t::utility);
 
   py::class_<oz::flipguess_t, oz::game_t>(m, "FlipGuess")
       .def("heads", &oz::flipguess_t::heads);

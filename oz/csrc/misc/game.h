@@ -26,8 +26,8 @@ class infoset_t {
   std::vector<action_t> actions() const;
 };
 
-bool operator==(const infoset_t &a, const infoset_t &b);
-bool operator==(const action_t &a, const action_t &b);
+bool operator ==(const infoset_t& a, const infoset_t& b);
+bool operator ==(const action_t& a, const action_t& b);
 
 class history_t {
  public:

@@ -22,7 +22,7 @@ void oss_t::search_t::step(action_prob_t ap) {
   prefix_prob_.s1 *= ap.rho1;
   prefix_prob_.s2 *= ap.rho2;
 
-  path_item_t path_item {
+  path_item_t path_item{
       acting_player, infoset,
       ap, prefix_prob_
   };
@@ -46,7 +46,8 @@ void oss_t::search_t::walk(tree_t tree) {
     }
     else {
       infoset_t infoset = history_.infoset();
-      action_prob_t ap {}; bool out_of_tree;
+      action_prob_t ap{};
+      bool out_of_tree;
       std::tie(ap, out_of_tree) = tree.sample_sigma(infoset);
 
       if (out_of_tree) {
@@ -86,14 +87,14 @@ void oss_t::search_t::unwind(tree_t tree, suffix_prob_t suffix_prob) {
     node_t node = tree.lookup(infoset);
 
     if (active_player == search_player_) {
-      const value_t w = u*pi_o/l;
-      for (const auto &a_prime : infoset.actions()) {
+      const value_t w = u * pi_o / l;
+      for (const auto& a_prime : infoset.actions()) {
         value_t r;
         if (a_prime == a) {
-          r = (c - x)*w;
+          r = (c - x) * w;
         }
         else {
-          r = -x*w;
+          r = -x * w;
         }
 
         node.accumulate_regret(a_prime, r);
@@ -102,9 +103,9 @@ void oss_t::search_t::unwind(tree_t tree, suffix_prob_t suffix_prob) {
     else {
       const auto sigma = node.sigma_regret_matching();
 
-      const prob_t q = delta_*s1 + (1 - delta_)*s2;
-      for (const auto &a_prime : infoset.actions()) {
-        value_t s = (1/q)*pi_o*sigma.pr(infoset, a_prime);
+      const prob_t q = delta_ * s1 + (1 - delta_) * s2;
+      for (const auto& a_prime : infoset.actions()) {
+        value_t s = (1 / q) * pi_o * sigma.pr(infoset, a_prime);
         node.accumulate_average_strategy(a_prime, s);
       }
     }
@@ -131,7 +132,7 @@ auto sigma_t::concept_t::sample_pr(infoset_t infoset) const -> action_prob_t {
   auto rho1 = pr_a;
   auto rho2 = pr_a;
 
-  return {a, pr_a, rho1, rho2};
+  return { a, pr_a, rho1, rho2 };
 };
 
 sigma_t node_t::sigma_regret_matching() {

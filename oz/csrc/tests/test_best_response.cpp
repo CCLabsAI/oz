@@ -11,7 +11,7 @@ using namespace oz;
 class sigma_uniform_t : public sigma_t::concept_t {
   prob_t pr(infoset_t infoset, action_t a) const override {
     auto n = infoset.actions().size();
-    return (prob_t) 1/n;
+    return (prob_t) 1 / n;
   }
 };
 
@@ -30,17 +30,17 @@ class sigma_flip_t : public sigma_t::concept_t {
     }
     else if (infoset == p2) {
       if (a == left) {
-        return (prob_t) 1/3;
+        return (prob_t) 1 / 3;
       }
       else if (a == right) {
-        return (prob_t) 2/3;
+        return (prob_t) 2 / 3;
       }
       else {
         assert (false);
       }
     }
     else {
-      return (prob_t) 1/infoset.actions().size();
+      return (prob_t) 1 / infoset.actions().size();
     }
   }
 };
@@ -60,11 +60,11 @@ TEST_CASE("best response map lookup", "[best_response]") {
   auto a2 = actions[1];
   std::unordered_map<q_info_t, value_t> m;
 
-  m[{infoset, a1}] += 1;
-  m[{infoset, a1}] += 1;
+  m[{ infoset, a1 }] += 1;
+  m[{ infoset, a1 }] += 1;
 
-  REQUIRE(m[{infoset, a1}] == 2);
-  REQUIRE(m[{infoset, a2}] == 0);
+  REQUIRE(m[{ infoset, a1 }] == 2);
+  REQUIRE(m[{ infoset, a2 }] == 0);
 }
 
 TEST_CASE("best response run gebr2", "[best_response]") {
