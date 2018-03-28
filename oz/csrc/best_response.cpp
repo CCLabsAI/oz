@@ -17,8 +17,7 @@ auto exploitability(history_t h, sigma_t sigma) -> value_t {
   return v1 + v2;
 }
 
-auto gebr(history_t h, player_t i,
-          sigma_t sigma) -> value_t {
+auto gebr(history_t h, player_t i, sigma_t sigma) -> value_t {
   const auto depths = infoset_depths(h);
   return gebr(move(h), i, move(sigma), depths);
 }
@@ -64,7 +63,7 @@ auto gebr_pass2(history_t h, player_t i,
 
   if (player == i && l > d) {
     auto value_fn = [&](const action_t& a) -> value_t {
-      return tb.at({ infoset.str(), a }).v();
+      return tb.at({ infoset, a }).v();
     };
 
     auto a_best = max_element_by(begin(actions), end(actions), value_fn);
@@ -88,7 +87,7 @@ auto gebr_pass2(history_t h, player_t i,
       v += sigma.pr(infoset, a) * v_prime;
     }
     else if (player == i && l == d) {
-      auto& q = tb[{ infoset.str(), a }];
+      auto& q = tb[{ infoset, a }];
       q.t += v_prime*pi_o;
       q.b += pi_o;
     }

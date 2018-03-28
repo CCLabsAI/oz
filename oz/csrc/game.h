@@ -39,6 +39,7 @@ class infoset_t {
     virtual std::vector<action_t> actions() const = 0;
     virtual std::string str() const = 0;
     virtual bool is_equal(const concept_t& that) const = 0;
+    virtual size_t hash() const = 0;
     virtual ~concept_t() = default;
   };
 
@@ -46,6 +47,7 @@ class infoset_t {
   std::string str() const { return self_->str(); }
   virtual bool is_equal(const infoset_t& that) const
     { return self_->is_equal(*that.self_); };
+  virtual size_t hash() const { return self_->hash(); };
 
  private:
   explicit infoset_t(concept_t* self): self_(self) {};
@@ -93,10 +95,18 @@ namespace std {
 
 template<>
 struct hash<oz::action_t> {
-  inline size_t operator()(const oz::action_t &a) const {
+  inline size_t operator ()(const oz::action_t &a) const {
     return hash<int>()(a.index());
   }
 };
+
+template <>
+struct hash<oz::infoset_t> {
+  inline size_t operator ()(const oz::infoset_t &a) const {
+    return a.hash();
+  }
+};
+
 
 } // namespace std
 

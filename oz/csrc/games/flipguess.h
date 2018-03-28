@@ -22,6 +22,9 @@ class flipguess_t : public game_t {
     std::vector<oz::action_t> actions() const override;
     std::string str() const override;
     bool is_equal(const oz::infoset_t::concept_t& that) const override;
+    virtual size_t hash() const override {
+      return std::hash<player_t >()(player_);
+    };
 
    private:
     player_t player_;
@@ -32,6 +35,7 @@ class flipguess_t : public game_t {
   player_t player() const override { return player_; }
   bool is_terminal() const override { return finished_; }
   value_t utility(player_t player) const override;
+
   std::unique_ptr<game_t> clone() const override {
     return std::make_unique<flipguess_t>(*this);
   }

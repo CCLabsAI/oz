@@ -2,6 +2,7 @@
 #define OZ_OSS_H
 
 #include <tuple>
+#include <random>
 
 #include "game.h"
 
@@ -55,18 +56,17 @@ class sigma_t {
  public:
   struct concept_t {
     virtual prob_t pr(infoset_t infoset, action_t a) const = 0;
-    virtual action_prob_t sample_pr(infoset_t infoset) const {
-      return action_prob_t {};
-    };
+    virtual action_prob_t sample_pr(infoset_t infoset) const;
+    virtual ~concept_t() = default;
   };
 
-  virtual action_prob_t sample_pr(infoset_t infoset) const {
-    return self_->sample_pr(std::move(infoset));
-  }
-
-  virtual prob_t pr(infoset_t infoset, action_t a) const {
+  prob_t pr(infoset_t infoset, action_t a) const {
     return self_->pr(std::move(infoset), a);
   };
+
+  action_prob_t sample_pr(infoset_t infoset) const {
+    return self_->sample_pr(std::move(infoset));
+  }
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;

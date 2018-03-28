@@ -13,7 +13,7 @@ struct q_val_t {
   value_t v() { return b > 0 ? t / b : 0; }
 };
 
-using q_info_t = std::pair<std::string, action_t>;
+using q_info_t = std::pair<infoset_t, action_t>;
 using q_stats_t = std::unordered_map<q_info_t, q_val_t>;
 
 value_t exploitability(history_t h, sigma_t sigma);

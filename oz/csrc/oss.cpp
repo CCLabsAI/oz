@@ -113,6 +113,27 @@ void oss_t::search_t::unwind(tree_t tree, suffix_prob_t suffix_prob) {
   state_ = FINISHED;
 }
 
+auto sigma_t::concept_t::sample_pr(infoset_t infoset) const -> action_prob_t {
+  auto actions = infoset.actions();
+  auto prob_fn = [&](const action_t& a) { return pr(infoset, a); };
+  std::vector<prob_t> probs(actions.size());
+  std::transform(begin(actions), end(actions),
+                 begin(probs), prob_fn);
+  std::discrete_distribution<> d(begin(probs), end(probs));
+
+  std::random_device rd;
+  std::default_random_engine gen(rd());
+
+  auto i = d(gen);
+
+  auto a = actions[i];
+  auto pr_a = probs[i];
+  auto rho1 = pr_a;
+  auto rho2 = pr_a;
+
+  return {a, pr_a, rho1, rho2};
+};
+
 sigma_t node_t::sigma_regret_matching() {
   assert (false);
 }
