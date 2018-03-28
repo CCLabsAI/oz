@@ -1,5 +1,4 @@
 #include <catch.hpp>
-#include <cassert>
 
 #include "util.h"
 #include "best_response.h"
@@ -26,7 +25,7 @@ class sigma_flip_t : public sigma_t::concept_t {
     static const auto right = action_t(static_cast<int>(flipguess_t::action_t::Right));
 
     if (infoset == p1) {
-      return 0.5;
+      return (prob_t) 1/2;
     }
     else if (infoset == p2) {
       if (a == left) {
@@ -36,7 +35,7 @@ class sigma_flip_t : public sigma_t::concept_t {
         return (prob_t) 2 / 3;
       }
       else {
-        assert (false);
+        return 0;
       }
     }
     else {

@@ -22,9 +22,7 @@ class flipguess_t : public game_t {
     std::vector<oz::action_t> actions() const override;
     std::string str() const override;
     bool is_equal(const oz::infoset_t::concept_t& that) const override;
-    virtual size_t hash() const override {
-      return std::hash<player_t>()(player_);
-    };
+    size_t hash() const override;
 
    private:
     player_t player_;

@@ -60,17 +60,21 @@ auto flipguess_t::act_(flipguess_t::action_t a) -> void {
 }
 
 auto flipguess_t::infoset_t::actions() const -> vector<oz::action_t> {
+  static const auto chance_actions = vector<oz::action_t> {
+      oz::action_t(static_cast<int>(action_t::Heads)),
+      oz::action_t(static_cast<int>(action_t::Tails)),
+  };
+
+  static const auto player_actions = vector<oz::action_t> {
+      oz::action_t(static_cast<int>(action_t::Left)),
+      oz::action_t(static_cast<int>(action_t::Right)),
+  };
+
   if (player_ == CHANCE) {
-    return vector<oz::action_t> {
-        oz::action_t(static_cast<int>(action_t::Heads)),
-        oz::action_t(static_cast<int>(action_t::Tails)),
-    };
+    return chance_actions;
   }
   else {
-    return vector<oz::action_t> {
-        oz::action_t(static_cast<int>(action_t::Left)),
-        oz::action_t(static_cast<int>(action_t::Right)),
-    };
+    return player_actions;
   }
 }
 
@@ -98,6 +102,10 @@ const -> bool {
   else {
     return false;
   }
+}
+
+size_t flipguess_t::infoset_t::hash() const {
+  return std::hash<player_t>()(player_);
 }
 
 } // namespace oz

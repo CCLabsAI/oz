@@ -45,9 +45,7 @@ class history_t {
 
 template<class Game, typename... Args>
 auto make_history(Args&& ... args) -> history_t {
-  return history_t(history_t::ptr_t {
-      new Game(std::forward<Args>(args)...)
-  });
+  return history_t(std::make_unique<Game>(std::forward<Args>(args)...));
 }
 
 //class rng_t { };
