@@ -15,7 +15,7 @@ auto oss_t::playout(history_t h, prob_t s, sigma_t sigma) -> walk_ret_t {
   prob_t x = 1;
 
   while (!h.is_terminal()) {
-    action_prob_t ap = sample_action(std::move(h), sigma);
+    action_prob_t ap = sample_action(h, sigma);
     h.act(ap.a);
     x = x*ap.pr_a;
   }
@@ -35,7 +35,7 @@ auto oss_t::walk(history_t h,
   }
 
   else if (h.player() == player_t::Chance) {
-    action_prob2_t ap = sample_chance(std::move(h));
+    action_prob2_t ap = sample_chance(h);
     action_t a = ap.a;
     prob_t rho1 = ap.s1, rho2 = ap.s2;
 

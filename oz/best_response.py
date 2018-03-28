@@ -19,7 +19,7 @@ def gebr(h, i, sigma, depths=None):
     for d in depths:
         gebr_pass2(h, i, d, 0, 1.0, sigma, t, b)
 
-    # final pass should maximize at every depth, so: d == -1
+    # final pass should maximize at every depth, so: d = -1
     v = gebr_pass2(h, i, -1, 0, 1.0, sigma, t, b)
     return v
 

@@ -1,5 +1,5 @@
-#ifndef OZ_GAME_H
-#define OZ_GAME_H
+#ifndef OZ_GAME_MISC_H
+#define OZ_GAME_MISC_H
 
 #include <cstdint>
 #include <memory>
@@ -36,7 +36,7 @@ class history_t {
   player_t player() const { return self_->player(); }
   bool is_terminal() const { return self_->is_terminal(); }
   value_t utility() const { return self_->utility(); }
-  history_t operator>>(action_t a) {
+  history_t operator >>(action_t a) {
     history_t h = std::move(*this);
     h.act(a);
     return h;

@@ -1,24 +1,11 @@
 #ifndef OZ_OSS_H
 #define OZ_OSS_H
 
-#include <vector>
-#include <functional>
+#include <tuple>
 
 #include "game.h"
 
 namespace oz {
-
-class action_t {
-};
-
-class infoset_t {
- public:
-  std::vector<action_t> actions() const;
-  void foreach_action(std::function<void(action_t)> f);
-};
-
-bool operator==(const infoset_t &a, const infoset_t &b);
-bool operator==(const action_t &a, const action_t &b);
 
 struct action_prob_t {
   action_t a;
@@ -29,19 +16,71 @@ struct action_prob_t {
 
 class history_t {
  public:
-  void act(action_t a);
-  history_t operator >>(action_t a);
-  infoset_t infoset() const;
-  player_t player() const;
-  bool is_terminal() const;
-  value_t utility(player_t player) const;
-  action_prob_t sample_chance() const;
+  history_t(const history_t& that): self_(that.self_->clone()) { };
+  history_t(history_t&& that) noexcept: self_(move(that.self_)) { };
+
+  void act(action_t a) { self_->act(a); }
+  infoset_t infoset() const { return self_->infoset(); }
+  player_t player() const { return self_->player(); }
+  bool is_terminal() const { return self_->is_terminal(); }
+  value_t utility(player_t player) const { return self_->utility(player); }
+  action_prob_t sample_chance();
+
+  history_t operator >>(action_t a) const {
+    auto g = self_->clone();
+    g->act(a);
+    return history_t(move(g));
+  }
+
+ private:
+  using ptr_t = std::unique_ptr<game_t>;
+
+  explicit history_t(ptr_t game): self_(move(game)) { };
+  template <class Infoset, typename... Args>
+    friend history_t make_history(Args&&... args);
+
+  ptr_t self_;
 };
+
+template <class Game, typename... Args>
+auto make_history(Args&&... args) -> history_t {
+  return history_t(history_t::ptr_t {
+      new Game(std::forward<Args>(args)...)
+  });
+}
+
+//class rng_t { };
 
 class sigma_t {
  public:
-  action_prob_t sample_pr(infoset_t infoset);
-  prob_t pr(infoset_t infoset, action_t a) const;
+  struct concept_t {
+    virtual prob_t pr(infoset_t infoset, action_t a) const = 0;
+    virtual action_prob_t sample_pr(infoset_t infoset) const {
+      return action_prob_t {};
+    };
+  };
+
+  virtual action_prob_t sample_pr(infoset_t infoset) const {
+    return self_->sample_pr(std::move(infoset));
+  }
+
+  virtual prob_t pr(infoset_t infoset, action_t a) const {
+    return self_->pr(std::move(infoset), a);
+  };
+
+ private:
+  using ptr_t = std::shared_ptr<const concept_t>;
+
+  explicit sigma_t(ptr_t self): self_(std::move(self)) { };
+  template <class Sigma, typename... Args>
+    friend sigma_t make_sigma(Args&&... args);
+
+  ptr_t self_;
+};
+
+template <class Sigma, typename... Args>
+sigma_t make_sigma(Args&&... args) {
+  return sigma_t(std::make_shared<Sigma>(std::forward<Args>(args)...));
 };
 
 class node_t {
@@ -85,7 +124,7 @@ class oss_t {
     void walk(tree_t tree);
     void unwind(tree_t tree, suffix_prob_t prob);
 
-    enum {IN_TREE, ROLLOUT_EVAL, PRIOR_EVAL, TERMINAL, END} state_;
+    enum {IN_TREE, ROLLOUT_EVAL, PRIOR_EVAL, TERMINAL, FINISHED} state_;
 
     player_t search_player_;
     prefix_prob_t prefix_prob_;
@@ -96,7 +135,7 @@ class oss_t {
   };
 
  private:
-  tree_t tree_;
+//  tree_t tree_;
 };
 
 } // namespace oz

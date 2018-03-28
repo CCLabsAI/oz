@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iterator>
 
 #include "oss.h"
 
@@ -39,7 +40,7 @@ void oss_t::search_t::walk(tree_t tree) {
     if (history_.is_terminal()) {
       state_ = TERMINAL;
     }
-    else if (acting_player == Chance) {
+    else if (acting_player == CHANCE) {
       action_prob_t ap = history_.sample_chance();
       step(ap);
     }
@@ -58,31 +59,34 @@ void oss_t::search_t::walk(tree_t tree) {
   }
 }
 
-void oss_t::search_t::unwind(tree_t tree, suffix_prob_t prob) {
-  suffix_prob_t suffix_prob = prob;
+void oss_t::search_t::unwind(tree_t tree, suffix_prob_t suffix_prob) {
+  assert(state_ == TERMINAL);
 
-  for (auto i = path_.rbegin(); i != path_.rend(); ++i) {
+  prob_t c;
+  prob_t x = suffix_prob.x;
+
+  const prob_t l = suffix_prob.l;
+  const value_t u = suffix_prob.u;
+
+  for (auto i = rbegin(path_); i != rend(path_); ++i) {
     const auto& path_item = *i;
     const auto& active_player = path_item.player;
     const auto& infoset = path_item.infoset;
-    const auto& action_prob = path_item.action_prob;
-    const auto& prefix_prob = path_item.prefix_prob;
 
-    action_t a = action_prob.a;
+    const auto a = path_item.action_prob.a;
+    const auto pr_a = path_item.action_prob.pr_a;
 
-    prob_t pi_o = prefix_prob.pi_o;
-    prob_t s1 = prefix_prob.s1;
-    prob_t s2 = prefix_prob.s2;
+    const auto pi_o = path_item.prefix_prob.pi_o;
+    const auto s1 = path_item.prefix_prob.s1;
+    const auto s2 = path_item.prefix_prob.s2;
 
-    prob_t l = suffix_prob.l;
-    prob_t c = suffix_prob.x;
-    prob_t x = action_prob.pr_a * suffix_prob.x;
-    value_t u = suffix_prob.u;
+    c = x;
+    x = pr_a * x;
 
     node_t node = tree.lookup(infoset);
 
     if (active_player == search_player_) {
-      value_t w = u*pi_o/l;
+      const value_t w = u*pi_o/l;
       for (const auto &a_prime : infoset.actions()) {
         value_t r;
         if (a_prime == a) {
@@ -98,15 +102,39 @@ void oss_t::search_t::unwind(tree_t tree, suffix_prob_t prob) {
     else {
       const auto sigma = node.sigma_regret_matching();
 
-      prob_t q = delta_*s1 + (1 - delta_)*s2;
+      const prob_t q = delta_*s1 + (1 - delta_)*s2;
       for (const auto &a_prime : infoset.actions()) {
         value_t s = (1/q)*pi_o*sigma.pr(infoset, a_prime);
         node.accumulate_average_strategy(a_prime, s);
       }
     }
-
-    suffix_prob.x = x;
   }
+
+  state_ = FINISHED;
+}
+
+sigma_t node_t::sigma_regret_matching() {
+  assert (false);
+}
+
+void node_t::accumulate_regret(action_t a, value_t r) {
+  assert (false);
+}
+
+void node_t::accumulate_average_strategy(action_t a, prob_t s) {
+  assert (false);
+}
+
+action_prob_t history_t::sample_chance() {
+  assert (false);
+}
+
+node_t tree_t::lookup(infoset_t infoset) {
+  assert (false);
+}
+
+std::tuple<action_prob_t, bool> tree_t::sample_sigma(infoset_t infoset) {
+  assert (false);
 }
 
 }
