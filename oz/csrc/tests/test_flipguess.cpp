@@ -73,6 +73,11 @@ TEST_CASE("flip guess action equality", "[flipguess]") {
   action_t b(static_cast<int>(flipguess_t::action_t::Heads));
 
   REQUIRE(a == b);
+
+  action_t c(static_cast<int>(flipguess_t::action_t::Left));
+  action_t d(static_cast<int>(flipguess_t::action_t::Right));
+
+  REQUIRE(c != d);
 }
 
 TEST_CASE("flip guess infoset equality", "[flipguess]") {

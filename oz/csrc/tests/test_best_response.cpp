@@ -46,9 +46,11 @@ class sigma_flip_t : public sigma_t::concept_t {
 
 TEST_CASE("best response infoset depths", "[best_response]") {
   auto h = make_history<flipguess_t>();
-  auto depth_list = infoset_depths(move(h));
+  auto d1 = infoset_depths(h, P1);
+  auto d2 = infoset_depths(h, P2);
 
-  REQUIRE(depth_list == vector<int>{ 2, 1 });
+  REQUIRE(d1 == vector<int>{ 1 });
+  REQUIRE(d2 == vector<int>{ 2 });
 }
 
 TEST_CASE("best response map lookup", "[best_response]") {
@@ -66,12 +68,12 @@ TEST_CASE("best response map lookup", "[best_response]") {
   REQUIRE(m[{ infoset, a2 }] == 0);
 }
 
-TEST_CASE("best response run gebr2", "[best_response]") {
+TEST_CASE("best response run gebr_pass2", "[best_response]") {
   auto h = make_history<flipguess_t>();
   auto sigma = make_sigma<sigma_uniform_t>();
 
   q_stats_t tb;
-  gebr_pass2(move(h), P1, 1, 0, 1.0, sigma, tb);
+  gebr_pass2(h, P1, 1, 0, 1.0, sigma, tb);
 
   REQUIRE(!tb.empty());
 }
@@ -79,9 +81,8 @@ TEST_CASE("best response run gebr2", "[best_response]") {
 TEST_CASE("best response run gebr p1", "[best_response]") {
   auto h = make_history<flipguess_t>();
   auto sigma = make_sigma<sigma_uniform_t>();
-  auto depths = infoset_depths(h);
 
-  value_t v1 = gebr(move(h), P1, sigma, depths);
+  value_t v1 = gebr(h, P1, sigma);
   REQUIRE(v1 == 1.25);
 }
 
@@ -89,7 +90,7 @@ TEST_CASE("best response run gebr p2", "[best_response]") {
   auto h = make_history<flipguess_t>();
   auto sigma = make_sigma<sigma_uniform_t>();
 
-  value_t v2 = gebr(move(h), P2, sigma);
+  value_t v2 = gebr(h, P2, sigma);
   REQUIRE(v2 == -1);
 }
 

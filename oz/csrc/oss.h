@@ -48,13 +48,14 @@ auto make_history(Args&& ... args) -> history_t {
   return history_t(std::make_unique<Game>(std::forward<Args>(args)...));
 }
 
-//class rng_t { };
-
 class sigma_t {
  public:
+
   struct concept_t {
+    using rng_t = std::mt19937;
+
     virtual prob_t pr(infoset_t infoset, action_t a) const = 0;
-    virtual action_prob_t sample_pr(infoset_t infoset) const;
+    virtual action_prob_t sample_pr(infoset_t infoset, rng_t& rng) const;
     virtual ~concept_t() = default;
   };
 
@@ -62,8 +63,8 @@ class sigma_t {
     return self_->pr(std::move(infoset), a);
   };
 
-  action_prob_t sample_pr(infoset_t infoset) const {
-    return self_->sample_pr(std::move(infoset));
+  action_prob_t sample_pr(infoset_t infoset, concept_t::rng_t& rng) const {
+    return self_->sample_pr(std::move(infoset), rng);
   }
 
  private:
@@ -90,8 +91,14 @@ class node_t {
 
 class tree_t {
  public:
-  node_t lookup(infoset_t infoset);
-  std::tuple<action_prob_t, bool> sample_sigma(infoset_t infoset);
+  struct sample_ret_t {
+    action_prob_t ap;
+    bool out_of_tree;
+  };
+
+  void create_node(infoset_t infoset);
+  node_t lookup(infoset_t infoset) const;
+  sample_ret_t sample_sigma(infoset_t infoset) const;
 };
 
 class oss_t {
@@ -116,18 +123,40 @@ class oss_t {
     prefix_prob_t prefix_prob;
   };
 
+  // state machine representing a search
   class search_t {
-   private:
-    void step(action_prob_t ap);
-    void walk(tree_t tree);
-    void unwind(tree_t tree, suffix_prob_t prob);
+   public:
+    void select(tree_t& tree);      // walk from tip to leaf and updating path
+    void create(tree_t& tree);      // add node to tree with prior values
+    void playout_step(action_prob_t ap);
+    void backprop(tree_t& tree);    // unwind updates along path
 
-    enum { IN_TREE, ROLLOUT_EVAL, PRIOR_EVAL, TERMINAL, FINISHED } state_;
+    infoset_t infoset() const { return history_.infoset(); }
+
+   private:
+    void step_tree(action_prob_t ap); // take one step in-tree and extend path
+    
+    // states are mostly sequential
+    // PLAYOUT has a self loop
+    // SELECT and CREATE may move straight to BACKPROP
+    enum class state_t {
+      SELECT,   // initial state
+      CREATE,   // create node (with prior information)
+      PLAYOUT,  // waiting for playout policy evaluation
+      BACKPROP, // history is terminal, waiting to apply updates
+      FINISHED
+    };
+    // invariant: CREATE, PLAYOUT => history is not terminal
+    // invariant: BACKPROP, FINISHED => history is terminal
+
+    state_t state_;
+
+    history_t history_;
+    std::vector<path_item_t> path_;
 
     player_t search_player_;
     prefix_prob_t prefix_prob_;
-    history_t history_;
-    std::vector<path_item_t> path_;
+    suffix_prob_t suffix_prob_;
 
     prob_t delta_;
   };

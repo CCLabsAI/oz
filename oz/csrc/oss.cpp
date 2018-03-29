@@ -1,73 +1,119 @@
 #include <cassert>
+#include <algorithm>
 #include <iterator>
+
+#include <unordered_map>
 
 #include "oss.h"
 
 namespace oz {
 
-void oss_t::search_t::step(action_prob_t ap) {
-  assert (state_ == IN_TREE);
+using namespace std;
+
+void update_probs(oss_t::prefix_prob_t& probs, player_t i,
+  const action_prob_t ap, player_t p) {
+  if(p == i) {
+    probs.pi_i *= ap.pr_a;
+  }
+  else {
+    probs.pi_o *= ap.pr_a;
+  }
+
+  probs.s1 *= ap.rho1;
+  probs.s2 *= ap.rho2;
+}
+
+void oss_t::search_t::step_tree(action_prob_t ap) {
+  assert (state_ == state_t::SELECT);
   assert (!history_.is_terminal());
 
   const auto acting_player = history_.player();
   const auto infoset = history_.infoset();
 
-  if (acting_player == search_player_) {
-    prefix_prob_.pi_i *= ap.pr_a;
-  }
-  else {
-    prefix_prob_.pi_o *= ap.pr_a;
-  }
-
-  prefix_prob_.s1 *= ap.rho1;
-  prefix_prob_.s2 *= ap.rho2;
-
-  path_item_t path_item{
+  // save the current infoset and prefix stats
+  path_.emplace_back(path_item_t {
       acting_player, infoset,
       ap, prefix_prob_
-  };
+  });
 
+  // update state and sample probabilities
   history_.act(ap.a);
-  path_.push_back(path_item);
+  update_probs(prefix_prob_, search_player_, ap, acting_player);
 }
 
-void oss_t::search_t::walk(tree_t tree) {
-  assert (state_ == IN_TREE);
+void oss_t::search_t::select(tree_t& tree) {
+  assert (state_ == state_t::SELECT);
 
-  while (state_ == IN_TREE) {
+  while (state_ == state_t::SELECT) {
     const auto acting_player = history_.player();
 
     if (history_.is_terminal()) {
-      state_ = TERMINAL;
+      state_ = state_t::BACKPROP;
     }
     else if (acting_player == CHANCE) {
-      action_prob_t ap = history_.sample_chance();
-      step(ap);
+      auto ap = history_.sample_chance();
+      step_tree(ap);
     }
     else {
       infoset_t infoset = history_.infoset();
-      action_prob_t ap{};
-      bool out_of_tree;
-      std::tie(ap, out_of_tree) = tree.sample_sigma(infoset);
+      const auto r = tree.sample_sigma(infoset);
 
-      if (out_of_tree) {
-        state_ = PRIOR_EVAL;
+      if (r.out_of_tree) {
+        state_ = state_t::CREATE;
       }
       else {
-        step(ap);
+        step_tree(r.ap);
       }
     }
   }
 }
 
-void oss_t::search_t::unwind(tree_t tree, suffix_prob_t suffix_prob) {
-  assert(state_ == TERMINAL);
+void oss_t::search_t::create(tree_t& tree) {
+  assert (state_ == state_t::CREATE);
+  assert (!history_.is_terminal());
 
-  prob_t c;
-  prob_t x = suffix_prob.x;
+  const auto infoset = history_.infoset();
+  tree.create_node(infoset);
+  
+  const auto r = tree.sample_sigma(infoset);
+  assert (!r.out_of_tree);
+  
+  step_tree(r.ap);
 
-  const prob_t l = suffix_prob.l;
-  const value_t u = suffix_prob.u;
+  if (history_.is_terminal()) {
+    state_ = state_t::BACKPROP;
+  }
+  else {
+    state_ = state_t::PLAYOUT;    
+  }
+}
+
+void oss_t::search_t::playout_step(action_prob_t ap) {
+  assert (state_ == state_t::PLAYOUT);
+  
+  history_.act(ap.a);
+  suffix_prob_.x *= ap.pr_a;
+
+  if (history_.is_terminal()) {
+    prob_t s1 = prefix_prob_.s1;
+    prob_t s2 = prefix_prob_.s2;
+
+    suffix_prob_.l = delta_ * s1 + (1.0 - delta_) * s2;
+    suffix_prob_.u = history_.utility(search_player_);
+    
+    state_ = state_t::BACKPROP;
+  }
+}
+
+void oss_t::search_t::backprop(tree_t& tree) {
+  assert (state_ == state_t::BACKPROP);
+  assert (history_.is_terminal());
+
+  prob_t c = 1.0;
+  prob_t x = suffix_prob_.x;
+
+  const prob_t  l = suffix_prob_.l;
+  const value_t u = suffix_prob_.u;
 
   for (auto i = rbegin(path_); i != rend(path_); ++i) {
     const auto& path_item = *i;
@@ -103,29 +149,26 @@ void oss_t::search_t::unwind(tree_t tree, suffix_prob_t suffix_prob) {
     else {
       const auto sigma = node.sigma_regret_matching();
 
-      const prob_t q = delta_ * s1 + (1 - delta_) * s2;
+      const prob_t q = delta_ * s1 + (1.0 - delta_) * s2;
       for (const auto& a_prime : infoset.actions()) {
-        value_t s = (1 / q) * pi_o * sigma.pr(infoset, a_prime);
+        prob_t s = (pi_o * sigma.pr(infoset, a_prime)) / q;
         node.accumulate_average_strategy(a_prime, s);
       }
     }
   }
 
-  state_ = FINISHED;
+  state_ = state_t::FINISHED;
 }
 
-auto sigma_t::concept_t::sample_pr(infoset_t infoset) const -> action_prob_t {
+auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const -> action_prob_t {
   auto actions = infoset.actions();
-  auto prob_fn = [&](const action_t& a) { return pr(infoset, a); };
-  std::vector<prob_t> probs(actions.size());
-  std::transform(begin(actions), end(actions),
-                 begin(probs), prob_fn);
-  std::discrete_distribution<> d(begin(probs), end(probs));
-
-  std::random_device rd;
-  std::default_random_engine gen(rd());
-
-  auto i = d(gen);
+  auto probs = vector<prob_t>(actions.size());
+  
+  transform(begin(actions), end(actions), begin(probs),
+            [&](auto& a) { return pr(infoset, a); });
+  
+  auto a_dist = discrete_distribution<>(begin(probs), end(probs));
+  auto i = a_dist(rng);
 
   auto a = actions[i];
   auto pr_a = probs[i];
@@ -151,11 +194,15 @@ action_prob_t history_t::sample_chance() {
   assert (false);
 }
 
-node_t tree_t::lookup(infoset_t infoset) {
+node_t tree_t::lookup(infoset_t infoset) const {
   assert (false);
 }
 
-std::tuple<action_prob_t, bool> tree_t::sample_sigma(infoset_t infoset) {
+void tree_t::create_node(infoset_t infoset) {
+  assert (false);
+}
+
+auto tree_t::sample_sigma(infoset_t infoset) const -> sample_ret_t {
   assert (false);
 }
 

@@ -28,7 +28,7 @@ value_t gebr_pass2(history_t h, player_t i,
                    int d, int l, prob_t pi_o,
                    sigma_t sigma, q_stats_t& tb);
 
-std::vector<int> infoset_depths(history_t h);
+std::vector<int> infoset_depths(history_t h, player_t i);
 
 } // namespace oz
 
