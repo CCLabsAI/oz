@@ -50,12 +50,11 @@ auto make_history(Args&& ... args) -> history_t {
 
 class sigma_t {
  public:
+  using rng_t = std::mt19937;
 
   struct concept_t {
-    using rng_t = std::mt19937;
-
     virtual prob_t pr(infoset_t infoset, action_t a) const = 0;
-    virtual action_prob_t sample_pr(infoset_t infoset, rng_t& rng) const;
+    virtual action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const;
     virtual ~concept_t() = default;
   };
 
@@ -63,7 +62,7 @@ class sigma_t {
     return self_->pr(std::move(infoset), a);
   };
 
-  action_prob_t sample_pr(infoset_t infoset, concept_t::rng_t& rng) const {
+  action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const {
     return self_->sample_pr(std::move(infoset), rng);
   }
 

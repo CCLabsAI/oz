@@ -3,12 +3,13 @@
 #include "util.h"
 #include "best_response.h"
 #include "games/flipguess.h"
+#include "games/kuhn.h"
 
 using namespace std;
 using namespace oz;
 
 class sigma_uniform_t : public sigma_t::concept_t {
-  prob_t pr(infoset_t infoset, action_t a) const override {
+  prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
     auto n = infoset.actions().size();
     return (prob_t) 1 / n;
   }
@@ -16,13 +17,13 @@ class sigma_uniform_t : public sigma_t::concept_t {
 
 class sigma_flip_t : public sigma_t::concept_t {
  public:
-  prob_t pr(infoset_t infoset, action_t a) const override {
+  prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
     static const auto chance = make_infoset<flipguess_t::infoset_t>(CHANCE);
     static const auto p1 = make_infoset<flipguess_t::infoset_t>(P1);
     static const auto p2 = make_infoset<flipguess_t::infoset_t>(P2);
 
-    static const auto left = action_t(static_cast<int>(flipguess_t::action_t::Left));
-    static const auto right = action_t(static_cast<int>(flipguess_t::action_t::Right));
+    static const auto left = make_action(flipguess_t::action_t::Left);
+    static const auto right = make_action(flipguess_t::action_t::Right);
 
     if (infoset == p1) {
       return (prob_t) 1/2;
@@ -36,6 +37,32 @@ class sigma_flip_t : public sigma_t::concept_t {
       }
       else {
         return 0;
+      }
+    }
+    else {
+      return (prob_t) 1 / infoset.actions().size();
+    }
+  }
+};
+
+class sigma_kuhn_t : public sigma_t::concept_t {
+ public:
+  prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
+    const auto &infoset_ = dynamic_cast<const kuhn_poker_t::infoset_t&>(infoset.get());
+    auto player = infoset_.player;
+
+    static const auto bet = make_action(kuhn_poker_t::action_t::Bet);
+    static const auto pass = make_action(kuhn_poker_t::action_t::Pass);
+
+    if (player == P1 || player == P2) {
+      if (a == bet) {
+        return (prob_t) 1;
+      }
+      else if (a == pass) {
+        return (prob_t) 0;
+      }
+      else {
+        return (prob_t) 0;
       }
     }
     else {
@@ -92,6 +119,14 @@ TEST_CASE("best response run gebr p2", "[best_response]") {
 
   value_t v2 = gebr(h, P2, sigma);
   REQUIRE(v2 == -1);
+}
+
+TEST_CASE("best response kuhn gebr", "[best_response]") {
+  auto h = make_history<kuhn_poker_t>();
+  auto sigma = make_sigma<sigma_kuhn_t>();
+
+  value_t v2 = gebr(move(h), P2, sigma);
+  REQUIRE(-v2 == (1./3)*1 + (1./3)*-2);
 }
 
 TEST_CASE("best response run exploitability", "[best_response]") {

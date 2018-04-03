@@ -1,16 +1,20 @@
 import sys
 from copy import copy
 
-import oz.game.flipguess
-import oz.game.kuhn
-import oz.game.leduk
+import oz
+
+# import oz.game.flipguess
+# import oz.game.kuhn
+# import oz.game.leduk
 
 # g = oz.game.flipguess.FlipGuess()
 # g = oz.game.kuhn.KuhnPoker()
-g = oz.game.leduk.LedukPoker()
+# g = oz.game.leduk.LedukPoker()
 
-# infoset_style = 'cluster'
-infoset_style = 'edge'
+g = oz.make_kuhn()
+
+infoset_style = 'cluster'
+# infoset_style = 'edge'
 
 infoset_nodes = {}
 n_nodes = 0
@@ -37,7 +41,7 @@ def print_dot(g, d, node=gen_node(), h=[]):
         ls.append(node)
 
     if g.is_terminal():
-        r = g.utility()
+        r = g.utility(g.Player.P1)
         l = '{} [label="{}" shape=plaintext]'.format(node, r)
         print_indent(1, l)
     else:
@@ -58,7 +62,8 @@ def print_dot(g, d, node=gen_node(), h=[]):
             node_a = gen_node()
             g_a = copy(g)
             g_a.act(a)
-            label = a.name
+            # label = a.name
+            label = "action" # FIXME
             props = 'headport=_ tailport=c label="{}" len=1.5'.format(label)
             if not g_a.is_terminal():
                 props += ' weight=4'

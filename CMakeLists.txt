@@ -19,6 +19,7 @@ add_executable("tests"
         "oz/csrc/tests/tests.cpp"
         "oz/csrc/tests/test_flipguess.cpp"
         "oz/csrc/games/flipguess.cpp"
+        "oz/csrc/games/kuhn.cpp"
         "oz/csrc/tests/test_best_response.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oss.cpp"
@@ -27,9 +28,7 @@ add_executable("tests"
 pybind11_add_module(_ext
         "oz/csrc/oz.cpp"
         "oz/csrc/games/flipguess.cpp"
-#        "oz/csrc/misc/oss.cpp"
-#        "oz/csrc/oss.cpp"
-#        "oz/csrc/best_response.cpp"
+        "oz/csrc/games/kuhn.cpp"
         )
 #pybind11_add_module(_ext "oz/csrc/oz.cpp")
 

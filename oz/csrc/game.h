@@ -33,6 +33,11 @@ class action_t {
   int index_;
 };
 
+template <class Action>
+action_t make_action(Action a) {
+  return action_t(static_cast<int>(a));
+}
+
 class infoset_t {
  public:
   struct concept_t {
@@ -47,6 +52,8 @@ class infoset_t {
   std::string str() const { return self_->str(); }
   virtual bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
   virtual size_t hash() const { return self_->hash(); };
+
+  const concept_t &get() const { return *self_.get(); };
 
  private:
   explicit infoset_t(concept_t *self) : self_(self) {};
