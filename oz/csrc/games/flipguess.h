@@ -8,11 +8,11 @@ namespace oz {
 class flipguess_t : public game_t {
  public:
   enum class action_t {
-    NA,
-    Left,
-    Right,
-    Heads,
-    Tails
+    NA = -1,
+    Left = 1,
+    Right = 2,
+    Heads = 3,
+    Tails = 4
   };
 
   class infoset_t : public oz::infoset_t::concept_t {

@@ -113,6 +113,7 @@ inline auto relative_utility(player_t player, value_t u) -> value_t {
 }
 
 auto kuhn_poker_t::utility(player_t player) const -> value_t {
+  assert (is_terminal());
   player_t winner;
   value_t u;
 

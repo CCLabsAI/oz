@@ -1,4 +1,5 @@
 #include <typeinfo>
+#include <cassert>
 
 #include "flipguess.h"
 
@@ -20,6 +21,7 @@ inline value_t relative_utility(player_t player, value_t u) {
 }
 
 auto flipguess_t::utility(player_t player) const -> value_t {
+  assert (is_terminal());
   value_t u = 0;
 
   if (heads_ && p1_action_ == action_t::Left) {

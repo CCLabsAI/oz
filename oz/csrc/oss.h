@@ -68,6 +68,8 @@ class sigma_t {
     return self_->sample_pr(std::move(infoset), rng);
   }
 
+  action_prob_t sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const;
+
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
 
@@ -81,7 +83,7 @@ class sigma_t {
 template<class Sigma, typename... Args>
 sigma_t make_sigma(Args&& ... args) {
   return sigma_t(std::make_shared<Sigma>(std::forward<Args>(args)...));
-};
+}
 
 class node_t {
  public:
@@ -120,6 +122,9 @@ class sigma_regret_t : public sigma_t::concept_t {
 
 class tree_t {
  public:
+  tree_t() = default;
+  tree_t(const tree_t& that) = delete;
+
   using map_t = std::unordered_map<infoset_t, node_t>;
 
   struct sample_ret_t {
@@ -128,7 +133,8 @@ class tree_t {
   };
 
   void create_node(infoset_t infoset);
-  node_t lookup(infoset_t infoset) const;
+  node_t &lookup(const infoset_t &infoset) { return nodes_.at(infoset); }
+  const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
   sample_ret_t sample_sigma(infoset_t infoset, rng_t &rng) const;
 
   map_t::size_type size() const { return nodes_.size(); }
@@ -140,6 +146,9 @@ class tree_t {
 
 class oss_t {
  public:
+  void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
+  void search_step(history_t h, player_t player, tree_t &tree, rng_t &rng);
+
   struct prefix_prob_t {
     prob_t pi_i = 1.0;  // reach probability for search player
     prob_t pi_o = 1.0;  // reach probability for opponent player and chance
@@ -170,7 +179,7 @@ class oss_t {
         delta_(0.1)
     { };
 
-    void select(tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
+    void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
     void create(tree_t& tree, rng_t &rng); // add node to tree with prior values
     void playout_step(action_prob_t ap);
     void backprop(tree_t& tree);           // unwind updates along path
@@ -193,7 +202,8 @@ class oss_t {
     state_t state() const { return state_; };
 
    private:
-    void step_tree(action_prob_t ap); // take one step in-tree and extend path
+    void tree_step(action_prob_t ap); // take one step in-tree and extend path
+    void enter_backprop();
 
     state_t state_;
 
