@@ -69,13 +69,13 @@ TEST_CASE("flip guess basic actions 4", "[flipguess]") {
 TEST_CASE("flip guess action equality", "[flipguess]") {
   flipguess_t game;
 
-  action_t a(static_cast<int>(flipguess_t::action_t::Heads));
-  action_t b(static_cast<int>(flipguess_t::action_t::Heads));
+  auto a = make_action(flipguess_t::action_t::Heads);
+  auto b = make_action(flipguess_t::action_t::Heads);
 
   REQUIRE(a == b);
 
-  action_t c(static_cast<int>(flipguess_t::action_t::Left));
-  action_t d(static_cast<int>(flipguess_t::action_t::Right));
+  auto c = make_action(flipguess_t::action_t::Left);
+  auto d = make_action(flipguess_t::action_t::Right);
 
   REQUIRE(c != d);
 }

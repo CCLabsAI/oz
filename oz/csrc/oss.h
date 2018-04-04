@@ -103,16 +103,16 @@ class tree_t {
 class oss_t {
  public:
   struct prefix_prob_t {
-    prob_t pi_i;  // reach probability for search player
-    prob_t pi_o;  // reach probability for opponent player and chance
-    prob_t s1;    // probability of this sample when targeted
-    prob_t s2;    // probability of this sample
+    prob_t pi_i = 1.0;  // reach probability for search player
+    prob_t pi_o = 1.0;  // reach probability for opponent player and chance
+    prob_t s1 = 1.0;    // probability of this sample when targeted
+    prob_t s2 = 1.0;    // probability of this sample
   };
 
   struct suffix_prob_t {
-    prob_t x;     // suffix probability
-    prob_t l;     // tip-to-tail sample probability
-    value_t u;    // value at the terminal
+    prob_t x = 1.0;     // suffix probability
+    prob_t l = 1.0;     // tip-to-tail sample probability
+    value_t u = 0.0;    // value at the terminal
   };
 
   struct path_item_t {
@@ -125,6 +125,13 @@ class oss_t {
   // state machine representing a search
   class search_t {
    public:
+    search_t(history_t history, player_t search_player):
+        state_(state_t::SELECT),
+        history_(std::move(history)),
+        search_player_(search_player),
+        delta_(0.1)
+    { };
+
     void select(tree_t& tree);      // walk from tip to leaf and updating path
     void create(tree_t& tree);      // add node to tree with prior values
     void playout_step(action_prob_t ap);
@@ -132,9 +139,6 @@ class oss_t {
 
     infoset_t infoset() const { return history_.infoset(); }
 
-   private:
-    void step_tree(action_prob_t ap); // take one step in-tree and extend path
-    
     // states are mostly sequential
     // PLAYOUT has a self loop
     // SELECT and CREATE may move straight to BACKPROP
@@ -147,6 +151,11 @@ class oss_t {
     };
     // invariant: CREATE, PLAYOUT => history is not terminal
     // invariant: BACKPROP, FINISHED => history is terminal
+
+    state_t state() const { return state_; };
+
+   private:
+    void step_tree(action_prob_t ap); // take one step in-tree and extend path
 
     state_t state_;
 

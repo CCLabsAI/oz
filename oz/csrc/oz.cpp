@@ -5,6 +5,8 @@
 #include <torch/csrc/utils/pybind.h>
 
 #include "game.h"
+#include "oss.h"
+
 #include "games/flipguess.h"
 #include "games/kuhn.h"
 
@@ -55,8 +57,33 @@ PYBIND11_MODULE(_ext, m) {
 
   py::class_<oz::kuhn_poker_t, oz::game_t>(m, "KuhnPoker");
 
+  py::class_<oz::history_t>(m, "History")
+      .def("act", &oz::history_t::act)
+      .def("infoset", &oz::history_t::infoset)
+      .def_property_readonly("player", &oz::history_t::player)
+      .def("is_terminal", &oz::history_t::is_terminal)
+      .def("utility", &oz::history_t::utility)
+      .def("__copy__", [](const oz::history_t &h){ return oz::history_t(h); });
+
+  auto py_OSS =
+  py::class_<oz::oss_t::search_t>(m, "Search")
+      .def(py::init<oz::history_t, oz::player_t>())
+      .def_property_readonly("state", &oz::oss_t::search_t::state)
+      .def("infoset", &oz::oss_t::search_t::infoset);
+
+  py::enum_<oz::oss_t::search_t::state_t>(py_OSS, "State")
+      .value("SELECT", oz::oss_t::search_t::state_t::SELECT)
+      .value("CREATE", oz::oss_t::search_t::state_t::CREATE)
+      .value("PLAYOUT", oz::oss_t::search_t::state_t::PLAYOUT)
+      .value("BACKPROP", oz::oss_t::search_t::state_t::BACKPROP)
+      .value("FINISHED", oz::oss_t::search_t::state_t::FINISHED);
+
   m.def("make_flipguess", []() {
     return std::unique_ptr<oz::game_t>(new oz::flipguess_t);
+  });
+
+  m.def("make_flipguess_history", []() {
+    return oz::make_history<oz::flipguess_t>();
   });
 
   m.def("make_kuhn", []() {
