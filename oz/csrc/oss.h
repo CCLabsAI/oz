@@ -157,9 +157,6 @@ class sigma_average_t : public sigma_t::concept_t {
 
 class oss_t {
  public:
-  void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
-  void search_step(history_t h, player_t player, tree_t &tree, rng_t &rng);
-
   struct prefix_prob_t {
     prob_t pi_i = 1.0;  // reach probability for search player
     prob_t pi_o = 1.0;  // reach probability for opponent player and chance
@@ -188,7 +185,7 @@ class oss_t {
         history_(std::move(history)),
         search_player_(search_player),
         delta_(0.1)
-    { };
+    { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
     void create(tree_t& tree, rng_t &rng);       // add node to tree with prior values
@@ -227,6 +224,9 @@ class oss_t {
 
     prob_t delta_;
   };
+
+  void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
+  void search_step(history_t h, player_t player, tree_t &tree, rng_t &rng);
 
  private:
   tree_t tree_;

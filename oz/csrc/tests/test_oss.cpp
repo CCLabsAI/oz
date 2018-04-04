@@ -89,7 +89,7 @@ TEST_CASE("oss search", "[oss]") {
   auto node = tree.lookup(make_infoset<flipguess_t::infoset_t>(P2));
   auto nl = node.average_strategy(make_action(flipguess_t::action_t::Left));
   auto nr = node.average_strategy(make_action(flipguess_t::action_t::Right));
-  CHECK(nl / (nl + nr) == Approx((prob_t) 1/3).epsilon(0.01));
+  CHECK(nl / (nl + nr) == Approx((prob_t) 1/3).epsilon(0.05));
 }
 
 TEST_CASE("oss exploitability flipguess", "[oss]") {
@@ -98,11 +98,11 @@ TEST_CASE("oss exploitability flipguess", "[oss]") {
   tree_t tree;
   rng_t rng(1);
 
-  s.search(h, 1000, tree, rng);
+  s.search(h, 100, tree, rng);
   auto sigma1 = tree.sigma_average();
   auto ex1 = exploitability(h, sigma1);
 
-  s.search(h, 5000, tree, rng);
+  s.search(h, 1000, tree, rng);
   auto sigma2 = tree.sigma_average();
   auto ex2 = exploitability(h, sigma2);
 
@@ -121,7 +121,7 @@ TEST_CASE("oss exploitability kuhn poker", "[oss]") {
     auto sigma = tree.sigma_average();
     auto ex_prime = exploitability(h, sigma);
 
-    CHECK(ex_prime / ex < 1.1);
+    CHECK(ex_prime / ex < 1.2);
     ex = ex_prime;
   }
 }

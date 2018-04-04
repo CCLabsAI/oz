@@ -39,7 +39,7 @@ auto flipguess_t::utility(player_t player) const -> value_t {
   return relative_utility(player, u);
 }
 
-auto flipguess_t::act_(flipguess_t::action_t a) -> void {
+void flipguess_t::act_(flipguess_t::action_t a) {
   if (player_ == CHANCE) {
     if (a == action_t::Heads) {
       heads_ = true;
@@ -63,13 +63,13 @@ auto flipguess_t::act_(flipguess_t::action_t a) -> void {
 
 auto flipguess_t::infoset_t::actions() const -> vector<oz::action_t> {
   static const auto chance_actions = vector<oz::action_t> {
-      oz::action_t(static_cast<int>(action_t::Heads)),
-      oz::action_t(static_cast<int>(action_t::Tails)),
+      make_action(action_t::Heads),
+      make_action(action_t::Tails),
   };
 
   static const auto player_actions = vector<oz::action_t> {
-      oz::action_t(static_cast<int>(action_t::Left)),
-      oz::action_t(static_cast<int>(action_t::Right)),
+      make_action(action_t::Left),
+      make_action(action_t::Right),
   };
 
   if (player_ == CHANCE) {

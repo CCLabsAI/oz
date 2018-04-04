@@ -226,7 +226,7 @@ action_prob_t sigma_t::sample_eps(infoset_t infoset,
 node_t::node_t(std::vector<action_t> actions) {
   auto regret_in = inserter(regrets_, regrets_.end());
   transform(begin(actions), end(actions), regret_in,
-    [](const action_t &a) { return make_pair(a, 0); });
+            [](const action_t &a) { return make_pair(a, 0); });
 
   auto avg_in = inserter(average_stratergy_, average_stratergy_.end());
   transform(begin(actions), end(actions), avg_in,
@@ -253,21 +253,21 @@ auto history_t::sample_chance(rng_t& rng) -> action_prob_t {
 }
 
 void tree_t::create_node(infoset_t infoset) {
-  nodes_.emplace(make_pair(infoset, node_t(infoset.actions())));
+  nodes_.emplace(infoset, node_t(infoset.actions()));
 }
 
 auto tree_t::sample_sigma(infoset_t infoset, rng_t &rng) const -> sample_ret_t {
   const auto it = nodes_.find(infoset);
 
   if (it == end(nodes_)) {
-    return {{}, true};
+    return { { }, true };
   }
   else {
     const auto &node = lookup(infoset);
     const auto sigma = node.sigma_regret_matching();
 
     const auto ap = sigma.sample_eps(infoset, 0.5, rng);
-    return {ap, false};
+    return { ap, false };
   }
 }
 
@@ -281,15 +281,16 @@ T rectify(T x) {
 }
 
 auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
-  auto sum_positive = accumulate(begin(regrets_), end(regrets_), (value_t) 0,
-                          [](const auto &r, const auto &x) {
-                              return r + rectify(x.second);
-                          });
+  auto sum_positive = accumulate(
+    begin(regrets_), end(regrets_), (value_t) 0,
+    [](const auto &r, const auto &x) {
+        return r + rectify(x.second);
+    });
 
   prob_t p;
   if (sum_positive > 0) {
     auto r = regrets_.at(a);
-    p = r > 0 ? r / sum_positive : 0;
+    p = r > 0 ? r/sum_positive : 0;
   }
   else {
     p = (prob_t) 1/infoset.actions().size();
@@ -301,16 +302,14 @@ auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 
 auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   -> action_prob_t {
-  auto actions = vector<action_t> {};
-  auto weights = vector<prob_t> {};
+  auto actions = vector<action_t>(regrets_.size());
+  auto weights = vector<prob_t>(regrets_.size());
 
-  transform(begin(regrets_), end(regrets_), back_inserter(actions),
+  transform(begin(regrets_), end(regrets_), begin(actions),
             [](const auto &x) { return x.first; });
 
-  transform(begin(regrets_), end(regrets_), back_inserter(weights),
-            [](const auto &x) {
-              auto w = x.second; return w > 0 ? w : 0;
-            });
+  transform(begin(regrets_), end(regrets_), begin(weights),
+            [](const auto &x) { return rectify(x.second); });
 
   auto total = accumulate(begin(weights), end(weights), (value_t) 0);
 
@@ -328,7 +327,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   }
 
   auto a = actions[i];
-  auto pr_a = total > 0 ? weights[i] / total : (prob_t) 1/weights.size();
+  auto pr_a = total > 0 ? weights[i]/total : (prob_t) 1/weights.size();
   auto rho1 = pr_a;
   auto rho2 = pr_a;
 
