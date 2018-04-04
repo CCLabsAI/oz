@@ -3,10 +3,14 @@
 
 #include <tuple>
 #include <random>
+#include <unordered_map>
+#include <map>
 
 #include "game.h"
 
 namespace oz {
+
+using rng_t = std::mt19937;
 
 struct action_prob_t {
   action_t a;
@@ -25,7 +29,7 @@ class history_t {
   player_t player() const { return self_->player(); }
   bool is_terminal() const { return self_->is_terminal(); }
   value_t utility(player_t player) const { return self_->utility(player); }
-  action_prob_t sample_chance();
+  action_prob_t sample_chance(rng_t& rng);
 
   history_t operator >>(action_t a) const {
     auto g = self_->clone();
@@ -50,8 +54,6 @@ auto make_history(Args&& ... args) -> history_t {
 
 class sigma_t {
  public:
-  using rng_t = std::mt19937;
-
   struct concept_t {
     virtual prob_t pr(infoset_t infoset, action_t a) const = 0;
     virtual action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const;
@@ -83,21 +85,53 @@ sigma_t make_sigma(Args&& ... args) {
 
 class node_t {
  public:
-  sigma_t sigma_regret_matching();
+  explicit node_t(std::vector<action_t> actions);
+
+  using regret_map_t = std::map<action_t, value_t>;
+  using avg_map_t = std::map<action_t, prob_t>;
+
+  sigma_t sigma_regret_matching() const;
   void accumulate_regret(action_t a, value_t r);
   void accumulate_average_strategy(action_t a, prob_t s);
+
+  value_t &regret(action_t a) { return regrets_[a]; }
+  prob_t &average_strategy(action_t a) { return average_stratergy_[a]; }
+
+ private:
+  regret_map_t regrets_;
+  avg_map_t average_stratergy_;
+};
+
+class sigma_regret_t : public sigma_t::concept_t {
+ public:
+  explicit sigma_regret_t(node_t::regret_map_t regrets):
+      regrets_(std::move(regrets)) { };
+
+  prob_t pr(infoset_t infoset, action_t a) const override;
+  action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const override;
+  ~sigma_regret_t() override = default;
+
+ private:
+  const node_t::regret_map_t regrets_;
 };
 
 class tree_t {
  public:
+  using map_t = std::unordered_map<infoset_t, node_t>;
+
   struct sample_ret_t {
     action_prob_t ap;
-    bool out_of_tree;
+    bool out_of_tree = false;
   };
 
   void create_node(infoset_t infoset);
   node_t lookup(infoset_t infoset) const;
-  sample_ret_t sample_sigma(infoset_t infoset) const;
+  sample_ret_t sample_sigma(infoset_t infoset, rng_t &rng) const;
+
+  map_t::size_type size() const { return nodes_.size(); }
+
+ private:
+  map_t nodes_;
 };
 
 class oss_t {
@@ -116,7 +150,7 @@ class oss_t {
   };
 
   struct path_item_t {
-    player_t player;
+    player_t player = CHANCE;
     infoset_t infoset;
     action_prob_t action_prob;
     prefix_prob_t prefix_prob;
@@ -132,10 +166,10 @@ class oss_t {
         delta_(0.1)
     { };
 
-    void select(tree_t& tree);      // walk from tip to leaf and updating path
-    void create(tree_t& tree);      // add node to tree with prior values
+    void select(tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
+    void create(tree_t& tree, rng_t &rng); // add node to tree with prior values
     void playout_step(action_prob_t ap);
-    void backprop(tree_t& tree);    // unwind updates along path
+    void backprop(tree_t& tree);           // unwind updates along path
 
     infoset_t infoset() const { return history_.infoset(); }
 
@@ -170,7 +204,7 @@ class oss_t {
   };
 
  private:
-//  tree_t tree_;
+  tree_t tree_;
 };
 
 } // namespace oz

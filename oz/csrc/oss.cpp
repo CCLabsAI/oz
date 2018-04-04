@@ -24,7 +24,7 @@ void update_probs(oss_t::prefix_prob_t& probs, player_t i,
 }
 
 void oss_t::search_t::step_tree(action_prob_t ap) {
-  assert (state_ == state_t::SELECT);
+  assert (state_ == state_t::SELECT || state_ == state_t::CREATE);
   assert (!history_.is_terminal());
 
   const auto acting_player = history_.player();
@@ -41,7 +41,7 @@ void oss_t::search_t::step_tree(action_prob_t ap) {
   update_probs(prefix_prob_, search_player_, ap, acting_player);
 }
 
-void oss_t::search_t::select(tree_t& tree) {
+void oss_t::search_t::select(tree_t& tree, rng_t &rng) {
   assert (state_ == state_t::SELECT);
 
   while (state_ == state_t::SELECT) {
@@ -51,12 +51,12 @@ void oss_t::search_t::select(tree_t& tree) {
       state_ = state_t::BACKPROP;
     }
     else if (acting_player == CHANCE) {
-      auto ap = history_.sample_chance();
+      const auto ap = history_.sample_chance(rng);
       step_tree(ap);
     }
     else {
-      infoset_t infoset = history_.infoset();
-      const auto r = tree.sample_sigma(infoset);
+      const auto infoset = history_.infoset();
+      const auto r = tree.sample_sigma(infoset, rng);
 
       if (r.out_of_tree) {
         state_ = state_t::CREATE;
@@ -68,14 +68,14 @@ void oss_t::search_t::select(tree_t& tree) {
   }
 }
 
-void oss_t::search_t::create(tree_t& tree) {
+void oss_t::search_t::create(tree_t& tree, rng_t &rng) {
   assert (state_ == state_t::CREATE);
   assert (!history_.is_terminal());
 
   const auto infoset = history_.infoset();
   tree.create_node(infoset);
   
-  const auto r = tree.sample_sigma(infoset);
+  const auto r = tree.sample_sigma(infoset, rng);
   assert (!r.out_of_tree);
   
   step_tree(r.ap);
@@ -130,6 +130,10 @@ void oss_t::search_t::backprop(tree_t& tree) {
     c = x;
     x = pr_a * x;
 
+    if (active_player == CHANCE) {
+      continue;
+    }
+
     node_t node = tree.lookup(infoset);
 
     if (active_player == search_player_) {
@@ -151,7 +155,7 @@ void oss_t::search_t::backprop(tree_t& tree) {
 
       const prob_t q = delta_ * s1 + (1.0 - delta_) * s2;
       for (const auto& a_prime : infoset.actions()) {
-        prob_t s = (pi_o * sigma.pr(infoset, a_prime)) / q;
+        const prob_t s = (pi_o * sigma.pr(infoset, a_prime)) / q;
         node.accumulate_average_strategy(a_prime, s);
       }
     }
@@ -160,12 +164,13 @@ void oss_t::search_t::backprop(tree_t& tree) {
   state_ = state_t::FINISHED;
 }
 
-auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const -> action_prob_t {
+auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const ->
+action_prob_t {
   auto actions = infoset.actions();
   auto probs = vector<prob_t>(actions.size());
   
   transform(begin(actions), end(actions), begin(probs),
-            [&](auto& a) { return pr(infoset, a); });
+            [&](const auto& a) { return pr(infoset, a); });
   
   auto a_dist = discrete_distribution<>(begin(probs), end(probs));
   auto i = a_dist(rng);
@@ -178,32 +183,109 @@ auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const -> actio
   return { a, pr_a, rho1, rho2 };
 };
 
-sigma_t node_t::sigma_regret_matching() {
-  assert (false);
+sigma_t node_t::sigma_regret_matching() const {
+  return make_sigma<sigma_regret_t>(regrets_);
 }
 
 void node_t::accumulate_regret(action_t a, value_t r) {
-  assert (false);
+  regret(a) += r;
 }
 
 void node_t::accumulate_average_strategy(action_t a, prob_t s) {
-  assert (false);
+  average_strategy(a) += s;
 }
 
-action_prob_t history_t::sample_chance() {
-  assert (false);
+node_t::node_t(std::vector<action_t> actions) {
+  auto regret_in = inserter(regrets_, regrets_.end());
+  transform(begin(actions), end(actions), regret_in,
+    [](const action_t &a) { return make_pair(a, 0); });
+
+  auto avg_in = inserter(average_stratergy_, average_stratergy_.end());
+  transform(begin(actions), end(actions), avg_in,
+            [](const action_t &a) { return make_pair(a, 0); });
+}
+
+auto history_t::sample_chance(rng_t& rng) -> action_prob_t {
+  // FIXME use real probs
+  const auto actions = infoset().actions();
+
+  auto probs = vector<prob_t>(actions.size());
+
+  fill(begin(probs), end(probs), (prob_t) 1/actions.size());
+
+  auto a_dist = discrete_distribution<>(begin(probs), end(probs));
+  auto i = a_dist(rng);
+
+  auto a = actions[i];
+  auto pr_a = probs[i];
+  auto rho1 = pr_a;
+  auto rho2 = pr_a;
+
+  return { a, pr_a, rho1, rho2 };
 }
 
 node_t tree_t::lookup(infoset_t infoset) const {
-  assert (false);
+  return nodes_.at(infoset);
 }
 
 void tree_t::create_node(infoset_t infoset) {
-  assert (false);
+  nodes_.emplace(make_pair(infoset, node_t(infoset.actions())));
 }
 
-auto tree_t::sample_sigma(infoset_t infoset) const -> sample_ret_t {
-  assert (false);
+auto tree_t::sample_sigma(infoset_t infoset, rng_t &rng) const -> sample_ret_t {
+  const auto it = nodes_.find(infoset);
+
+  if (it == end(nodes_)) {
+    return {{}, true};
+  }
+  else {
+    const auto node = lookup(infoset);
+    const auto sigma = node.sigma_regret_matching();
+
+    const auto ap = sigma.sample_pr(infoset, rng);
+    return {ap, false};
+  }
+}
+
+auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
+  auto total = accumulate(begin(regrets_), end(regrets_), (value_t) 0,
+                             [](const auto &r, const auto &x) { return r + x.second; });
+
+  return regrets_.at(a) / total;
+}
+
+auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
+  -> action_prob_t {
+  auto actions = vector<action_t> {};
+  auto weights = vector<prob_t> {};
+
+  transform(begin(regrets_), end(regrets_), back_inserter(actions),
+            [](const auto &x) { return x.first; });
+
+  transform(begin(regrets_), end(regrets_), back_inserter(weights),
+            [](const auto &x) { return x.second; });
+
+  auto total = accumulate(begin(weights), end(weights), (value_t) 0);
+
+  assert (actions.size() > 0);
+  assert (weights.size() > 0);
+
+  int i;
+  if (total > 0) {
+    auto a_dist = discrete_distribution<>(begin(weights), end(weights));
+    i = a_dist(rng);
+  }
+  else {
+    auto a_dist = uniform_int_distribution<>(0, weights.size()-1);
+    i = a_dist(rng);
+  }
+
+  auto a = actions[i];
+  auto pr_a = total > 0 ? weights[i] / total : (prob_t) 1/weights.size();
+  auto rho1 = pr_a;
+  auto rho2 = pr_a;
+
+  return { a, pr_a, rho1, rho2 };
 }
 
 }

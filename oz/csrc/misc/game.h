@@ -51,9 +51,7 @@ class history_t {
     virtual value_t utility() const = 0;
   };
 
-  // FIXME
   std::unique_ptr<concept_t> self_;
-  // concept_t *self_;
 };
 
 #endif // OZ_GAME_H

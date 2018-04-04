@@ -15,7 +15,7 @@ auto flipguess_t::infoset() const -> oz::infoset_t {
   return make_infoset<infoset_t>(player_);
 }
 
-value_t relative_utility(player_t player, value_t u) {
+inline value_t relative_utility(player_t player, value_t u) {
   return player == P2 ? -u : u;
 }
 

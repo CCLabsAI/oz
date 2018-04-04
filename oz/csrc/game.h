@@ -95,6 +95,10 @@ inline bool operator !=(const action_t& a, const action_t& b) {
   return !(a == b);
 }
 
+inline bool operator <(const action_t& a, const action_t& b) {
+  return a.index() < b.index();
+}
+
 } // namespace oz
 
 namespace std {
