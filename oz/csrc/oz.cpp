@@ -33,7 +33,8 @@ PYBIND11_MODULE(_ext, m) {
     py::enum_<oz::player_t>(m, "Player")
       .value("Chance", oz::player_t::Chance)
       .value("P1", oz::player_t::P1)
-      .value("P2", oz::player_t::P2);
+      .value("P2", oz::player_t::P2)
+      .export_values();
 
   py::class_<oz::action_t>(m, "Action");
 
@@ -69,7 +70,11 @@ PYBIND11_MODULE(_ext, m) {
   py::class_<oz::oss_t::search_t>(m, "Search")
       .def(py::init<oz::history_t, oz::player_t>())
       .def_property_readonly("state", &oz::oss_t::search_t::state)
-      .def("infoset", &oz::oss_t::search_t::infoset);
+      .def("infoset", &oz::oss_t::search_t::infoset)
+      .def("select", &oz::oss_t::search_t::select)
+      .def("create", &oz::oss_t::search_t::create)
+      .def("playout_step", &oz::oss_t::search_t::playout_step)
+      .def("backprop", &oz::oss_t::search_t::backprop);
 
   py::enum_<oz::oss_t::search_t::state_t>(py_OSS, "State")
       .value("SELECT", oz::oss_t::search_t::state_t::SELECT)
@@ -77,6 +82,24 @@ PYBIND11_MODULE(_ext, m) {
       .value("PLAYOUT", oz::oss_t::search_t::state_t::PLAYOUT)
       .value("BACKPROP", oz::oss_t::search_t::state_t::BACKPROP)
       .value("FINISHED", oz::oss_t::search_t::state_t::FINISHED);
+
+  py::class_<oz::tree_t>(m, "Tree")
+      .def(py::init<>())
+      .def("size", &oz::tree_t::size)
+      .def("create_node", &oz::tree_t::create_node)
+      .def("lookup", &oz::tree_t::lookup)
+      .def("nodes", &oz::tree_t::nodes);
+
+  py::class_<oz::node_t>(m, "Node")
+      .def("sigma_regret_matching", &oz::node_t::sigma_regret_matching)
+      .def("accumulate_regret", &oz::node_t::accumulate_regret)
+      .def("accumulate_average_strategy", &oz::node_t::accumulate_average_strategy)
+      .def_property_readonly("regrets", &oz::node_t::regret_map)
+      .def_property_readonly("average_strategy", &oz::node_t::avg_map);
+
+  py::class_<oz::rng_t>(m, "Random")
+      .def(py::init<>())
+      .def(py::init<int>());
 
   m.def("make_flipguess", []() {
     return std::unique_ptr<oz::game_t>(new oz::flipguess_t);
@@ -88,5 +111,9 @@ PYBIND11_MODULE(_ext, m) {
 
   m.def("make_kuhn", []() {
     return std::unique_ptr<oz::game_t>(new oz::kuhn_poker_t);
+  });
+
+  m.def("make_kuhn_history", []() {
+    return oz::make_history<oz::kuhn_poker_t>();
   });
 }

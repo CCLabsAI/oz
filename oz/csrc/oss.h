@@ -97,6 +97,9 @@ class node_t {
   value_t &regret(action_t a) { return regrets_[a]; }
   prob_t &average_strategy(action_t a) { return average_stratergy_[a]; }
 
+  regret_map_t &regret_map() { return regrets_; }
+  avg_map_t &avg_map() { return average_stratergy_; }
+
  private:
   regret_map_t regrets_;
   avg_map_t average_stratergy_;
@@ -129,6 +132,7 @@ class tree_t {
   sample_ret_t sample_sigma(infoset_t infoset, rng_t &rng) const;
 
   map_t::size_type size() const { return nodes_.size(); }
+  map_t &nodes() { return nodes_; }
 
  private:
   map_t nodes_;
