@@ -85,6 +85,8 @@ sigma_t make_sigma(Args&& ... args) {
   return sigma_t(std::make_shared<Sigma>(std::forward<Args>(args)...));
 }
 
+class sigma_regret_t;
+
 class node_t {
  public:
   explicit node_t(std::vector<action_t> actions);
@@ -92,12 +94,12 @@ class node_t {
   using regret_map_t = std::map<action_t, value_t>;
   using avg_map_t = std::map<action_t, prob_t>;
 
-  sigma_t sigma_regret_matching() const;
-  void accumulate_regret(action_t a, value_t r);
-  void accumulate_average_strategy(action_t a, prob_t s);
+  sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
+  void accumulate_regret(action_t a, value_t r) { regrets_[a] += r; }
+  void accumulate_average_strategy(action_t a, prob_t s) { average_stratergy_[a] += s; }
 
-  value_t &regret(action_t a) { return regrets_[a]; }
-  prob_t &average_strategy(action_t a) { return average_stratergy_[a]; }
+  const value_t &regret(action_t a) const { return regrets_.at(a); }
+  const prob_t &average_strategy(action_t a) const { return average_stratergy_.at(a); }
 
   regret_map_t &regret_map() { return regrets_; }
   avg_map_t &avg_map() { return average_stratergy_; }
@@ -107,24 +109,8 @@ class node_t {
   avg_map_t average_stratergy_;
 };
 
-class sigma_regret_t : public sigma_t::concept_t {
- public:
-  explicit sigma_regret_t(node_t::regret_map_t regrets):
-      regrets_(std::move(regrets)) { };
-
-  prob_t pr(infoset_t infoset, action_t a) const override;
-  action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const override;
-  ~sigma_regret_t() override = default;
-
- private:
-  const node_t::regret_map_t regrets_;
-};
-
 class tree_t {
  public:
-  tree_t() = default;
-  tree_t(const tree_t& that) = delete;
-
   using map_t = std::unordered_map<infoset_t, node_t>;
 
   struct sample_ret_t {
@@ -136,6 +122,7 @@ class tree_t {
   node_t &lookup(const infoset_t &infoset) { return nodes_.at(infoset); }
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
   sample_ret_t sample_sigma(infoset_t infoset, rng_t &rng) const;
+  sigma_t sigma_average() const;
 
   map_t::size_type size() const { return nodes_.size(); }
   map_t &nodes() { return nodes_; }
@@ -143,6 +130,30 @@ class tree_t {
  private:
   map_t nodes_;
 };
+
+class sigma_regret_t : public sigma_t::concept_t {
+ public:
+  explicit sigma_regret_t(node_t::regret_map_t regrets):
+      regrets_(std::move(regrets)) { };
+
+  prob_t pr(infoset_t infoset, action_t a) const override;
+  action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const override;
+
+ private:
+  const node_t::regret_map_t regrets_;
+};
+
+class sigma_average_t : public sigma_t::concept_t {
+ public:
+  explicit sigma_average_t(tree_t tree):
+      tree_(std::move(tree)) { };
+
+  prob_t pr(infoset_t infoset, action_t a) const override;
+
+ private:
+  const tree_t tree_;
+};
+
 
 class oss_t {
  public:
@@ -180,9 +191,9 @@ class oss_t {
     { };
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
-    void create(tree_t& tree, rng_t &rng); // add node to tree with prior values
+    void create(tree_t& tree, rng_t &rng);       // add node to tree with prior values
     void playout_step(action_prob_t ap);
-    void backprop(tree_t& tree);           // unwind updates along path
+    void backprop(tree_t& tree);                 // unwind updates along path
 
     infoset_t infoset() const { return history_.infoset(); }
 

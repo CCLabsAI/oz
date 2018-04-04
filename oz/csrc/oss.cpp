@@ -106,9 +106,10 @@ void oss_t::search_t::playout_step(action_prob_t ap) {
   history_.act(ap.a);
   suffix_prob_.x *= ap.pr_a;
 
+  // TODO this is sort of a weird special case, make more elegant
   if (history_.is_terminal()) {
-    prob_t s1 = prefix_prob_.s1;
-    prob_t s2 = prefix_prob_.s2;
+    prob_t s1 = prefix_prob_.s1 * suffix_prob_.x;
+    prob_t s2 = prefix_prob_.s2 * suffix_prob_.x;
 
     suffix_prob_.l = delta_ * s1 + (1.0 - delta_) * s2;
     suffix_prob_.u = history_.utility(search_player_);
@@ -222,18 +223,6 @@ action_prob_t sigma_t::sample_eps(infoset_t infoset,
   }
 };
 
-auto node_t::sigma_regret_matching() const -> sigma_t {
-  return make_sigma<sigma_regret_t>(regrets_);
-}
-
-void node_t::accumulate_regret(action_t a, value_t r) {
-  regret(a) += r;
-}
-
-void node_t::accumulate_average_strategy(action_t a, prob_t s) {
-  average_strategy(a) += s;
-}
-
 node_t::node_t(std::vector<action_t> actions) {
   auto regret_in = inserter(regrets_, regrets_.end());
   transform(begin(actions), end(actions), regret_in,
@@ -282,23 +271,31 @@ auto tree_t::sample_sigma(infoset_t infoset, rng_t &rng) const -> sample_ret_t {
   }
 }
 
+auto tree_t::sigma_average() const -> sigma_t {
+  return make_sigma<sigma_average_t>(*this);
+}
+
+template <typename T>
+T rectify(T x) {
+  return x > 0 ? x : 0;
+}
+
 auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
-  auto total = accumulate(begin(regrets_), end(regrets_), (value_t) 0,
+  auto sum_positive = accumulate(begin(regrets_), end(regrets_), (value_t) 0,
                           [](const auto &r, const auto &x) {
-                              auto w = x.second;
-                              return w > 0 ? r + w : r;
+                              return r + rectify(x.second);
                           });
 
   prob_t p;
-  if (total > 0) {
+  if (sum_positive > 0) {
     auto r = regrets_.at(a);
-    p = r > 0 ? r / total : 0;
+    p = r > 0 ? r / sum_positive : 0;
   }
   else {
     p = (prob_t) 1/infoset.actions().size();
   }
 
-  assert(p >= 0);
+  assert(p >= 0 && p <= 1);
   return p;
 }
 
@@ -335,10 +332,21 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   auto rho1 = pr_a;
   auto rho2 = pr_a;
 
-  assert (pr_a >= 0);
+  assert (pr_a >= 0 && pr_a <= 1);
 
   return { a, pr_a, rho1, rho2 };
 }
+
+auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
+  const auto actions = infoset.actions();
+  const auto &node = tree_.lookup(infoset);
+  const auto total = accumulate(begin(actions), end(actions), (prob_t) 0,
+    [&](const auto &r, const auto &a_prime){ return r + node.average_strategy(a_prime); });
+
+  auto p = node.average_strategy(a) / total;
+  assert (p >= 0 && p <= 1);
+  return p;
+};
 
 void oss_t::search_step(history_t h,
                         player_t player,

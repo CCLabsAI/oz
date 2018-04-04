@@ -50,22 +50,24 @@ class infoset_t {
 
   std::vector<action_t> actions() const { return self_->actions(); }
   std::string str() const { return self_->str(); }
-  virtual bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
-  virtual size_t hash() const { return self_->hash(); };
+  bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
+  size_t hash() const { return self_->hash(); };
 
+  // This is a back door for testing a debugging
   const concept_t &get() const { return *self_.get(); };
 
  private:
-  explicit infoset_t(concept_t *self) : self_(self) {};
+  using ptr_t = std::shared_ptr<const concept_t>;
+  explicit infoset_t(ptr_t self) : self_(std::move(self)) { };
   template<class Infoset, typename... Args>
   friend infoset_t make_infoset(Args&& ... args);
 
-  std::shared_ptr<const concept_t> self_;
+  ptr_t self_;
 };
 
 template<class Infoset, typename... Args>
 auto make_infoset(Args&& ... args) -> infoset_t {
-  return infoset_t(new Infoset(std::forward<Args>(args)...));
+  return infoset_t(std::make_shared<Infoset>(std::forward<Args>(args)...));
 }
 
 class game_t {
@@ -112,8 +114,8 @@ struct hash<oz::action_t> {
 
 template<>
 struct hash<oz::infoset_t> {
-  inline size_t operator ()(const oz::infoset_t& a) const {
-    return a.hash();
+  inline size_t operator ()(const oz::infoset_t& infoset) const {
+    return infoset.hash();
   }
 };
 
