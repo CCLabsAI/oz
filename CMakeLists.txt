@@ -24,12 +24,22 @@ add_executable("tests"
         "oz/csrc/best_response.cpp"
         "oz/csrc/tests/test_oss.cpp"
         "oz/csrc/oss.cpp"
+        "oz/csrc/tests/test_leduk.cpp"
+        "oz/csrc/games/leduk.cpp"
+        )
+
+add_executable("solve_leduk"
+        "oz/csrc/solve_leduk.cpp"
+        "oz/csrc/games/leduk.cpp"
+        "oz/csrc/best_response.cpp"
+        "oz/csrc/oss.cpp"
         )
 
 pybind11_add_module(_ext
         "oz/csrc/oz.cpp"
         "oz/csrc/games/flipguess.cpp"
         "oz/csrc/games/kuhn.cpp"
+        "oz/csrc/games/leduk.cpp"
         "oz/csrc/oss.cpp"
         )
 #pybind11_add_module(_ext "oz/csrc/oz.cpp")

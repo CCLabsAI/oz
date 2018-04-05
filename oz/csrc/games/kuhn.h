@@ -15,8 +15,8 @@ namespace oz {
 class kuhn_poker_t : public game_t {
  public:
   enum class action_t {
-    Pass = 1,
-    Bet,
+    Bet = 1,
+    Pass,
 
     JQ = 100,
     JK,
@@ -47,8 +47,6 @@ class kuhn_poker_t : public game_t {
     size_t hash() const override;
   };
 
-  kuhn_poker_t();
-
   void act_(action_t a);
 
   void act(oz::action_t a) override;
@@ -67,11 +65,11 @@ class kuhn_poker_t : public game_t {
   static constexpr action_t CHANCE_START = action_t::JQ;
   static constexpr action_t CHANCE_FINISH = action_t::KQ;
 
-  bool showdown_;
-  bool folded_[N_PLAYERS];
-  card_t hand_[N_PLAYERS];
-  int pot_[N_PLAYERS];
-  player_t player_;
+  bool showdown_ = false;
+  bool folded_[N_PLAYERS] = {false, false};
+  card_t hand_[N_PLAYERS] = {card_t::NA, card_t::NA};
+  int pot_[N_PLAYERS] = {ANTE, ANTE};
+  player_t player_ = player_t::Chance;
   std::vector<action_t> history_;
 
   static int player_idx(player_t p) {

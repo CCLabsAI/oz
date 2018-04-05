@@ -5,14 +5,6 @@ namespace oz {
 
 using namespace std;
 
-kuhn_poker_t::kuhn_poker_t() :
-  showdown_(false),
-  folded_ { false, false },
-  hand_ { card_t::NA, card_t::NA },
-  pot_ { ANTE, ANTE },
-  player_(player_t::Chance)
-  { }
-
 auto kuhn_poker_t::is_terminal() const -> bool {
   return showdown_ ||
       folded(player_t::P1) ||
@@ -103,7 +95,8 @@ void kuhn_poker_t::deal_hand(action_t a) {
 auto kuhn_poker_t::infoset() const -> oz::infoset_t {
   if (player_ == CHANCE) {
     return make_infoset<infoset_t>(player_, card_t::NA, history_);    
-  } else {
+  }
+  else {
     return make_infoset<infoset_t>(player_, hand(player_), history_);
   }
 }
@@ -148,22 +141,24 @@ auto kuhn_poker_t::utility(player_t player) const -> value_t {
 }
 
 auto kuhn_poker_t::infoset_t::actions() const -> vector<oz::action_t> {
+  static const vector<oz::action_t> chance_actions {
+    make_action(action_t::JQ),
+    make_action(action_t::JK),
+    make_action(action_t::QJ),
+    make_action(action_t::QK),
+    make_action(action_t::KJ),
+    make_action(action_t::KQ)
+  };
+
+  static const vector<oz::action_t> player_actions {
+    make_action(action_t::Pass),
+    make_action(action_t::Bet),
+  };
+
   if (player == CHANCE) {
-    auto v = std::vector<oz::action_t>();
-
-    int first = static_cast<int>(CHANCE_START),
-        last  = static_cast<int>(CHANCE_FINISH);
-
-    for (int a = first; a <= last; a++) {
-      v.emplace_back(a);
-    }
-
-    return v;
+    return chance_actions;
   } else {
-    return std::vector<oz::action_t> {
-      oz::action_t(static_cast<int>(action_t::Pass)),
-      oz::action_t(static_cast<int>(action_t::Bet)),
-    };
+    return player_actions;
   }
 }
 
@@ -212,6 +207,7 @@ const -> bool {
   if (typeid(*this) == typeid(that)) {
     auto that_ = static_cast<const kuhn_poker_t::infoset_t &>(that);
     return
+      player == that_.player &&
       hand == that_.hand &&
       history == that_.history;
   }

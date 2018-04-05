@@ -2,8 +2,6 @@
 #include <algorithm>
 #include <iterator>
 
-#include <unordered_map>
-
 #include "oss.h"
 
 namespace oz {
@@ -338,13 +336,23 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
 
 auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   const auto actions = infoset.actions();
-  const auto &node = tree_.lookup(infoset);
-  const auto total = accumulate(begin(actions), end(actions), (prob_t) 0,
-    [&](const auto &r, const auto &a_prime){ return r + node.average_strategy(a_prime); });
+  const auto it = tree_.nodes().find(infoset);
 
-  auto p = node.average_strategy(a) / total;
-  assert (p >= 0 && p <= 1);
-  return p;
+  if (it != end(tree_.nodes())) {
+    const auto &node = it->second;
+
+    const auto total = accumulate(begin(actions), end(actions), (prob_t) 0,
+                                  [&](const auto &r, const auto &a_prime) {
+      return r + node.average_strategy(a_prime);
+    });
+
+    auto p = total > 0 ? node.average_strategy(a) / total : 0;
+    assert (p >= 0 && p <= 1);
+    return p;
+  }
+  else {
+    return (prob_t) 1/actions.size();
+  }
 };
 
 void oss_t::search_step(history_t h,

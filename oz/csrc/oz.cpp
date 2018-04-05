@@ -88,7 +88,7 @@ PYBIND11_MODULE(_ext, m) {
       .def("size", &oz::tree_t::size)
       .def("create_node", &oz::tree_t::create_node)
       .def("lookup", (oz::node_t &(oz::tree_t::*)(const oz::infoset_t &)) &oz::tree_t::lookup)
-      .def("nodes", &oz::tree_t::nodes);
+      .def("nodes", (oz::tree_t::map_t &(oz::tree_t::*)()) &oz::tree_t::nodes);
 
   py::class_<oz::node_t>(m, "Node")
       .def("sigma_regret_matching", &oz::node_t::sigma_regret_matching)

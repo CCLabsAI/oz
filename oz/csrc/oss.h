@@ -111,6 +111,8 @@ class node_t {
 
 class tree_t {
  public:
+  tree_t() = default;
+  tree_t(const tree_t& tree) = delete;
   using map_t = std::unordered_map<infoset_t, node_t>;
 
   struct sample_ret_t {
@@ -126,6 +128,9 @@ class tree_t {
 
   map_t::size_type size() const { return nodes_.size(); }
   map_t &nodes() { return nodes_; }
+
+  // TODO clean this up
+  const map_t &nodes() const { return nodes_; }
 
  private:
   map_t nodes_;
@@ -145,13 +150,13 @@ class sigma_regret_t : public sigma_t::concept_t {
 
 class sigma_average_t : public sigma_t::concept_t {
  public:
-  explicit sigma_average_t(tree_t tree):
-      tree_(std::move(tree)) { };
+  explicit sigma_average_t(const tree_t &tree):
+      tree_(tree) { };
 
   prob_t pr(infoset_t infoset, action_t a) const override;
 
  private:
-  const tree_t tree_;
+  const tree_t &tree_;
 };
 
 
