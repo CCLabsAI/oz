@@ -5,10 +5,14 @@
 #include <torch/csrc/utils/pybind.h>
 
 #include "game.h"
+#include "best_response.h"
 #include "oos.h"
+#include "batch.h"
+#include "encoder.h"
 
 #include "games/flipguess.h"
 #include "games/kuhn.h"
+#include "games/leduk.h"
 
 auto sigmoid_add(at::Tensor x, at::Tensor y) -> at::Tensor {
   return at::sigmoid(x + y);
@@ -53,10 +57,12 @@ PYBIND11_MODULE(_ext, m) {
 
   py_Game.attr("Player") = py_Player;
 
-  py::class_<oz::flipguess_t, oz::game_t>(m, "FlipGuess")
+  py::class_<oz::flipguess_t>(m, "FlipGuess", py_Game)
       .def("heads", &oz::flipguess_t::heads);
 
-  py::class_<oz::kuhn_poker_t, oz::game_t>(m, "KuhnPoker");
+  py::class_<oz::kuhn_poker_t>(m, "KuhnPoker", py_Game);
+
+  py::class_<oz::leduk_poker_t>(m, "LedukPoker", py_Game);
 
   py::class_<oz::history_t>(m, "History")
       .def("act", &oz::history_t::act)
@@ -66,8 +72,17 @@ PYBIND11_MODULE(_ext, m) {
       .def("utility", &oz::history_t::utility)
       .def("__copy__", [](const oz::history_t &h){ return oz::history_t(h); });
 
+  m.def("exploitability", &oz::exploitability);
+
+  py::class_<oz::oos_t>(m, "OOS")
+      .def(py::init<>())
+      .def("search", &oz::oos_t::search);
+
+  py::class_<oz::sigma_t>(m, "Sigma")
+      .def("pr", &oz::sigma_t::pr);
+
   auto py_OSS =
-  py::class_<oz::oos_t::search_t>(m, "Search")
+    py::class_<oz::oos_t::search_t>(m, "Search")
       .def(py::init<oz::history_t, oz::player_t>())
       .def_property_readonly("state", &oz::oos_t::search_t::state)
       .def("infoset", &oz::oos_t::search_t::infoset)
@@ -85,6 +100,7 @@ PYBIND11_MODULE(_ext, m) {
 
   py::class_<oz::tree_t>(m, "Tree")
       .def(py::init<>())
+      .def("sigma_average", &oz::tree_t::sigma_average)
       .def("size", &oz::tree_t::size)
       .def("create_node", &oz::tree_t::create_node)
       .def("lookup", (oz::node_t &(oz::tree_t::*)(const oz::infoset_t &)) &oz::tree_t::lookup)
@@ -101,8 +117,20 @@ PYBIND11_MODULE(_ext, m) {
       .def(py::init<>())
       .def(py::init<int>());
 
+  auto py_Encoder =
+    py::class_<oz::encoder_t, oz::batch_search_t::encoder_ptr_t>(m, "Encoder")
+      .def("encoding_size", &oz::encoder_t::encoding_size)
+      .def("encode", &oz::encoder_t::encode);
+
+  py::class_<oz::leduk_encoder_t>(m, "LedukEncoder", py_Encoder)
+      .def(py::init<>());
+
+  py::class_<oz::batch_search_t>(m, "BatchSearch")
+      .def(py::init<oz::history_t, oz::batch_search_t::encoder_ptr_t, int>())
+      .def("generate_batch", &oz::batch_search_t::generate_batch);
+
   m.def("make_flipguess", []() {
-    return std::unique_ptr<oz::game_t>(new oz::flipguess_t);
+    return oz::flipguess_t();
   });
 
   m.def("make_flipguess_history", []() {
@@ -110,10 +138,18 @@ PYBIND11_MODULE(_ext, m) {
   });
 
   m.def("make_kuhn", []() {
-    return std::unique_ptr<oz::game_t>(new oz::kuhn_poker_t);
+    return oz::kuhn_poker_t();
   });
 
   m.def("make_kuhn_history", []() {
     return oz::make_history<oz::kuhn_poker_t>();
+  });
+
+  m.def("make_leduk", []() {
+    return oz::leduk_poker_t();
+  });
+
+  m.def("make_leduk_history", []() {
+    return oz::make_history<oz::leduk_poker_t>();
   });
 }

@@ -37,6 +37,9 @@ class history_t {
     return history_t(move(g));
   }
 
+  // TODO clean this up
+  const game_t& get() { return *self_.get(); }
+
  private:
   using ptr_t = std::unique_ptr<game_t>;
 
@@ -162,6 +165,9 @@ class sigma_average_t : public sigma_t::concept_t {
 
 class oos_t {
  public:
+  void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
+  void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng);
+
   struct prefix_prob_t {
     prob_t pi_i = 1.0;  // reach probability for search player
     prob_t pi_o = 1.0;  // reach probability for opponent player and chance
@@ -230,11 +236,8 @@ class oos_t {
     prob_t delta_;
   };
 
-  void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
-  void search_step(history_t h, player_t player, tree_t &tree, rng_t &rng);
-
  private:
-  tree_t tree_;
+//  tree_t tree_;
 };
 
 } // namespace oz

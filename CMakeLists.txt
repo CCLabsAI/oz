@@ -37,10 +37,13 @@ add_executable("solve_leduk"
 
 pybind11_add_module(_ext
         "oz/csrc/oz.cpp"
+        "oz/csrc/best_response.cpp"
+        "oz/csrc/oos.cpp"
+        "oz/csrc/batch.cpp"
+        "oz/csrc/encoder.cpp"
         "oz/csrc/games/flipguess.cpp"
         "oz/csrc/games/kuhn.cpp"
         "oz/csrc/games/leduk.cpp"
-        "oz/csrc/oos.cpp"
         )
 #pybind11_add_module(_ext "oz/csrc/oz.cpp")
 

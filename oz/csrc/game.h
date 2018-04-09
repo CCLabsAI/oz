@@ -53,7 +53,7 @@ class infoset_t {
   bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
   size_t hash() const { return self_->hash(); };
 
-  // This is a back door for testing a debugging
+  // TODO make this more elegant
   const concept_t &get() const { return *self_.get(); };
 
  private:

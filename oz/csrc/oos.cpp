@@ -355,7 +355,7 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   }
 };
 
-void oos_t::search_step(history_t h,
+void oos_t::search_iter(history_t h,
                         player_t player,
                         tree_t &tree,
                         rng_t &rng) {
@@ -394,8 +394,8 @@ void oos_t::search(history_t h,
                    tree_t &tree,
                    rng_t &rng) {
   for(int i = 0; i < n_iter; i++) {
-    search_step(h, P1, tree, rng);
-    search_step(h, P2, tree, rng);
+    search_iter(h, P1, tree, rng);
+    search_iter(h, P2, tree, rng);
   }
 }
 
