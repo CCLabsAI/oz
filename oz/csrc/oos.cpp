@@ -2,13 +2,13 @@
 #include <algorithm>
 #include <iterator>
 
-#include "oss.h"
+#include "oos.h"
 
 namespace oz {
 
 using namespace std;
 
-void update_probs(oss_t::prefix_prob_t& probs, player_t i,
+void update_probs(oos_t::prefix_prob_t& probs, player_t i,
   const action_prob_t ap, player_t p) {
   if(p == i) {
     probs.pi_i *= ap.pr_a;
@@ -21,7 +21,7 @@ void update_probs(oss_t::prefix_prob_t& probs, player_t i,
   probs.s2 *= ap.rho2;
 }
 
-void oss_t::search_t::tree_step(action_prob_t ap) {
+void oos_t::search_t::tree_step(action_prob_t ap) {
   assert (state_ == state_t::SELECT || state_ == state_t::CREATE);
   assert (!history_.is_terminal());
 
@@ -39,7 +39,7 @@ void oss_t::search_t::tree_step(action_prob_t ap) {
   update_probs(prefix_prob_, search_player_, ap, acting_player);
 }
 
-void oss_t::search_t::select(const tree_t& tree, rng_t &rng) {
+void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
   assert (state_ == state_t::SELECT);
 
   while (state_ == state_t::SELECT) {
@@ -66,7 +66,7 @@ void oss_t::search_t::select(const tree_t& tree, rng_t &rng) {
   }
 }
 
-void oss_t::search_t::enter_backprop() {
+void oos_t::search_t::enter_backprop() {
   oz::prob_t s1 = prefix_prob_.s1;
   oz::prob_t s2 = prefix_prob_.s2;
 
@@ -74,10 +74,10 @@ void oss_t::search_t::enter_backprop() {
   suffix_prob_.l = delta_ * s1 + (1.0 - delta_) * s2;
   suffix_prob_.u = history_.utility(search_player_);
 
-  state_ = oz::oss_t::search_t::state_t::BACKPROP;
+  state_ = oz::oos_t::search_t::state_t::BACKPROP;
 }
 
-void oss_t::search_t::create(tree_t& tree, rng_t &rng) {
+void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
   assert (state_ == state_t::CREATE);
   assert (history_.player() != CHANCE);
   assert (!history_.is_terminal());
@@ -98,7 +98,7 @@ void oss_t::search_t::create(tree_t& tree, rng_t &rng) {
   }
 }
 
-void oss_t::search_t::playout_step(action_prob_t ap) {
+void oos_t::search_t::playout_step(action_prob_t ap) {
   assert (state_ == state_t::PLAYOUT);
   
   history_.act(ap.a);
@@ -116,7 +116,7 @@ void oss_t::search_t::playout_step(action_prob_t ap) {
   }
 }
 
-void oss_t::search_t::backprop(tree_t& tree) {
+void oos_t::search_t::backprop(tree_t& tree) {
   assert (state_ == state_t::BACKPROP);
   assert (history_.is_terminal());
 
@@ -355,7 +355,7 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   }
 };
 
-void oss_t::search_step(history_t h,
+void oos_t::search_step(history_t h,
                         player_t player,
                         tree_t &tree,
                         rng_t &rng) {
@@ -389,7 +389,7 @@ void oss_t::search_step(history_t h,
   }
 }
 
-void oss_t::search(history_t h,
+void oos_t::search(history_t h,
                    int n_iter,
                    tree_t &tree,
                    rng_t &rng) {

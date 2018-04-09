@@ -5,7 +5,7 @@
 #include <torch/csrc/utils/pybind.h>
 
 #include "game.h"
-#include "oss.h"
+#include "oos.h"
 
 #include "games/flipguess.h"
 #include "games/kuhn.h"
@@ -27,7 +27,7 @@ PYBIND11_MODULE(_ext, m) {
   m.attr("__version__") = py::none();
 #endif
 
-  m.def("add_sigmoid", sigmoid_add);
+  m.def("sigmoid_add", sigmoid_add);
 
   auto py_Player =
     py::enum_<oz::player_t>(m, "Player")
@@ -67,21 +67,21 @@ PYBIND11_MODULE(_ext, m) {
       .def("__copy__", [](const oz::history_t &h){ return oz::history_t(h); });
 
   auto py_OSS =
-  py::class_<oz::oss_t::search_t>(m, "Search")
+  py::class_<oz::oos_t::search_t>(m, "Search")
       .def(py::init<oz::history_t, oz::player_t>())
-      .def_property_readonly("state", &oz::oss_t::search_t::state)
-      .def("infoset", &oz::oss_t::search_t::infoset)
-      .def("select", &oz::oss_t::search_t::select)
-      .def("create", &oz::oss_t::search_t::create)
-      .def("playout_step", &oz::oss_t::search_t::playout_step)
-      .def("backprop", &oz::oss_t::search_t::backprop);
+      .def_property_readonly("state", &oz::oos_t::search_t::state)
+      .def("infoset", &oz::oos_t::search_t::infoset)
+      .def("select", &oz::oos_t::search_t::select)
+      .def("create", &oz::oos_t::search_t::create)
+      .def("playout_step", &oz::oos_t::search_t::playout_step)
+      .def("backprop", &oz::oos_t::search_t::backprop);
 
-  py::enum_<oz::oss_t::search_t::state_t>(py_OSS, "State")
-      .value("SELECT", oz::oss_t::search_t::state_t::SELECT)
-      .value("CREATE", oz::oss_t::search_t::state_t::CREATE)
-      .value("PLAYOUT", oz::oss_t::search_t::state_t::PLAYOUT)
-      .value("BACKPROP", oz::oss_t::search_t::state_t::BACKPROP)
-      .value("FINISHED", oz::oss_t::search_t::state_t::FINISHED);
+  py::enum_<oz::oos_t::search_t::state_t>(py_OSS, "State")
+      .value("SELECT", oz::oos_t::search_t::state_t::SELECT)
+      .value("CREATE", oz::oos_t::search_t::state_t::CREATE)
+      .value("PLAYOUT", oz::oos_t::search_t::state_t::PLAYOUT)
+      .value("BACKPROP", oz::oos_t::search_t::state_t::BACKPROP)
+      .value("FINISHED", oz::oos_t::search_t::state_t::FINISHED);
 
   py::class_<oz::tree_t>(m, "Tree")
       .def(py::init<>())

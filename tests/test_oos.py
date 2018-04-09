@@ -7,7 +7,7 @@ from copy import copy
 from oz.game.flipguess import FlipGuess
 from oz.game.kuhn import KuhnPoker
 
-from oz import oss
+from oz import oos
 from oz import best_response
 
 import numpy.random
@@ -44,9 +44,9 @@ class TestOSS(unittest.TestCase):
 
     def test_terminal(self):
         h = TerminalHistory()
-        context = oss.Context()
-        tree = oss.Tree()
-        x, l, u = oss.oss(h, context, tree, 1, 1, 1, 1, 0)
+        context = oos.Context()
+        tree = oos.Tree()
+        x, l, u = oos.oos(h, context, tree, 1, 1, 1, 1, 0)
         self.assertEqual(x, 1)
 
     def test_playout(self):
@@ -54,17 +54,17 @@ class TestOSS(unittest.TestCase):
         sigma = TestPlayoutSigma()
         s = 0.1
         x_target = .5**3
-        x, l, u = oss.playout(h, s, sigma)
+        x, l, u = oos.playout(h, s, sigma)
         self.assertEqual(x, x_target)
         self.assertEqual(l, s*x_target)
         self.assertEqual(u, 3)
 
     def test_flipguess(self):
         h = FlipGuess()
-        context = oss.Context(seed=1)
-        tree = oss.Tree()
+        context = oos.Context(seed=1)
+        tree = oos.Tree()
 
-        oss.solve(h, context, tree, n_iter=5000)
+        oos.solve(h, context, tree, n_iter=5000)
         self.assertEqual(len(tree.nodes), 2)
 
         node = tree.nodes[FlipGuess.PlayerInfoset(FlipGuess.Player.P2)]
@@ -74,15 +74,15 @@ class TestOSS(unittest.TestCase):
 
     def test_flipguess_exploitability(self):
         h = FlipGuess()
-        context = oss.Context(seed=1)
-        tree = oss.Tree()
+        context = oos.Context(seed=1)
+        tree = oos.Tree()
 
-        oss.solve(h, context, tree, n_iter=1000)
+        oos.solve(h, context, tree, n_iter=1000)
 
         sigma = tree.sigma_average_strategy(rng=context.rng)
         ex1 = best_response.exploitability(h, sigma)
 
-        oss.solve(h, context, tree, n_iter=2000)
+        oos.solve(h, context, tree, n_iter=2000)
 
         sigma = tree.sigma_average_strategy(rng=context.rng)
         ex2 = best_response.exploitability(h, sigma)
@@ -91,11 +91,11 @@ class TestOSS(unittest.TestCase):
 
     def test_kuhn(self):
         h = KuhnPoker()
-        tree = oss.Tree()
-        context = oss.Context()
+        tree = oos.Tree()
+        context = oos.Context()
 
         for i in range(10):
-            oss.solve(h, context, tree, n_iter=1000)
+            oos.solve(h, context, tree, n_iter=1000)
             if len(tree.nodes) >= 12:
                 sigma = tree.sigma_average_strategy(rng=context.rng)
                 # ex = best_response.exploitability(h, sigma)

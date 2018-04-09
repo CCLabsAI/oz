@@ -3,7 +3,7 @@
 #include <random>
 #include <iostream>
 
-#include "oss.h"
+#include "oos.h"
 #include "best_response.h"
 
 #include "games/flipguess.h"
@@ -14,15 +14,15 @@ using namespace oz;
 
 TEST_CASE("oss simple", "[oss]") {
   auto h = make_history<kuhn_poker_t>();
-  oss_t::search_t s(h, P1);
+  oos_t::search_t s(h, P1);
   tree_t tree;
   rng_t rng(1);
 
   s.select(tree, rng);
-  REQUIRE(s.state() == oss_t::search_t::state_t::CREATE);
+  REQUIRE(s.state() == oos_t::search_t::state_t::CREATE);
   s.create(tree, rng);
   CHECK(tree.size() == 1);
-  REQUIRE(s.state() == oss_t::search_t::state_t::PLAYOUT);
+  REQUIRE(s.state() == oos_t::search_t::state_t::PLAYOUT);
 }
 
 TEST_CASE("node update", "[oss]") {
@@ -63,24 +63,24 @@ TEST_CASE("tree update", "[oss]") {
 
 TEST_CASE("oss playout", "[oss]") {
   auto h = make_history<kuhn_poker_t>();
-  oss_t::search_t s(h, P1);
+  oos_t::search_t s(h, P1);
   tree_t tree;
   rng_t rng(1);
 
   s.select(tree, rng);
-  REQUIRE(s.state() == oss_t::search_t::state_t::CREATE);
+  REQUIRE(s.state() == oos_t::search_t::state_t::CREATE);
   s.create(tree, rng);
-  REQUIRE(s.state() == oss_t::search_t::state_t::PLAYOUT);
+  REQUIRE(s.state() == oos_t::search_t::state_t::PLAYOUT);
   auto actions = s.infoset().actions();
   auto a = actions[0];
   s.playout_step(action_prob_t{ a, 1, 1, 1 });
-  REQUIRE(s.state() == oss_t::search_t::state_t::BACKPROP);
+  REQUIRE(s.state() == oos_t::search_t::state_t::BACKPROP);
   s.backprop(tree);
 }
 
 TEST_CASE("oss search", "[oss]") {
   auto h = make_history<flipguess_t>();
-  oss_t s;
+  oos_t s;
   tree_t tree;
   rng_t rng(1);
 
@@ -94,7 +94,7 @@ TEST_CASE("oss search", "[oss]") {
 
 TEST_CASE("oss exploitability flipguess", "[oss]") {
   auto h = make_history<flipguess_t>();
-  oss_t s;
+  oos_t s;
   tree_t tree;
   rng_t rng(1);
 
@@ -111,7 +111,7 @@ TEST_CASE("oss exploitability flipguess", "[oss]") {
 
 TEST_CASE("oss exploitability kuhn poker", "[oss]") {
   auto h = make_history<kuhn_poker_t>();
-  oss_t s;
+  oos_t s;
   tree_t tree;
   rng_t rng(1);
   value_t ex = numeric_limits<value_t>::max();

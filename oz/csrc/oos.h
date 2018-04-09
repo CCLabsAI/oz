@@ -160,7 +160,7 @@ class sigma_average_t : public sigma_t::concept_t {
 };
 
 
-class oss_t {
+class oos_t {
  public:
   struct prefix_prob_t {
     prob_t pi_i = 1.0;  // reach probability for search player

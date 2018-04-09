@@ -211,7 +211,7 @@ class Context:
         self.delta = sigma
 
 
-def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
+def oos(h, context, tree, pi_i, pi_o, s1, s2, i):
     delta = context.delta
     rng = context.rng
     player = h.player
@@ -223,9 +223,9 @@ def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
 
     elif player == h.Player.Chance:
         (a, rho1, rho2) = sample_chance(h, context)
-        (x, l, u) = oss(h >> a, context, tree,
-                        pi_i, rho2*pi_o,
-                        rho1*s1, rho2*s2, i)
+        (x, l, u) = oos(h >> a, context, tree,
+                        pi_i, rho2 * pi_o,
+                        rho1 * s1, rho2 * s2, i)
         return rho2*x, l, u
 
     infoset = h.infoset()
@@ -252,7 +252,7 @@ def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
             pi_prime_i = pi_i
             pi_prime_o = pr_a*pi_o
 
-        (x, l, u) = oss(h >> a, context, tree,
+        (x, l, u) = oos(h >> a, context, tree,
                         pi_prime_i, pi_prime_o,
                         s1_prime, s2_prime, i)
 
@@ -279,5 +279,5 @@ def oss(h, context, tree, pi_i, pi_o, s1, s2, i):
 
 def solve(h, context, tree, n_iter):
     for i in range(n_iter):
-        oss(copy(h), context, tree, 1, 1, 1, 1, h.Player.P1)
-        oss(copy(h), context, tree, 1, 1, 1, 1, h.Player.P2)
+        oos(copy(h), context, tree, 1, 1, 1, 1, h.Player.P1)
+        oos(copy(h), context, tree, 1, 1, 1, 1, h.Player.P2)

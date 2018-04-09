@@ -1,4 +1,4 @@
-#include "oss.h"
+#include "oos.h"
 #include "best_response.h"
 #include "games/leduk.h"
 
@@ -9,7 +9,7 @@ using namespace std;
 
 int main(int argc, char **argv) {
   history_t h = make_history<leduk_poker_t>();
-  oss_t s;
+  oos_t s;
   tree_t tree;
   rng_t rng(1);
 
