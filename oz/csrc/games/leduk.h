@@ -72,7 +72,6 @@ class leduk_poker_t : public game_t {
     return std::make_unique<leduk_poker_t>(*this);
   }
 
- private:
   static constexpr int N_PLAYERS = 2;
   static constexpr int ANTE = 1;
   static constexpr int N_ROUNDS = 2;
@@ -80,6 +79,7 @@ class leduk_poker_t : public game_t {
   static constexpr int MAX_RAISES = 2;
   static constexpr int PAIR_RANK = 10;
 
+ private:
   static constexpr action_t CHANCE_START = action_t::J1;
   static constexpr action_t CHANCE_FINISH = action_t::K;
 
@@ -125,5 +125,6 @@ class leduk_poker_t : public game_t {
   card_t board() const { return board_; }
 };
 
-}
+} // namespace oz
+
 #endif // OZ_LEDUK_H

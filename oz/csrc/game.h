@@ -29,6 +29,9 @@ class action_t {
 
   int index() const { return index_; };
 
+  template <typename T>
+  T as() const { return static_cast<T>(index_); }
+
  private:
   int index_;
 };

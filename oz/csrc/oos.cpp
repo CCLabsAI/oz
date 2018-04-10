@@ -43,12 +43,10 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
   assert (state_ == state_t::SELECT);
 
   while (state_ == state_t::SELECT) {
-    const auto acting_player = history_.player();
-
     if (history_.is_terminal()) {
       enter_backprop();
     }
-    else if (acting_player == CHANCE) {
+    else if (history_.player() == CHANCE) {
       const auto ap = history_.sample_chance(rng);
       tree_step(ap);
     }
@@ -231,7 +229,7 @@ node_t::node_t(std::vector<action_t> actions) {
             [](const action_t &a) { return make_pair(a, 0); });
 }
 
-auto history_t::sample_chance(rng_t& rng) -> action_prob_t {
+auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
   // FIXME use real probs
   const auto actions = infoset().actions();
 
@@ -326,8 +324,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
 
   auto a = actions[i];
   auto pr_a = total > 0 ? weights[i]/total : (prob_t) 1/weights.size();
-  auto rho1 = pr_a;
-  auto rho2 = pr_a;
+  auto rho1 = pr_a, rho2 = pr_a;
 
   assert (pr_a >= 0 && pr_a <= 1);
 

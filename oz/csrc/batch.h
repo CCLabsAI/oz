@@ -19,6 +19,9 @@ class batch_search_t {
   batch_search_t(history_t root, encoder_ptr_t encoder, int batch_size);
 
   at::Tensor generate_batch();
+  void step(at::Tensor d, rng_t &rng);
+
+  const tree_t &tree() const { return tree_; }
 
  private:
   history_t root_;

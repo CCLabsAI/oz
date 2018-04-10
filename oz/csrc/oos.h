@@ -23,13 +23,15 @@ class history_t {
  public:
   history_t(const history_t& that) : self_(that.self_->clone()) {};
   history_t(history_t&& that) noexcept: self_(move(that.self_)) {};
+  history_t &operator =(history_t &&that) noexcept {
+    self_ = move(that.self_); return *this; }
 
   void act(action_t a) { self_->act(a); }
   infoset_t infoset() const { return self_->infoset(); }
   player_t player() const { return self_->player(); }
   bool is_terminal() const { return self_->is_terminal(); }
   value_t utility(player_t player) const { return self_->utility(player); }
-  action_prob_t sample_chance(rng_t& rng);
+  action_prob_t sample_chance(rng_t& rng) const;
 
   history_t operator >>(action_t a) const {
     auto g = self_->clone();
@@ -219,6 +221,8 @@ class oos_t {
     // invariant: BACKPROP, FINISHED => history is terminal
 
     state_t state() const { return state_; };
+    const history_t &history() const { return history_; }
+    player_t search_player() const { return search_player_; }
 
    private:
     void tree_step(action_prob_t ap); // take one step in-tree and extend path

@@ -127,7 +127,9 @@ PYBIND11_MODULE(_ext, m) {
 
   py::class_<oz::batch_search_t>(m, "BatchSearch")
       .def(py::init<oz::history_t, oz::batch_search_t::encoder_ptr_t, int>())
-      .def("generate_batch", &oz::batch_search_t::generate_batch);
+      .def("generate_batch", &oz::batch_search_t::generate_batch)
+      .def("step", &oz::batch_search_t::step)
+      .def_property_readonly("tree", &oz::batch_search_t::tree);
 
   m.def("make_flipguess", []() {
     return oz::flipguess_t();
