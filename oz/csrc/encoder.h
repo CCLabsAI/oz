@@ -13,6 +13,7 @@ namespace oz {
 class encoder_t {
  public:
   virtual int encoding_size() = 0;
+  virtual int max_actions() = 0;
   virtual void encode(infoset_t infoset, at::Tensor x) = 0;
   virtual action_prob_t decode_and_sample(infoset_t infoset,
                                           at::Tensor x,
@@ -22,6 +23,7 @@ class encoder_t {
 class leduk_encoder_t : public encoder_t {
  public:
   int encoding_size() override { return ENCODING_SIZE; };
+  int max_actions() override { return MAX_ACTIONS; };
   void encode(infoset_t infoset, at::Tensor x) override;
   action_prob_t decode_and_sample(infoset_t infoset, at::Tensor x, rng_t &rng) override;
 
@@ -31,6 +33,7 @@ class leduk_encoder_t : public encoder_t {
   static constexpr int CARD_SIZE = 3;
   static constexpr int ENCODING_SIZE =
       2*CARD_SIZE + leduk_poker_t::N_ROUNDS*ROUND_SIZE;
+  static constexpr int MAX_ACTIONS = 3;
 };
 
 };

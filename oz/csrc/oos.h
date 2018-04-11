@@ -104,7 +104,10 @@ class node_t {
   void accumulate_average_strategy(action_t a, prob_t s) { average_stratergy_[a] += s; }
 
   const value_t &regret(action_t a) const { return regrets_.at(a); }
+  value_t &regret(action_t a) { return regrets_.at(a); }
+
   const prob_t &average_strategy(action_t a) const { return average_stratergy_.at(a); }
+  prob_t &average_strategy(action_t a) { return average_stratergy_.at(a); }
 
   regret_map_t &regret_map() { return regrets_; }
   avg_map_t &avg_map() { return average_stratergy_; }
@@ -130,6 +133,7 @@ class tree_t {
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
   sample_ret_t sample_sigma(infoset_t infoset, rng_t &rng) const;
   sigma_t sigma_average() const;
+  void clear();
 
   map_t::size_type size() const { return nodes_.size(); }
   map_t &nodes() { return nodes_; }

@@ -262,13 +262,18 @@ auto tree_t::sample_sigma(infoset_t infoset, rng_t &rng) const -> sample_ret_t {
     const auto &node = lookup(infoset);
     const auto sigma = node.sigma_regret_matching();
 
-    const auto ap = sigma.sample_eps(infoset, 0.5, rng);
+    const auto ap = sigma.sample_eps(infoset, 0.2, rng);
+
     return { ap, false };
   }
 }
 
 auto tree_t::sigma_average() const -> sigma_t {
   return make_sigma<sigma_average_t>(*this);
+}
+
+void tree_t::clear() {
+  nodes_.clear();
 }
 
 template <typename T>

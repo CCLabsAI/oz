@@ -40,7 +40,8 @@ PYBIND11_MODULE(_ext, m) {
       .value("P2", oz::player_t::P2)
       .export_values();
 
-  py::class_<oz::action_t>(m, "Action");
+  py::class_<oz::action_t>(m, "Action")
+      .def_property_readonly("index", &oz::action_t::index);
 
   py::class_<oz::infoset_t>(m, "Infoset")
       .def_property_readonly("actions", &oz::infoset_t::actions)
@@ -74,12 +75,19 @@ PYBIND11_MODULE(_ext, m) {
 
   m.def("exploitability", &oz::exploitability);
 
+  py::class_<oz::action_prob_t>(m, "ActionProb")
+      .def_property_readonly("a", [](const oz::action_prob_t &x){ return x.a; })
+      .def_property_readonly("pr_a", [](const oz::action_prob_t &x){ return x.pr_a; })
+      .def_property_readonly("rho1", [](const oz::action_prob_t &x){ return x.rho1; })
+      .def_property_readonly("rho2", [](const oz::action_prob_t &x){ return x.rho2; });
+
   py::class_<oz::oos_t>(m, "OOS")
       .def(py::init<>())
       .def("search", &oz::oos_t::search);
 
   py::class_<oz::sigma_t>(m, "Sigma")
-      .def("pr", &oz::sigma_t::pr);
+      .def("pr", &oz::sigma_t::pr)
+      .def("sample_pr", &oz::sigma_t::sample_pr);
 
   auto py_OSS =
     py::class_<oz::oos_t::search_t>(m, "Search")
@@ -104,7 +112,8 @@ PYBIND11_MODULE(_ext, m) {
       .def("size", &oz::tree_t::size)
       .def("create_node", &oz::tree_t::create_node)
       .def("lookup", (oz::node_t &(oz::tree_t::*)(const oz::infoset_t &)) &oz::tree_t::lookup)
-      .def("nodes", (oz::tree_t::map_t &(oz::tree_t::*)()) &oz::tree_t::nodes);
+      .def_property_readonly("nodes", (oz::tree_t::map_t &(oz::tree_t::*)()) &oz::tree_t::nodes)
+      .def("clear", &oz::tree_t::clear);
 
   py::class_<oz::node_t>(m, "Node")
       .def("sigma_regret_matching", &oz::node_t::sigma_regret_matching)
@@ -120,7 +129,9 @@ PYBIND11_MODULE(_ext, m) {
   auto py_Encoder =
     py::class_<oz::encoder_t, oz::batch_search_t::encoder_ptr_t>(m, "Encoder")
       .def("encoding_size", &oz::encoder_t::encoding_size)
-      .def("encode", &oz::encoder_t::encode);
+      .def("max_actions", &oz::encoder_t::max_actions)
+      .def("encode", &oz::encoder_t::encode)
+      .def("decode_and_sample", &oz::encoder_t::decode_and_sample);
 
   py::class_<oz::leduk_encoder_t>(m, "LedukEncoder", py_Encoder)
       .def(py::init<>());
