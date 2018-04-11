@@ -76,10 +76,10 @@ PYBIND11_MODULE(_ext, m) {
   m.def("exploitability", &oz::exploitability);
 
   py::class_<oz::action_prob_t>(m, "ActionProb")
-      .def_property_readonly("a", [](const oz::action_prob_t &x){ return x.a; })
-      .def_property_readonly("pr_a", [](const oz::action_prob_t &x){ return x.pr_a; })
-      .def_property_readonly("rho1", [](const oz::action_prob_t &x){ return x.rho1; })
-      .def_property_readonly("rho2", [](const oz::action_prob_t &x){ return x.rho2; });
+      .def_readwrite("a", &oz::action_prob_t::a)
+      .def_readwrite("pr_a", &oz::action_prob_t::pr_a)
+      .def_readwrite("rho1", &oz::action_prob_t::rho1)
+      .def_readwrite("rho2", &oz::action_prob_t::rho2);
 
   py::class_<oz::oos_t>(m, "OOS")
       .def(py::init<>())

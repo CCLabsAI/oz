@@ -4,10 +4,11 @@
 
 namespace oz {
 
+using namespace std;
 using namespace at;
 
 batch_search_t::batch_search_t(history_t root,
-                               batch_search_t::encoder_ptr_t encoder,
+                               encoder_ptr_t encoder,
                                int batch_size) :
     root_(std::move(root)),
     encoder_(std::move(encoder)),
@@ -43,6 +44,7 @@ void batch_search_t::step(at::Tensor d, rng_t &rng) {
   int playout_n = 0;
   for (auto it = begin(searches_); it != end(searches_); ++it) {
     auto &search = *it;
+    const auto &history = search.history();
     switch (search.state()) {
       case oos_t::search_t::state_t::SELECT:
         search.select(tree_, rng);
@@ -51,8 +53,8 @@ void batch_search_t::step(at::Tensor d, rng_t &rng) {
         search.create(tree_, rng);
         break;
       case oos_t::search_t::state_t::PLAYOUT:
-        if (search.history().player() == CHANCE) {
-          auto ap = search.history().sample_chance(rng);
+        if (history.player() == CHANCE) {
+          auto ap = history.sample_chance(rng);
           search.playout_step(ap);
         }
         else {
@@ -66,7 +68,7 @@ void batch_search_t::step(at::Tensor d, rng_t &rng) {
         search.backprop(tree_);
         break;
       case oos_t::search_t::state_t::FINISHED:
-        // TODO fix this mess
+        // TODO is there a better way to do this?
         auto last_player = search.search_player();
         search = oos_t::search_t(root_, last_player == P1 ? P2 : P1);
         break;

@@ -23,12 +23,13 @@ class Net(nn.Module):
         x = F.log_softmax(x, dim=1)
         return x
 
+
 root = oz.make_leduk_history()
 h = copy(root)
 enc = oz.LedukEncoder()
 rng = oz.Random(1)
 
-search_size = 80
+search_size = 50
 bs = oz.BatchSearch(root, enc, search_size)
 ex = 100
 batch = None
@@ -43,14 +44,12 @@ optimizer = optim.Adam(net.parameters(), lr=1e-3)
 criterion = nn.KLDivLoss(size_average=True)
 
 while ex > .25:
-# for i in range(100):
     for i in range(1000):
         batch = bs.generate_batch()
         if len(batch) == 0:
             bs.step(torch.Tensor(), rng)
         else:
-            batch_var = Variable(batch, volatile=True)
-            logits = net.forward(batch_var)
+            logits = net.forward(Variable(batch, volatile=True))
             probs = logits.exp()
             bs.step(probs.data, rng)
 
