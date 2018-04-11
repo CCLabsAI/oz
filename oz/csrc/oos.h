@@ -12,6 +12,11 @@ namespace oz {
 
 using rng_t = std::mt19937;
 
+using std::move;
+using std::vector;
+using std::unordered_map;
+using std::map;
+
 struct action_prob_t {
   action_t a;
   prob_t pr_a;  // probability action was taken under policy
@@ -39,9 +44,6 @@ class history_t {
     return history_t(move(g));
   }
 
-  // TODO clean this up
-  const game_t& get() { return *self_.get(); }
-
  private:
   using ptr_t = std::unique_ptr<game_t>;
 
@@ -66,11 +68,11 @@ class sigma_t {
   };
 
   prob_t pr(infoset_t infoset, action_t a) const {
-    return self_->pr(std::move(infoset), a);
+    return self_->pr(move(infoset), a);
   };
 
   action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const {
-    return self_->sample_pr(std::move(infoset), rng);
+    return self_->sample_pr(move(infoset), rng);
   }
 
   action_prob_t sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const;
@@ -78,7 +80,7 @@ class sigma_t {
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
 
-  explicit sigma_t(ptr_t self) : self_(std::move(self)) {};
+  explicit sigma_t(ptr_t self) : self_(move(self)) {};
   template<class Sigma, typename... Args>
   friend sigma_t make_sigma(Args&& ... args);
 
@@ -94,10 +96,10 @@ class sigma_regret_t;
 
 class node_t {
  public:
-  explicit node_t(std::vector<action_t> actions);
+  explicit node_t(vector<action_t> actions);
 
-  using regret_map_t = std::map<action_t, value_t>;
-  using avg_map_t = std::map<action_t, prob_t>;
+  using regret_map_t = map<action_t, value_t>;
+  using avg_map_t = map<action_t, prob_t>;
 
   sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
   void accumulate_regret(action_t a, value_t r) { regrets_[a] += r; regret_N_++; }
@@ -110,7 +112,7 @@ class node_t {
   prob_t &average_strategy(action_t a) { return average_stratergy_.at(a); }
 
   regret_map_t &regret_map() { return regrets_; }
-  avg_map_t &avg_map() { return average_stratergy_; }
+  avg_map_t &average_strategy_map() { return average_stratergy_; }
 
  private:
   int regret_N_;
@@ -121,9 +123,7 @@ class node_t {
 
 class tree_t {
  public:
-  tree_t() = default;
-  tree_t(const tree_t& tree) = delete;
-  using map_t = std::unordered_map<infoset_t, node_t>;
+  using map_t = unordered_map<infoset_t, node_t>;
 
   struct sample_ret_t {
     action_prob_t ap;
@@ -131,17 +131,17 @@ class tree_t {
   };
 
   void create_node(infoset_t infoset);
+
   node_t &lookup(const infoset_t &infoset) { return nodes_.at(infoset); }
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
-  sample_ret_t sample_sigma(infoset_t infoset, rng_t &rng) const;
+
+  sample_ret_t sample_sigma(infoset_t infoset, prob_t eps, rng_t &rng) const;
   sigma_t sigma_average() const;
-  void clear();
+
+  map_t &nodes() { return nodes_; }
+  const map_t &nodes() const { return nodes_; }
 
   map_t::size_type size() const { return nodes_.size(); }
-  map_t &nodes() { return nodes_; }
-
-  // TODO clean this up
-  const map_t &nodes() const { return nodes_; }
 
  private:
   map_t nodes_;
@@ -150,7 +150,7 @@ class tree_t {
 class sigma_regret_t : public sigma_t::concept_t {
  public:
   explicit sigma_regret_t(node_t::regret_map_t regrets):
-      regrets_(std::move(regrets)) { };
+      regrets_(move(regrets)) { };
 
   prob_t pr(infoset_t infoset, action_t a) const override;
   action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const override;
@@ -161,15 +161,14 @@ class sigma_regret_t : public sigma_t::concept_t {
 
 class sigma_average_t : public sigma_t::concept_t {
  public:
-  explicit sigma_average_t(const tree_t &tree):
-      tree_(tree) { };
+  explicit sigma_average_t(tree_t tree):
+      tree_(move(tree)) { };
 
   prob_t pr(infoset_t infoset, action_t a) const override;
 
  private:
-  const tree_t &tree_;
+  const tree_t tree_;
 };
-
 
 class oos_t {
  public:
@@ -201,16 +200,18 @@ class oos_t {
    public:
     search_t(history_t history, player_t search_player):
         state_(state_t::SELECT),
-        history_(std::move(history)),
+        history_(move(history)),
         search_player_(search_player),
+        eps_(0.2),
         delta_(0.1)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
     void create(tree_t& tree, rng_t &rng);       // add node to tree with prior values
-    void playout_step(action_prob_t ap);
+    void playout_step(action_prob_t ap);         // step playout forward one ply
     void backprop(tree_t& tree);                 // unwind updates along path
 
+    const history_t &history() const { return history_; }
     infoset_t infoset() const { return history_.infoset(); }
 
     // states are mostly sequential
@@ -227,7 +228,6 @@ class oos_t {
     // invariant: BACKPROP, FINISHED => history is terminal
 
     state_t state() const { return state_; };
-    const history_t &history() const { return history_; }
     player_t search_player() const { return search_player_; }
 
    private:
@@ -237,18 +237,17 @@ class oos_t {
     state_t state_;
 
     history_t history_;
-    std::vector<path_item_t> path_;
+    vector<path_item_t> path_;
 
     player_t search_player_;
     prefix_prob_t prefix_prob_;
     suffix_prob_t suffix_prob_;
 
+    prob_t eps_;
     prob_t delta_;
-  };
+  }; // class search_t
 
- private:
-//  tree_t tree_;
-};
+}; // class oos_t
 
 } // namespace oz
 

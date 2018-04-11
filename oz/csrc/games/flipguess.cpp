@@ -7,17 +7,8 @@ namespace oz {
 
 using namespace std;
 
-auto flipguess_t::act(oz::action_t a) -> void {
-  auto a_native = static_cast<action_t>(a.index());
-  act_(a_native);
-}
-
 auto flipguess_t::infoset() const -> oz::infoset_t {
   return make_infoset<infoset_t>(player_);
-}
-
-inline value_t relative_utility(player_t player, value_t u) {
-  return player == P2 ? -u : u;
 }
 
 auto flipguess_t::utility(player_t player) const -> value_t {

@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include "util.h"
 #include "encoder.h"
 
 namespace oz {
@@ -7,23 +8,14 @@ namespace oz {
 using namespace std;
 using namespace at;
 
-template <class T, class U>
-auto assert_cast(U&& x) -> T {
-#ifndef NDEBUG
-  return dynamic_cast<T>(std::forward<U>(x));
-#else
-  return static_cast<T>(std::forward<U>(x));
-#endif
-};
-
 auto leduk_encoder_t::cast_infoset(const infoset_t &infoset)
   -> const leduk_poker_t::infoset_t & {
-  // TODO this whole thing is somewhat distressing
-  return assert_cast<const leduk_poker_t::infoset_t&>(infoset.get());
+  // TODO this whole thing is still somewhat distressing
+  return infoset.as<leduk_poker_t::infoset_t>();
 }
 
 void leduk_encoder_t::card_one_hot(card_t card,
-                                  ta_t &x_a, int i) {
+                                   ta_t &x_a, int i) {
   switch (card) {
     case card_t::Jack:
       x_a[i+0] = 1;
@@ -53,7 +45,7 @@ void leduk_encoder_t::action_one_hot(action_t action,
   }
 }
 
-void leduk_encoder_t::rounds_one_hot(const std::vector<action_t> &actions,
+void leduk_encoder_t::rounds_one_hot(const vector<action_t> &actions,
                                      ta_t &x_a,
                                      int i) {
   int round_n = 0;
@@ -129,8 +121,8 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
     }
   });
 
-  assert (all_of(begin(weights), end(weights), [](auto x) { return x >= 0; }));
-  auto total = accumulate(begin(weights), end(weights), (value_t) 0);
+  assert (all_greater_than_zero(weights));
+  auto total = sum_probs(weights);
 
   auto a_dist = discrete_distribution<>(begin(weights), end(weights));
   auto i = a_dist(rng);

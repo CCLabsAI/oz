@@ -5,6 +5,8 @@
 #include <set>
 
 #include "util.h"
+#include "hash.h"
+
 #include "best_response.h"
 
 namespace oz {

@@ -1,6 +1,6 @@
 #include <catch.hpp>
 
-#include "util.h"
+#include "hash.h"
 #include "best_response.h"
 #include "games/flipguess.h"
 #include "games/kuhn.h"
@@ -48,7 +48,7 @@ class sigma_flip_t : public sigma_t::concept_t {
 class sigma_kuhn_t : public sigma_t::concept_t {
  public:
   prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
-    const auto &infoset_ = dynamic_cast<const kuhn_poker_t::infoset_t&>(infoset.get());
+    const auto &infoset_ = infoset.as<kuhn_poker_t::infoset_t>();
     auto player = infoset_.player;
 
     static const auto bet = make_action(kuhn_poker_t::action_t::Bet);

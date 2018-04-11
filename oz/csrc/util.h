@@ -2,29 +2,19 @@
 #define OZ_UTIL_H
 
 #include <functional>
-#include <utility>
-
-template<class T>
-inline void hash_combine(std::size_t& seed, const T& v) {
-  std::hash<T> h;
-  seed ^= h(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-}
-
-namespace std {
-
-template<typename S, typename T>
-struct hash<pair<S, T>> {
-  inline size_t operator ()(const pair<S, T>& v) const {
-    size_t seed = 0;
-    ::hash_combine(seed, v.first);
-    ::hash_combine(seed, v.second);
-    return seed;
-  }
-};
-
-} // namespace std
+#include <algorithm>
+#include <numeric>
 
 namespace oz {
+
+template <class T, class U>
+auto assert_cast(U&& x) -> T {
+#ifndef NDEBUG
+  return dynamic_cast<T>(std::forward<U>(x));
+#else
+  return static_cast<T>(std::forward<U>(x));
+#endif
+};
 
 template<typename ForwardIt, typename Projection>
 ForwardIt max_element_by(ForwardIt first, ForwardIt last, Projection f) {
@@ -40,6 +30,20 @@ ForwardIt max_element_by(ForwardIt first, ForwardIt last, Projection f) {
 
   return largest;
 };
+
+template <typename T>
+inline bool all_greater_than_zero(T iter) {
+  using namespace std;
+  return all_of(begin(iter), end(iter),
+                [](const auto &x) { return x >= 0; });
+}
+
+// TODO lift make this prob_t or something
+template <typename T>
+inline double sum_probs(T iter) {
+  using namespace std;
+  return accumulate(begin(iter), end(iter), (double) 0);
+}
 
 } // namespace oz
 

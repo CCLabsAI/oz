@@ -1,5 +1,6 @@
+#include "hash.h"
+
 #include "kuhn.h"
-#include "util.h"
 
 namespace oz {
 
@@ -9,11 +10,6 @@ auto kuhn_poker_t::is_terminal() const -> bool {
   return showdown_ ||
       folded(player_t::P1) ||
       folded(player_t::P2);
-}
-
-auto kuhn_poker_t::act(oz::action_t a) -> void {
-  auto a_native = static_cast<action_t>(a.index());
-  act_(a_native);
 }
 
 void kuhn_poker_t::act_(action_t a) {
@@ -99,10 +95,6 @@ auto kuhn_poker_t::infoset() const -> oz::infoset_t {
   else {
     return make_infoset<infoset_t>(player_, hand(player_), history_);
   }
-}
-
-inline auto relative_utility(player_t player, value_t u) -> value_t {
-  return player == P2 ? -u : u;
 }
 
 auto kuhn_poker_t::utility(player_t player) const -> value_t {

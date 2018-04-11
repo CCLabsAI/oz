@@ -8,9 +8,14 @@
 
 namespace oz {
 
-class leduk_poker_t : public game_t {
+using std::move;
+using std::string;
+using std::array;
+using std::vector;
 
+class leduk_poker_t : public game_t {
  public:
+
   enum class action_t {
     Raise = 1,
     Call,
@@ -41,29 +46,31 @@ class leduk_poker_t : public game_t {
     DEAL_BOARD = -4
   };
 
+  static constexpr int N_PLAYERS = 2;
+
   struct infoset_t : public oz::infoset_t::concept_t {
     const player_t player;
     const card_t hand;
     const card_t board;
-    const std::vector<action_t> history;
-    const std::array<int,2> pot;
+    const vector<action_t> history;
+    const array<int, N_PLAYERS> pot;
     const int raises;
 
     infoset_t(player_t player, card_t hand, card_t board,
-              std::vector<action_t> history, std::array<int,2> pot, int raises):
+              vector<action_t> history, array<int, N_PLAYERS> pot, int raises):
         player(player), hand(hand), board(board),
-        history(std::move(history)), pot(pot), raises(raises) { }
+        history(move(history)), pot(pot), raises(raises) { }
 
-    std::vector<oz::action_t> actions() const override;
-    std::string str() const override;
+    vector<oz::action_t> actions() const override;
+    string str() const override;
     bool is_equal(const concept_t &that) const override;
     size_t hash() const override;
   };
 
   void act_(action_t a);
 
-  void act(oz::action_t a) override { act_(static_cast<action_t>(a.index())); }
-  oz::infoset_t infoset() const override; // FIXME
+  void act(oz::action_t a) override { act_(a.as<action_t>()); }
+  oz::infoset_t infoset() const override;
   player_t player() const override { return player_; }
   bool is_terminal() const override;
   value_t utility(player_t player) const override;
@@ -72,10 +79,9 @@ class leduk_poker_t : public game_t {
     return std::make_unique<leduk_poker_t>(*this);
   }
 
-  static constexpr int N_PLAYERS = 2;
   static constexpr int ANTE = 1;
   static constexpr int N_ROUNDS = 2;
-  static constexpr int RAISE_PER_ROUND[2] = { 2, 4 };
+  static constexpr int RAISE_PER_ROUND[N_ROUNDS] = { 2, 4 };
   static constexpr int MAX_RAISES = 2;
   static constexpr int PAIR_RANK = 10;
 
@@ -84,14 +90,14 @@ class leduk_poker_t : public game_t {
   static constexpr action_t CHANCE_FINISH = action_t::K;
 
   player_t player_ = CHANCE;
-  std::array<card_t, N_PLAYERS> hand_ { {card_t::NA, card_t::NA} };
+  array<card_t, N_PLAYERS> hand_ { {card_t::NA, card_t::NA} };
   card_t board_ = card_t::NA;
-  std::array<int, N_PLAYERS> pot_ { {ANTE, ANTE} };
+  array<int, N_PLAYERS> pot_ {{ ANTE, ANTE }};
   int round_ = 0;
   bool checked_ = false;
   int raises_ = 0;
-  std::vector<action_t> history_;
-  std::array<bool, N_PLAYERS> folded_ { {false, false} };
+  vector<action_t> history_;
+  array<bool, N_PLAYERS> folded_ {{ false, false }};
 
   player_t other_player() const {
     assert(player_ == P1 || player_ == P2);
@@ -99,10 +105,11 @@ class leduk_poker_t : public game_t {
   }
 
   inline static int player_idx(player_t p) {
+    assert(p == P1 || p == P2);
     switch (p) {
       case P1: return 0;
       case P2: return 1;
-      default: throw std::invalid_argument("invalid player");
+      default: return 0; // should not be reachable
     }
   }
 

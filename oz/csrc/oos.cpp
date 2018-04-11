@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <iterator>
 
+#include "util.h"
+#include "hash.h"
+
 #include "oos.h"
 
 namespace oz {
@@ -52,7 +55,7 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
     }
     else {
       const auto infoset = history_.infoset();
-      const auto r = tree.sample_sigma(infoset, rng);
+      const auto r = tree.sample_sigma(infoset, eps_, rng);
 
       if (r.out_of_tree) {
         state_ = state_t::CREATE;
@@ -83,7 +86,7 @@ void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
   const auto infoset = history_.infoset();
   tree.create_node(infoset);
   
-  const auto r = tree.sample_sigma(infoset, rng);
+  const auto r = tree.sample_sigma(infoset, eps_, rng);
   assert (!r.out_of_tree);
 
   tree_step(r.ap);
@@ -220,13 +223,14 @@ action_prob_t sigma_t::sample_eps(infoset_t infoset,
 };
 
 node_t::node_t(std::vector<action_t> actions) {
+  static constexpr auto zero_value =
+      [](const action_t &a) { return make_pair(a, 0); };
+
   auto regret_in = inserter(regrets_, regrets_.end());
-  transform(begin(actions), end(actions), regret_in,
-            [](const action_t &a) { return make_pair(a, 0); });
+  transform(begin(actions), end(actions), regret_in, zero_value);
 
   auto avg_in = inserter(average_stratergy_, average_stratergy_.end());
-  transform(begin(actions), end(actions), avg_in,
-            [](const action_t &a) { return make_pair(a, 0); });
+  transform(begin(actions), end(actions), avg_in, zero_value);
 }
 
 auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
@@ -252,7 +256,7 @@ void tree_t::create_node(infoset_t infoset) {
   nodes_.emplace(infoset, node_t(infoset.actions()));
 }
 
-auto tree_t::sample_sigma(infoset_t infoset, rng_t &rng) const -> sample_ret_t {
+auto tree_t::sample_sigma(infoset_t infoset, prob_t eps, rng_t &rng) const -> sample_ret_t {
   const auto it = nodes_.find(infoset);
 
   if (it == end(nodes_)) {
@@ -262,7 +266,7 @@ auto tree_t::sample_sigma(infoset_t infoset, rng_t &rng) const -> sample_ret_t {
     const auto &node = lookup(infoset);
     const auto sigma = node.sigma_regret_matching();
 
-    const auto ap = sigma.sample_eps(infoset, 0.2, rng);
+    const auto ap = sigma.sample_eps(infoset, eps, rng);
 
     return { ap, false };
   }
@@ -270,10 +274,6 @@ auto tree_t::sample_sigma(infoset_t infoset, rng_t &rng) const -> sample_ret_t {
 
 auto tree_t::sigma_average() const -> sigma_t {
   return make_sigma<sigma_average_t>(*this);
-}
-
-void tree_t::clear() {
-  nodes_.clear();
 }
 
 template <typename T>
@@ -303,8 +303,11 @@ auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 
 auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   -> action_prob_t {
-  auto actions = vector<action_t>(regrets_.size());
-  auto weights = vector<prob_t>(regrets_.size());
+  static auto actions = vector<action_t>(regrets_.size());
+  static auto weights = vector<prob_t>(regrets_.size());
+
+  actions.resize(regrets_.size());
+  weights.resize(regrets_.size());
 
   transform(begin(regrets_), end(regrets_), begin(actions),
             [](const auto &x) { return x.first; });
@@ -312,7 +315,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   transform(begin(regrets_), end(regrets_), begin(weights),
             [](const auto &x) { return rectify(x.second); });
 
-  auto total = accumulate(begin(weights), end(weights), (value_t) 0);
+  auto total = sum_probs(weights);
 
   assert (actions.size() > 0);
   assert (weights.size() > 0);

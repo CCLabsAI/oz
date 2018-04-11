@@ -6,7 +6,13 @@
 #include <string>
 #include <vector>
 
+#include "util.h"
+
 namespace oz {
+
+using std::move;
+using std::string;
+using std::vector;
 
 using real_t = double;
 using prob_t = double;
@@ -24,8 +30,10 @@ constexpr player_t P2 = player_t::P2;
 
 class action_t {
  public:
-  action_t() : index_(-1) {};
-  explicit action_t(int index) : index_(index) {};
+  static constexpr int UNK = -10000;
+
+  action_t() : index_(UNK) { };
+  explicit action_t(int index) : index_(index) { };
 
   int index() const { return index_; };
 
@@ -44,24 +52,25 @@ action_t make_action(Action a) {
 class infoset_t {
  public:
   struct concept_t {
-    virtual std::vector<action_t> actions() const = 0;
-    virtual std::string str() const = 0;
+    virtual vector<action_t> actions() const = 0;
+    virtual string str() const = 0;
     virtual bool is_equal(const concept_t& that) const = 0;
     virtual size_t hash() const = 0;
     virtual ~concept_t() = default;
   };
 
-  std::vector<action_t> actions() const { return self_->actions(); }
-  std::string str() const { return self_->str(); }
+  vector<action_t> actions() const { return self_->actions(); }
+  string str() const { return self_->str(); }
   bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
   size_t hash() const { return self_->hash(); };
 
-  // TODO make this more elegant
-  const concept_t &get() const { return *self_.get(); };
+  template <class T>
+      const T &as() const { return assert_cast<const T&>(*self_.get()); }
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
-  explicit infoset_t(ptr_t self) : self_(std::move(self)) { };
+
+  explicit infoset_t(ptr_t self) : self_(move(self)) { };
   template<class Infoset, typename... Args>
   friend infoset_t make_infoset(Args&& ... args);
 
@@ -102,6 +111,10 @@ inline bool operator !=(const action_t& a, const action_t& b) {
 
 inline bool operator <(const action_t& a, const action_t& b) {
   return a.index() < b.index();
+}
+
+inline value_t relative_utility(player_t player, value_t u) {
+  return player == P2 ? -u : u;
 }
 
 } // namespace oz

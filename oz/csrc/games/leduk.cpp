@@ -1,17 +1,16 @@
 #include "leduk.h"
-#include "util.h"
+#include "hash.h"
 
 #include <cassert>
 #include <memory>
 #include <vector>
 #include <sstream>
-#include <util.h>
 
 namespace oz {
 
 using namespace std;
 
-constexpr int leduk_poker_t::RAISE_PER_ROUND[2];
+constexpr int leduk_poker_t::RAISE_PER_ROUND[];
 
 void leduk_poker_t::act_(action_t a) {
   if (player_ == CHANCE) {
@@ -121,10 +120,6 @@ void leduk_poker_t::deal_hand(action_t a) {
 
 auto leduk_poker_t::is_terminal() const -> bool {
   return folded(P1) || folded(P2) || round_ >= N_ROUNDS;
-}
-
-inline auto relative_utility(player_t player, value_t u) -> value_t {
-  return player == P2 ? -u : u;
 }
 
 auto leduk_poker_t::utility(player_t player) const -> value_t {

@@ -5,6 +5,9 @@
 
 namespace oz {
 
+using std::string;
+using std::vector;
+
 class flipguess_t : public game_t {
  public:
   enum class action_t {
@@ -19,8 +22,8 @@ class flipguess_t : public game_t {
    public:
     explicit infoset_t(player_t player) : player_(player) {};
 
-    std::vector<oz::action_t> actions() const override;
-    std::string str() const override;
+    vector<oz::action_t> actions() const override;
+    string str() const override;
     bool is_equal(const oz::infoset_t::concept_t& that) const override;
     size_t hash() const override;
 
@@ -28,7 +31,9 @@ class flipguess_t : public game_t {
     player_t player_;
   };
 
-  void act(oz::action_t a) override;
+  void act_(action_t a);
+
+  void act(oz::action_t a) override { act_(a.as<action_t>()); };
   oz::infoset_t infoset() const override;
   player_t player() const override { return player_; }
   bool is_terminal() const override { return finished_; }
@@ -37,8 +42,6 @@ class flipguess_t : public game_t {
   std::unique_ptr<game_t> clone() const override {
     return std::make_unique<flipguess_t>(*this);
   }
-
-  void act_(action_t a);
 
   bool heads() { return heads_; };
 

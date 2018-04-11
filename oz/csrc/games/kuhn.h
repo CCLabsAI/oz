@@ -6,14 +6,18 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <misc/game.h>
 
 #include "game.h"
 
 namespace oz {
 
+using std::move;
+using std::string;
+using std::vector;
+
 class kuhn_poker_t : public game_t {
  public:
+
   enum class action_t {
     Bet = 1,
     Pass,
@@ -36,20 +40,20 @@ class kuhn_poker_t : public game_t {
   struct infoset_t : public oz::infoset_t::concept_t {
     const player_t player;
     const card_t hand;
-    const std::vector<action_t> history;
+    const vector<action_t> history;
 
-    infoset_t(player_t player, card_t hand, std::vector<action_t> history):
-      player(player), hand(hand), history(std::move(history)) { }
+    infoset_t(player_t player, card_t hand, vector<action_t> history):
+      player(player), hand(hand), history(move(history)) { }
 
-    std::vector<oz::action_t> actions() const override;
-    std::string str() const override;
+    vector<oz::action_t> actions() const override;
+    string str() const override;
     bool is_equal(const concept_t &that) const override;
     size_t hash() const override;
   };
 
   void act_(action_t a);
 
-  void act(oz::action_t a) override;
+  void act(oz::action_t a) override { act_(a.as<action_t>()); };
   oz::infoset_t infoset() const override;
   player_t player() const override { return player_; }
   bool is_terminal() const override;
@@ -70,7 +74,9 @@ class kuhn_poker_t : public game_t {
   card_t hand_[N_PLAYERS] = {card_t::NA, card_t::NA};
   int pot_[N_PLAYERS] = {ANTE, ANTE};
   player_t player_ = player_t::Chance;
-  std::vector<action_t> history_;
+  vector<action_t> history_;
+
+  void deal_hand(action_t a);
 
   static int player_idx(player_t p) {
     switch (p) {
@@ -80,6 +86,7 @@ class kuhn_poker_t : public game_t {
     }
   }
 
+ public:
   card_t hand(player_t p) const { return hand_[player_idx(p)]; }
   card_t &hand(player_t p) { return hand_[player_idx(p)]; }
 
@@ -88,9 +95,6 @@ class kuhn_poker_t : public game_t {
 
   bool folded(player_t p) const { return folded_[player_idx(p)]; }
   bool &folded(player_t p) { return folded_[player_idx(p)]; }
-
-  void deal_hand(action_t a);
-
 };
 
 } // namespace oz

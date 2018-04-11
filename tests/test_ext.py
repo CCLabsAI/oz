@@ -5,4 +5,4 @@ from .context import oz
 class TestExt(unittest.TestCase):
 
     def test_init(self):
-        self.assertIsNotNone(oz.__version__)
+        self.assertIsNotNone(oz._ext)
