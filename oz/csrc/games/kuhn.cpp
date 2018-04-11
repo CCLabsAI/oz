@@ -156,10 +156,10 @@ auto kuhn_poker_t::infoset_t::actions() const -> vector<oz::action_t> {
 
 auto kuhn_poker_t::infoset_t::hash() const -> size_t {
     size_t seed = 0;
-    ::hash_combine(seed, player);
-    ::hash_combine(seed, hand);
+    hash_combine(seed, player);
+    hash_combine(seed, hand);
     for (const auto &a : history) {
-      ::hash_combine(seed, a);
+      hash_combine(seed, a);
     }
     return seed;
 }

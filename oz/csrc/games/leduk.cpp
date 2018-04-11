@@ -297,14 +297,14 @@ bool leduk_poker_t::infoset_t::is_equal(const infoset_t::concept_t &that) const 
 
 size_t leduk_poker_t::infoset_t::hash() const {
   size_t seed = 0;
-  ::hash_combine(seed, player);
-  ::hash_combine(seed, hand);
+  hash_combine(seed, player);
+  hash_combine(seed, hand);
   for (const auto &a : history) {
-    ::hash_combine(seed, a);
+    hash_combine(seed, a);
   }
-  ::hash_combine(seed, pot[0]);
-  ::hash_combine(seed, pot[1]);
-  ::hash_combine(seed, raises);
+  hash_combine(seed, pot[0]);
+  hash_combine(seed, pot[1]);
+  hash_combine(seed, raises);
   return seed;
 }
 

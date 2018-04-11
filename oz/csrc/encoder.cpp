@@ -9,22 +9,22 @@ using namespace std;
 using namespace at;
 
 auto leduk_encoder_t::cast_infoset(const infoset_t &infoset)
-  -> const leduk_poker_t::infoset_t & {
+  -> const leduk_poker_t::infoset_t &
+{
   // TODO this whole thing is still somewhat distressing
   return infoset.as<leduk_poker_t::infoset_t>();
 }
 
-void leduk_encoder_t::card_one_hot(card_t card,
-                                   ta_t &x_a, int i) {
+void leduk_encoder_t::card_one_hot(card_t card, ta_t &x_a, int i) {
   switch (card) {
     case card_t::Jack:
-      x_a[i+0] = 1;
+      x_a[i+0] = 1.0;
       break;
     case card_t::Queen:
-      x_a[i+1] = 1;
+      x_a[i+1] = 1.0;
       break;
     case card_t::King:
-      x_a[i+2] = 1;
+      x_a[i+2] = 1.0;
       break;
     case card_t::NA:
       break;
@@ -32,24 +32,22 @@ void leduk_encoder_t::card_one_hot(card_t card,
   }
 }
 
-void leduk_encoder_t::action_one_hot(action_t action,
-                                     ta_t &x_a, int i) {
+void leduk_encoder_t::action_one_hot(action_t action, ta_t &x_a, int i) {
   switch (action) {
     case action_t::Raise:
-      x_a[i+0] = 1;
+      x_a[i+0] = 1.0;
       break;
     case action_t::Call:
-      x_a[i+1] = 1;
+      x_a[i+1] = 1.0;
       break;
     default: assert (false);
   }
 }
 
 void leduk_encoder_t::rounds_one_hot(const vector<action_t> &actions,
-                                     ta_t &x_a,
-                                     int i) {
-  int round_n = 0;
-  int action_n = 0;
+                                     ta_t &x_a, int i)
+{
+  int round_n = 0, action_n = 0;
   for (const auto &a : actions) {
     switch (a) {
       case action_t::Raise:
@@ -76,10 +74,9 @@ void leduk_encoder_t::rounds_one_hot(const vector<action_t> &actions,
 // TODO write tests
 void leduk_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
   const auto &game_infoset = cast_infoset(infoset);
-
   assert (game_infoset.player != CHANCE);
 
-  auto x_a = x.accessor<nn_real_t,1>();
+  auto x_a = x.accessor<nn_real_t, 1>();
 
   for (int i = 0; i < x_a.size(0); i++) {
     x_a[i] = 0;
@@ -104,7 +101,7 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
   const auto actions = infoset.actions();
   auto weights = vector<prob_t>(actions.size());
 
-  auto x_a = x.accessor<nn_real_t,1>();
+  auto x_a = x.accessor<nn_real_t, 1>();
 
   transform(begin(actions), end(actions), begin(weights),
             [&](const oz::action_t &action) -> prob_t {
@@ -122,7 +119,7 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
   });
 
   assert (all_greater_than_zero(weights));
-  auto total = sum_probs(weights);
+  auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
 
   auto a_dist = discrete_distribution<>(begin(weights), end(weights));
   auto i = a_dist(rng);

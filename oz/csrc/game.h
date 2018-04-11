@@ -30,7 +30,7 @@ constexpr player_t P2 = player_t::P2;
 
 class action_t {
  public:
-  static constexpr int UNK = -10000;
+  static constexpr int UNK = -1000000;
 
   action_t() : index_(UNK) { };
   explicit action_t(int index) : index_(index) { };
@@ -65,7 +65,7 @@ class infoset_t {
   size_t hash() const { return self_->hash(); };
 
   template <class T>
-      const T &as() const { return assert_cast<const T&>(*self_.get()); }
+  const T &as() const { return assert_cast<const T&>(*self_.get()); }
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
@@ -93,28 +93,29 @@ class game_t {
   virtual ~game_t() = default;
 };
 
-inline bool operator ==(const infoset_t& a, const infoset_t& b) {
-  return a.is_equal(b);
-}
-
-inline bool operator !=(const infoset_t& a, const infoset_t& b) {
-  return !(a == b);
-}
-
-inline bool operator ==(const action_t& a, const action_t& b) {
-  return a.index() == b.index();
-}
-
-inline bool operator !=(const action_t& a, const action_t& b) {
-  return !(a == b);
-}
-
-inline bool operator <(const action_t& a, const action_t& b) {
-  return a.index() < b.index();
-}
 
 inline value_t relative_utility(player_t player, value_t u) {
   return player == P2 ? -u : u;
+}
+
+inline bool operator ==(const infoset_t &a, const infoset_t &b) {
+  return a.is_equal(b);
+}
+
+inline bool operator !=(const infoset_t &a, const infoset_t &b) {
+  return !(a == b);
+}
+
+inline bool operator ==(const action_t &a, const action_t &b) {
+  return a.index() == b.index();
+}
+
+inline bool operator !=(const action_t &a, const action_t &b) {
+  return !(a == b);
+}
+
+inline bool operator <(const action_t &a, const action_t &b) {
+  return a.index() < b.index();
 }
 
 } // namespace oz

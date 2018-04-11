@@ -35,6 +35,7 @@ auto gebr(history_t h, player_t i, sigma_t sigma) -> value_t {
 auto gebr_pass2(history_t h, player_t i,
                 int d, int l, prob_t pi_o,
                 sigma_t sigma, q_stats_t& tb) -> value_t {
+
   if (h.is_terminal()) {
     return h.utility(i);
   }
@@ -48,7 +49,8 @@ auto gebr_pass2(history_t h, player_t i,
   if (player == CHANCE) {
     value_t v_chance = 0;
     for (const auto& a : actions) {
-      auto pr_a = (prob_t) 1 / actions.size(); // FIXME
+      // FIXME handle chance actions properly
+      auto pr_a = (prob_t) 1 / actions.size();
       value_t v_a = gebr_pass2(h >> a, i,
                                d, l + 1, pi_o * pr_a,
                                sigma, tb);
@@ -59,11 +61,11 @@ auto gebr_pass2(history_t h, player_t i,
   }
 
   if (player == i && l > d) {
-    auto value_fn = [&](const action_t& a) -> value_t {
+    auto value_lookup = [&](const action_t& a) -> value_t {
       return tb.at({ infoset, a }).v();
     };
 
-    auto a_best = max_element_by(begin(actions), end(actions), value_fn);
+    auto a_best = max_element_by(begin(actions), end(actions), value_lookup);
     return gebr_pass2(h >> *a_best, i,
                       d, l + 1, pi_o,
                       sigma, tb);

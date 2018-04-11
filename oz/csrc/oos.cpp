@@ -12,7 +12,8 @@ namespace oz {
 using namespace std;
 
 void update_probs(oos_t::prefix_prob_t& probs, player_t i,
-  const action_prob_t ap, player_t p) {
+                  const action_prob_t ap, player_t p)
+{
   if(p == i) {
     probs.pi_i *= ap.pr_a;
   }
@@ -176,8 +177,9 @@ void oos_t::search_t::backprop(tree_t& tree) {
   state_ = state_t::FINISHED;
 }
 
-auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const ->
-action_prob_t {
+auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const
+  -> action_prob_t
+{
   auto actions = infoset.actions();
   auto probs = vector<prob_t>(actions.size());
   
@@ -195,9 +197,9 @@ action_prob_t {
   return { a, pr_a, rho1, rho2 };
 };
 
-action_prob_t sigma_t::sample_eps(infoset_t infoset,
-                                  prob_t eps,
-                                  rng_t &rng) const {
+auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
+  -> action_prob_t
+{
   auto d = uniform_real_distribution<>();
   prob_t u = d(rng);
 
@@ -256,7 +258,9 @@ void tree_t::create_node(infoset_t infoset) {
   nodes_.emplace(infoset, node_t(infoset.actions()));
 }
 
-auto tree_t::sample_sigma(infoset_t infoset, prob_t eps, rng_t &rng) const -> sample_ret_t {
+auto tree_t::sample_sigma(infoset_t infoset, prob_t eps, rng_t &rng) const
+  -> sample_ret_t
+{
   const auto it = nodes_.find(infoset);
 
   if (it == end(nodes_)) {
@@ -302,7 +306,8 @@ auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 }
 
 auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
-  -> action_prob_t {
+  -> action_prob_t
+{
   static auto actions = vector<action_t>(regrets_.size());
   static auto weights = vector<prob_t>(regrets_.size());
 
@@ -315,7 +320,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   transform(begin(regrets_), end(regrets_), begin(weights),
             [](const auto &x) { return rectify(x.second); });
 
-  auto total = sum_probs(weights);
+  auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
 
   assert (actions.size() > 0);
   assert (weights.size() > 0);
@@ -341,15 +346,16 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
 
 auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   const auto actions = infoset.actions();
-  const auto it = tree_.nodes().find(infoset);
+  const auto &nodes = tree_.nodes();
+  const auto it = nodes.find(infoset);
 
-  if (it != end(tree_.nodes())) {
+  if (it != end(nodes)) {
     const auto &node = it->second;
 
-    const auto total = accumulate(begin(actions), end(actions), (prob_t) 0,
-                                  [&](const auto &r, const auto &a_prime) {
-      return r + node.average_strategy(a_prime);
-    });
+    const auto total =
+        accumulate(begin(actions), end(actions), (prob_t) 0,
+                   [&](const auto &r, const auto &a_prime)
+                   { return r + node.average_strategy(a_prime); });
 
     auto p = total > 0 ? node.average_strategy(a) / total : 0;
     assert (p >= 0 && p <= 1);
@@ -360,20 +366,22 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   }
 };
 
-void oos_t::search_iter(history_t h,
-                        player_t player,
-                        tree_t &tree,
-                        rng_t &rng) {
+void oos_t::search_iter(history_t h, player_t player,
+                        tree_t &tree, rng_t &rng)
+{
+  using state_t = search_t::state_t;
+
   search_t s(move(h), player);
+
   while (s.state() != search_t::state_t::FINISHED) {
     switch (s.state()) {
-      case search_t::state_t::SELECT:
+      case state_t::SELECT:
         s.select(tree, rng);
         break;
-      case search_t::state_t::CREATE:
+      case state_t::CREATE:
         s.create(tree, rng);
         break;
-      case search_t::state_t::PLAYOUT:
+      case state_t::PLAYOUT:
         // FIXME handle chance nodes properly
         {
           auto infoset = s.infoset();
@@ -385,19 +393,16 @@ void oos_t::search_iter(history_t h,
           s.playout_step(action_prob_t{ a, pr_a, pr_a, pr_a });
         }
         break;
-      case search_t::state_t::BACKPROP:
+      case state_t::BACKPROP:
         s.backprop(tree);
         break;
-      case search_t::state_t::FINISHED:
-        break;
+      case state_t::FINISHED:
+        return;
     }
   }
 }
 
-void oos_t::search(history_t h,
-                   int n_iter,
-                   tree_t &tree,
-                   rng_t &rng) {
+void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng) {
   for(int i = 0; i < n_iter; i++) {
     search_iter(h, P1, tree, rng);
     search_iter(h, P2, tree, rng);
