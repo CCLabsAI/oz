@@ -8,7 +8,7 @@ namespace oz {
 using std::string;
 using std::vector;
 
-class flipguess_t : public game_t {
+class flipguess_t final : public game_t {
  public:
   enum class action_t {
     NA = -1,

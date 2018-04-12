@@ -24,7 +24,7 @@ struct action_prob_t {
   prob_t rho2;  // probability of sampling action
 };
 
-class history_t {
+class history_t final {
  public:
   history_t(const history_t& that) : self_(that.self_->clone()) {};
   history_t(history_t&& that) noexcept: self_(move(that.self_)) {};
@@ -59,7 +59,7 @@ auto make_history(Args&& ... args) -> history_t {
   return history_t(std::make_unique<Game>(std::forward<Args>(args)...));
 }
 
-class sigma_t {
+class sigma_t final {
  public:
   struct concept_t {
     virtual prob_t pr(infoset_t infoset, action_t a) const = 0;
@@ -94,7 +94,7 @@ sigma_t make_sigma(Args&& ... args) {
 
 class sigma_regret_t;
 
-class node_t {
+class node_t final {
  public:
   explicit node_t(vector<action_t> actions);
 
@@ -102,24 +102,30 @@ class node_t {
   using avg_map_t = map<action_t, prob_t>;
 
   sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
-  void accumulate_regret(action_t a, value_t r) { regrets_[a] += r; }
-  void accumulate_average_strategy(action_t a, prob_t s) { average_stratergy_[a] += s; }
 
   const value_t &regret(action_t a) const { return regrets_.at(a); }
   value_t &regret(action_t a) { return regrets_.at(a); }
 
-  const prob_t &average_strategy(action_t a) const { return average_stratergy_.at(a); }
-  prob_t &average_strategy(action_t a) { return average_stratergy_.at(a); }
-
-  regret_map_t &regret_map() { return regrets_; }
-  avg_map_t &average_strategy_map() { return average_stratergy_; }
+  const prob_t &average_strategy(action_t a) const { return average_strategy_.at(a); }
+  prob_t &average_strategy(action_t a) { return average_strategy_.at(a); }
 
  private:
+  friend class oos_t;
+
   regret_map_t regrets_;
-  avg_map_t average_stratergy_;
+  avg_map_t average_strategy_;
+
+  int regret_n = 0;
+
+ public:
+  // used only in python interface
+  regret_map_t &regret_map() { return regrets_; }
+  avg_map_t &average_strategy_map() { return average_strategy_; }
+  void accumulate_regret(action_t a, value_t r) { regrets_[a] += r; }
+  void accumulate_average_strategy(action_t a, prob_t s) { average_strategy_[a] += s; }
 };
 
-class tree_t {
+class tree_t final {
  public:
   using map_t = unordered_map<infoset_t, node_t>;
 
@@ -168,7 +174,7 @@ class sigma_average_t : public sigma_t::concept_t {
   const tree_t tree_;
 };
 
-class oos_t {
+class oos_t final {
  public:
   void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
   void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng);
@@ -194,7 +200,7 @@ class oos_t {
   };
 
   // state machine representing a search
-  class search_t {
+  class search_t final {
    public:
     search_t(history_t history, player_t search_player):
         state_(state_t::SELECT),

@@ -14,7 +14,7 @@ namespace oz {
 using std::vector;
 using at::Tensor;
 
-class batch_search_t {
+class batch_search_t final {
  public:
   using encoder_ptr_t = std::shared_ptr<encoder_t>;
   using search_list_t = vector<oos_t::search_t>;

@@ -33,11 +33,11 @@ TEST_CASE("node update", "[oss]") {
 
   node_t node(actions);
 
-  node.accumulate_regret(heads, 7);
+  node.regret(heads) += 7;
   CHECK(node.regret(heads) == 7);
   CHECK(node.regret(tails) == 0);
 
-  node.accumulate_average_strategy(tails, 5);
+  node.average_strategy(tails) += 5;
   CHECK(node.average_strategy(tails) == 5);
   CHECK(node.average_strategy(heads) == 0);
 

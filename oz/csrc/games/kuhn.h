@@ -15,7 +15,7 @@ using std::move;
 using std::string;
 using std::vector;
 
-class kuhn_poker_t : public game_t {
+class kuhn_poker_t final : public game_t {
  public:
 
   enum class action_t {

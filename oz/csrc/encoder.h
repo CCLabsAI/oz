@@ -22,7 +22,7 @@ class encoder_t {
                                           rng_t &rng) = 0;
 };
 
-class leduk_encoder_t : public encoder_t {
+class leduk_encoder_t final : public encoder_t {
  public:
   using nn_real_t = float;
   using ta_t = at::TensorAccessor<nn_real_t, 1>;

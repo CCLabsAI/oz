@@ -160,8 +160,10 @@ void oos_t::search_t::backprop(tree_t& tree) {
           r = -x * w;
         }
 
-        node.accumulate_regret(a_prime, r);
+        node.regret(a_prime) += r;
       }
+
+      node.regret_n += 1;
     }
     else {
       const auto sigma = node.sigma_regret_matching();
@@ -169,7 +171,7 @@ void oos_t::search_t::backprop(tree_t& tree) {
       const prob_t q = delta_ * s1 + (1.0 - delta_) * s2;
       for (const auto& a_prime : infoset.actions()) {
         const prob_t s = (pi_o * sigma.pr(infoset, a_prime)) / q;
-        node.accumulate_average_strategy(a_prime, s);
+        node.average_strategy(a_prime) += s;
       }
     }
   }
@@ -231,7 +233,7 @@ node_t::node_t(std::vector<action_t> actions) {
   auto regret_in = inserter(regrets_, regrets_.end());
   transform(begin(actions), end(actions), regret_in, zero_value);
 
-  auto avg_in = inserter(average_stratergy_, average_stratergy_.end());
+  auto avg_in = inserter(average_strategy_, average_strategy_.end());
   transform(begin(actions), end(actions), avg_in, zero_value);
 }
 

@@ -28,7 +28,7 @@ constexpr player_t CHANCE = player_t::Chance;
 constexpr player_t P1 = player_t::P1;
 constexpr player_t P2 = player_t::P2;
 
-class action_t {
+class action_t final {
  public:
   static constexpr int UNK = -1000000;
 
@@ -49,7 +49,7 @@ action_t make_action(Action a) {
   return action_t(static_cast<int>(a));
 }
 
-class infoset_t {
+class infoset_t final {
  public:
   struct concept_t {
     virtual vector<action_t> actions() const = 0;

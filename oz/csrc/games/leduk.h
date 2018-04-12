@@ -13,7 +13,7 @@ using std::string;
 using std::array;
 using std::vector;
 
-class leduk_poker_t : public game_t {
+class leduk_poker_t final : public game_t {
  public:
 
   enum class action_t {
