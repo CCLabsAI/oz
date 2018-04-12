@@ -225,7 +225,7 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
 };
 
 node_t::node_t(std::vector<action_t> actions) {
-  static constexpr auto zero_value =
+  static const auto zero_value =
       [](const action_t &a) { return make_pair(a, 0); };
 
   auto regret_in = inserter(regrets_, regrets_.end());
