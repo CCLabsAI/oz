@@ -102,8 +102,8 @@ class node_t {
   using avg_map_t = map<action_t, prob_t>;
 
   sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
-  void accumulate_regret(action_t a, value_t r) { regrets_[a] += r; regret_N_++; }
-  void accumulate_average_strategy(action_t a, prob_t s) { average_stratergy_[a] += s; avg_N_++; }
+  void accumulate_regret(action_t a, value_t r) { regrets_[a] += r; }
+  void accumulate_average_strategy(action_t a, prob_t s) { average_stratergy_[a] += s; }
 
   const value_t &regret(action_t a) const { return regrets_.at(a); }
   value_t &regret(action_t a) { return regrets_.at(a); }
@@ -115,8 +115,6 @@ class node_t {
   avg_map_t &average_strategy_map() { return average_stratergy_; }
 
  private:
-  int regret_N_;
-  int avg_N_;
   regret_map_t regrets_;
   avg_map_t average_stratergy_;
 };
