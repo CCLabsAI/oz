@@ -41,6 +41,7 @@ pybind11_add_module(_ext
         "oz/csrc/oos.cpp"
         "oz/csrc/batch.cpp"
         "oz/csrc/encoder.cpp"
+        "oz/csrc/py_sigma.cpp"
         "oz/csrc/games/flipguess.cpp"
         "oz/csrc/games/kuhn.cpp"
         "oz/csrc/games/leduk.cpp"

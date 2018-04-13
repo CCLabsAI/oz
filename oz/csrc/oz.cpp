@@ -9,7 +9,7 @@
 #include "oos.h"
 #include "batch.h"
 #include "encoder.h"
-
+#include "py_sigma.h"
 #include "games/flipguess.h"
 #include "games/kuhn.h"
 #include "games/leduk.h"
@@ -48,7 +48,13 @@ void bind_oz(py::module &m) {
           .export_values();
 
   py::class_<action_t>(m, "Action")
-      .def_property_readonly("index", &action_t::index);
+      .def_property_readonly("index", &action_t::index)
+      .def("__eq__", [](const action_t &self, const action_t &other) {
+        return self.index() == other.index();
+      })
+      .def("__hash__", [](const action_t &self) {
+        return py::hash(py::int_(self.index()));
+      });
 
   py::class_<infoset_t>(m, "Infoset")
       .def_property_readonly("actions", &infoset_t::actions)
@@ -96,6 +102,10 @@ void bind_oz(py::module &m) {
       .def("pr", &sigma_t::pr)
       .def("sample_pr", &sigma_t::sample_pr)
       .def("sample_eps", &sigma_t::sample_eps);
+
+  m.def("make_py_sigma", [](py::object callback_fn) {
+    return make_sigma<py_sigma_t>(move(callback_fn));
+  });
 
   {
     using search_t = oos_t::search_t;
@@ -145,6 +155,7 @@ void bind_oz(py::module &m) {
           .def("encoding_size", &encoder_t::encoding_size)
           .def("max_actions", &encoder_t::max_actions)
           .def("encode", &encoder_t::encode)
+          .def("decode", &encoder_t::decode)
           .def("decode_and_sample", &encoder_t::decode_and_sample);
 
   py::class_<leduk_encoder_t>(m, "LedukEncoder", py_Encoder)

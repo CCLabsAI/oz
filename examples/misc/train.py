@@ -41,7 +41,7 @@ h = copy(root)
 enc = oz.LedukEncoder()
 rng = oz.Random(1)
 
-search_size = 1
+search_size = 50
 bs = oz.BatchSearch(root, enc, search_size)
 ex = 100
 batch = None
@@ -59,9 +59,21 @@ optimizer_regret = optim.Adam(net_regret.parameters(), lr=1e-2)
 criterion_sigma = nn.KLDivLoss(size_average=True)
 criterion_regret = nn.SmoothL1Loss(size_average=True)
 
+def pr_nn(infoset, action):
+    d = torch.zeros(encoding_size)
+    enc.encode(infoset, d)
+    sigma_logits = net_sigma.forward(Variable(d.unsqueeze(0)))
+    sigma_pr = sigma_logits.exp()
+    m = enc.decode(infoset, sigma_pr.data[0])
+    return m[action]
+
+sigma_nn = oz.make_py_sigma(pr_nn)
+ex = oz.exploitability(h, sigma_nn)
+print(ex)
+
 # while ex > .1:
-for i in range(1000):
-    n_iter = 100
+for i in range(100):
+    n_iter = 10000
     for j in range(n_iter):
         batch = bs.generate_batch()
         if len(batch) == 0:
@@ -107,7 +119,7 @@ for i in range(1000):
     sigma_target_var = Variable(sigma_target)
     regret_target_var = Variable(regret_target)
 
-    for j in range(100):
+    for j in range(500):
         optimizer_sigma.zero_grad()
         sigma_logits = net_sigma(bigX_var)
         loss_sigma = criterion_sigma(sigma_logits, sigma_target_var)
@@ -127,9 +139,10 @@ for i in range(1000):
     loss_sigma0 = float(loss_sigma.data)
     loss_regret0 = float(loss_regret.data)
     ex = oz.exploitability(h, sigma)
-    print("%.3f, %.3f, %.3f" % (ex, loss_sigma0, loss_regret0))
+    ex_nn = oz.exploitability(h, sigma_nn)
+    print("%.3f, %.3f, %.5f, %.5f" % (ex, ex_nn, loss_sigma0, loss_regret0))
 
-    if i > 0 and (i % 20) == 0:
+    if i > 0 and (i % 50) == 0:
         bs = oz.BatchSearch(root, enc, search_size)
         print("reset!")
 

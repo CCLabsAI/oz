@@ -63,8 +63,8 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
       case oos_t::search_t::state_t::CREATE:
         {
           int i = playout_n++;
-          const auto regrets = encoder_->decode(search.infoset(), regret[i], rng);
-          const auto average_strategy = encoder_->decode(search.infoset(), avg[i], rng);
+          const auto regrets = encoder_->decode(search.infoset(), regret[i]);
+          const auto average_strategy = encoder_->decode(search.infoset(), avg[i]);
           // search.create(tree_, rng);
           search.create_prior(tree_, regrets, average_strategy, rng);
         }

@@ -93,7 +93,7 @@ void leduk_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
   rounds_one_hot(game_infoset.history, x_a, pos);
 }
 
-auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x, rng_t &rng)
+auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x)
   -> map<oz::action_t, real_t>
 {
   const auto actions = infoset.actions();
@@ -102,7 +102,7 @@ auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x, rng_t &rng)
 
   for (const auto &action : actions) {
     prob_t p;
-    action_t a_leduk = action.template as<leduk_poker_t::action_t>();
+    const auto a_leduk = action.template as<leduk_poker_t::action_t>();
     switch (a_leduk) {
       case action_t::Raise:
         p = x_a[0];
