@@ -10,8 +10,8 @@ using namespace at;
 batch_search_t::batch_search_t(history_t root,
                                encoder_ptr_t encoder,
                                int batch_size) :
-    root_(std::move(root)),
-    encoder_(std::move(encoder)),
+    root_(move(root)),
+    encoder_(move(encoder)),
     batch_size_(batch_size)
 {
   player_t search_player = P1;
