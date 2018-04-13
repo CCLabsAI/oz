@@ -93,8 +93,40 @@ void leduk_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
   rounds_one_hot(game_infoset.history, x_a, pos);
 }
 
+auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x, rng_t &rng)
+  -> map<oz::action_t, real_t>
+{
+  const auto actions = infoset.actions();
+  auto m = map<oz::action_t, prob_t>();
+  auto x_a = x.accessor<nn_real_t, 1>();
+
+  for (const auto &action : actions) {
+    prob_t p;
+    action_t a_leduk = action.template as<leduk_poker_t::action_t>();
+    switch (a_leduk) {
+      case action_t::Raise:
+        p = x_a[0];
+        break;
+      case action_t::Call:
+        p = x_a[1];
+        break;
+      case action_t::Fold:
+        p = x_a[2];
+        break;
+      default:
+        assert (false);
+        p = 0;
+    }
+
+    m[action] = p;
+  }
+
+  return m;
+}
+
 auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &rng)
-  -> action_prob_t {
+  -> action_prob_t
+{
   assert (cast_infoset(infoset).player != CHANCE);
   assert (x.size(0) == max_actions());
 

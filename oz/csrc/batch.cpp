@@ -21,12 +21,23 @@ batch_search_t::batch_search_t(history_t root,
   }
 }
 
+inline auto search_needs_eval(const oos_t::search_t &search) -> bool {
+  using state_t = oos_t::search_t::state_t;
+
+  return (
+    search.state() == state_t::PLAYOUT &&
+    search.history().player() != CHANCE
+  ) || (
+    search.state() == state_t::CREATE
+  );
+}
+
 auto batch_search_t::generate_batch() -> Tensor {
   Tensor d = CPU(kFloat).ones({ batch_size_, encoder_->encoding_size() });
 
   int playout_n = 0;
-  for (auto &search : searches_) {
-    if (search.state() == oos_t::search_t::state_t::PLAYOUT && search.history().player() != CHANCE) {
+  for (const auto &search : searches_) {
+    if (search_needs_eval(search)) {
       int i = playout_n++;
       encoder_->encode(search.infoset(), d[i]);
     }
@@ -40,7 +51,7 @@ auto batch_search_t::generate_batch() -> Tensor {
   }
 }
 
-void batch_search_t::step(at::Tensor d, rng_t &rng) {
+void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
   int playout_n = 0;
   for (auto it = begin(searches_); it != end(searches_); ++it) {
     auto &search = *it;
@@ -50,7 +61,13 @@ void batch_search_t::step(at::Tensor d, rng_t &rng) {
         search.select(tree_, rng);
         break;
       case oos_t::search_t::state_t::CREATE:
-        search.create(tree_, rng);
+        {
+          int i = playout_n++;
+          const auto regrets = encoder_->decode(search.infoset(), regret[i], rng);
+          const auto average_strategy = encoder_->decode(search.infoset(), avg[i], rng);
+          // search.create(tree_, rng);
+          search.create_prior(tree_, regrets, average_strategy, rng);
+        }
         break;
       case oos_t::search_t::state_t::PLAYOUT:
         if (history.player() == CHANCE) {
@@ -59,8 +76,7 @@ void batch_search_t::step(at::Tensor d, rng_t &rng) {
         }
         else {
           int i = playout_n++;
-          assert (i < d.size(0));
-          auto ap = encoder_->decode_and_sample(search.infoset(), d[i], rng);
+          auto ap = encoder_->decode_and_sample(search.infoset(), avg[i], rng);
           search.playout_step(ap);
         }
         break;
@@ -74,6 +90,9 @@ void batch_search_t::step(at::Tensor d, rng_t &rng) {
         break;
     }
   }
+
+  assert(avg.dim() <= 0 || playout_n == avg.size(0));
+  assert(regret.dim() <= 0 || playout_n == regret.size(0));
 }
 
 } // namespace oz

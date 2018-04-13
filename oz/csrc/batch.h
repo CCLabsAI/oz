@@ -22,7 +22,7 @@ class batch_search_t final {
   batch_search_t(history_t root, encoder_ptr_t encoder, int batch_size);
 
   Tensor generate_batch();
-  void step(Tensor d, rng_t &rng);
+  void step(Tensor avg, Tensor regret, rng_t &rng);
 
   const tree_t &tree() const { return tree_; }
 

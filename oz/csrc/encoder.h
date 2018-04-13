@@ -11,6 +11,8 @@
 namespace oz {
 
 using std::vector;
+using std::map;
+
 using at::Tensor;
 
 class encoder_t {
@@ -18,6 +20,7 @@ class encoder_t {
   virtual int encoding_size() = 0;
   virtual int max_actions() = 0;
   virtual void encode(infoset_t infoset, Tensor x) = 0;
+  virtual map<action_t, prob_t> decode(oz::infoset_t infoset, Tensor x, rng_t &rng) = 0;
   virtual action_prob_t decode_and_sample(infoset_t infoset, Tensor x,
                                           rng_t &rng) = 0;
 };
@@ -32,6 +35,7 @@ class leduk_encoder_t final : public encoder_t {
   int encoding_size() override { return ENCODING_SIZE; };
   int max_actions() override { return MAX_ACTIONS; };
   void encode(oz::infoset_t infoset, Tensor x) override;
+  map<oz::action_t, prob_t> decode(oz::infoset_t infoset, Tensor x, rng_t &rng) override;
   action_prob_t decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &rng) override;
 
  private:

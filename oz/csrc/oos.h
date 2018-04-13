@@ -28,18 +28,18 @@ class history_t final {
  public:
   history_t(const history_t& that) : self_(that.self_->clone()) {};
   history_t(history_t&& that) noexcept: self_(move(that.self_)) {};
-  history_t &operator =(history_t &&that) noexcept {
-    self_ = move(that.self_); return *this; }
+  history_t &operator =(history_t &&that) noexcept
+    { self_ = move(that.self_); return *this; }
 
   void act(action_t a) { self_->act(a); }
   infoset_t infoset() const { return self_->infoset(); }
   player_t player() const { return self_->player(); }
   bool is_terminal() const { return self_->is_terminal(); }
   value_t utility(player_t player) const { return self_->utility(player); }
-  action_prob_t sample_chance(rng_t& rng) const;
 
+  action_prob_t sample_chance(rng_t& rng) const;
   history_t operator >>(action_t a) const {
-    auto g = self_->clone();
+    ptr_t g = self_->clone();
     g->act(a);
     return history_t(move(g));
   }
@@ -109,13 +109,16 @@ class node_t final {
   const prob_t &average_strategy(action_t a) const { return average_strategy_.at(a); }
   prob_t &average_strategy(action_t a) { return average_strategy_.at(a); }
 
+  int regret_n() const { return regret_n_; }
+  int &regret_n() { return regret_n_; }
+
  private:
   friend class oos_t;
 
   regret_map_t regrets_;
   avg_map_t average_strategy_;
 
-  int regret_n = 0;
+  int regret_n_ = 0;
 
  public:
   // used only in python interface
@@ -206,14 +209,20 @@ class oos_t final {
         state_(state_t::SELECT),
         history_(move(history)),
         search_player_(search_player),
-        eps_(0.2),
+        eps_(0.4),
         delta_(0.1)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
-    void create(tree_t& tree, rng_t &rng);       // add node to tree with prior values
+    void create(tree_t& tree, rng_t &rng);       // add node to tree with zero values
     void playout_step(action_prob_t ap);         // step playout forward one ply
     void backprop(tree_t& tree);                 // unwind updates along path
+
+    // add node to tree with prior values
+    void create_prior(tree_t& tree,
+                      node_t::regret_map_t regrets,
+                      node_t::avg_map_t average_strategy,
+                      rng_t &rng);
 
     const history_t &history() const { return history_; }
     infoset_t infoset() const { return history_.infoset(); }

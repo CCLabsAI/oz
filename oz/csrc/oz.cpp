@@ -131,6 +131,7 @@ void bind_oz(py::module &m) {
       .def("sigma_regret_matching", &node_t::sigma_regret_matching)
       .def("accumulate_regret", &node_t::accumulate_regret)
       .def("accumulate_average_strategy", &node_t::accumulate_average_strategy)
+      .def_property_readonly("regret_n", (int (node_t::*)() const) &node_t::regret_n)
       .def_property_readonly("regrets", &node_t::regret_map)
       .def_property_readonly("average_strategy",
                              &node_t::average_strategy_map);
