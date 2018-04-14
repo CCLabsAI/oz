@@ -53,7 +53,7 @@ class kuhn_poker_t final : public game_t {
 
   void act_(action_t a);
 
-  void act(oz::action_t a) override { act_(a.as<action_t>()); };
+  void act(oz::action_t a) override { act_(a.cast<action_t>()); };
   oz::infoset_t infoset() const override;
   player_t player() const override { return player_; }
   bool is_terminal() const override;

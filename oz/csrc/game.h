@@ -38,7 +38,7 @@ class action_t final {
   int index() const { return index_; };
 
   template <typename T>
-  T as() const { return static_cast<T>(index_); }
+  T cast() const { return static_cast<T>(index_); }
 
  private:
   int index_;
@@ -65,7 +65,7 @@ class infoset_t final {
   size_t hash() const { return self_->hash(); };
 
   template <class T>
-  const T &as() const { return assert_cast<const T&>(*self_.get()); }
+  const T &cast() const { return assert_cast<const T&>(*self_.get()); }
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;

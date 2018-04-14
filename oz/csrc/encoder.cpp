@@ -12,7 +12,7 @@ auto leduk_encoder_t::cast_infoset(const infoset_t &infoset)
   -> const leduk_poker_t::infoset_t &
 {
   // TODO this whole thing is still somewhat distressing
-  return infoset.as<leduk_poker_t::infoset_t>();
+  return infoset.cast<leduk_poker_t::infoset_t>();
 }
 
 void leduk_encoder_t::card_one_hot(card_t card, ta_t &x_a, int i) {
@@ -102,7 +102,7 @@ auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x)
 
   for (const auto &action : actions) {
     prob_t p;
-    const auto a_leduk = action.template as<leduk_poker_t::action_t>();
+    const auto a_leduk = action.template cast<leduk_poker_t::action_t>();
     switch (a_leduk) {
       case action_t::Raise:
         p = x_a[0];
@@ -137,7 +137,7 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
 
   transform(begin(actions), end(actions), begin(weights),
             [&](const oz::action_t &action) -> prob_t {
-    switch (action.template as<leduk_poker_t::action_t>()) {
+    switch (action.template cast<leduk_poker_t::action_t>()) {
       case action_t::Raise:
         return x_a[0];
       case action_t::Call:

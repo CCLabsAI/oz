@@ -48,7 +48,7 @@ class sigma_flip_t : public sigma_t::concept_t {
 class sigma_kuhn_t : public sigma_t::concept_t {
  public:
   prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
-    const auto &infoset_ = infoset.as<kuhn_poker_t::infoset_t>();
+    const auto &infoset_ = infoset.cast<kuhn_poker_t::infoset_t>();
     auto player = infoset_.player;
 
     static const auto bet = make_action(kuhn_poker_t::action_t::Bet);
