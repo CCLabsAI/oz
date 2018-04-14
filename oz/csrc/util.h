@@ -5,6 +5,11 @@
 #include <algorithm>
 #include <numeric>
 
+#include <cassert>
+
+#define Expects(cond) assert(cond)
+#define Ensures(cond) assert(cond)
+
 namespace oz {
 
 template <class T, class U>
@@ -32,7 +37,7 @@ ForwardIt max_element_by(ForwardIt first, ForwardIt last, Projection f) {
 };
 
 template <typename T>
-inline bool all_greater_than_zero(T iter) {
+inline bool all_greater_equal_zero(T iter) {
   using namespace std;
   return all_of(begin(iter), end(iter),
                 [](const auto &x) { return x >= 0; });

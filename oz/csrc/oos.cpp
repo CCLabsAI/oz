@@ -11,23 +11,17 @@ namespace oz {
 
 using namespace std;
 
-void update_probs(oos_t::prefix_prob_t& probs, player_t i,
-                  const action_prob_t ap, player_t p)
-{
-  if(p == i) {
-    probs.pi_i *= ap.pr_a;
-  }
-  else {
-    probs.pi_o *= ap.pr_a;
-  }
+void oos_t::search_t::prepare_suffix_probs() {
+  prob_t s1 = prefix_prob_.s1 * suffix_prob_.x;
+  prob_t s2 = prefix_prob_.s2 * suffix_prob_.x;
 
-  probs.s1 *= ap.rho1;
-  probs.s2 *= ap.rho2;
+  suffix_prob_.l = delta_ * s1 + (1.0 - delta_) * s2;
+  suffix_prob_.u = history_.utility(search_player_);
 }
 
 void oos_t::search_t::tree_step(action_prob_t ap) {
-  assert (state_ == state_t::SELECT || state_ == state_t::CREATE);
-  assert (!history_.is_terminal());
+  Expects(state_ == state_t::SELECT || state_ == state_t::CREATE);
+  Expects(!history_.is_terminal());
 
   const auto acting_player = history_.player();
   const auto infoset = history_.infoset();
@@ -38,17 +32,28 @@ void oos_t::search_t::tree_step(action_prob_t ap) {
       ap, prefix_prob_
   });
 
-  // update state and sample probabilities
+  // update prefix and sample probabilities
+  if(acting_player == search_player_) {
+    prefix_prob_.pi_i *= ap.pr_a;
+  }
+  else {
+    prefix_prob_.pi_o *= ap.pr_a;
+  }
+
+  prefix_prob_.s1 *= ap.rho1;
+  prefix_prob_.s2 *= ap.rho2;
+
+  // move game forward one ply
   history_.act(ap.a);
-  update_probs(prefix_prob_, search_player_, ap, acting_player);
 }
 
 void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
-  assert (state_ == state_t::SELECT);
+  Expects(state_ == state_t::SELECT);
 
   while (state_ == state_t::SELECT) {
     if (history_.is_terminal()) {
-      enter_backprop();
+      prepare_suffix_probs();
+      state_ = state_t::BACKPROP;
     }
     else if (history_.player() == CHANCE) {
       const auto ap = history_.sample_chance(rng);
@@ -67,95 +72,88 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
       }
     }
   }
-}
 
-void oos_t::search_t::enter_backprop() {
-  oz::prob_t s1 = prefix_prob_.s1;
-  oz::prob_t s2 = prefix_prob_.s2;
-
-  suffix_prob_.x = 1.0;
-  suffix_prob_.l = delta_ * s1 + (1.0 - delta_) * s2;
-  suffix_prob_.u = history_.utility(search_player_);
-
-  state_ = state_t::BACKPROP;
+  Ensures(state_ == state_t::CREATE || state_ == state_t::BACKPROP);
 }
 
 void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
-  assert (state_ == state_t::CREATE);
-  assert (history_.player() != CHANCE);
-  assert (!history_.is_terminal());
+  Expects(state_ == state_t::CREATE);
+  Expects(history_.player() != CHANCE);
+  Expects(!history_.is_terminal());
 
   const auto infoset = history_.infoset();
   tree.create_node(infoset);
-  
+
   const auto eps = history_.player() == search_player_ ? eps_ : 0;
   const auto r = tree.sample_sigma(infoset, eps, rng);
-  assert (!r.out_of_tree);
+  Expects(!r.out_of_tree);
 
   tree_step(r.ap);
 
   if (history_.is_terminal()) {
-    enter_backprop();
+    prepare_suffix_probs();
+    state_ = state_t::BACKPROP;
   }
   else {
-    state_ = state_t::PLAYOUT;    
+    state_ = state_t::PLAYOUT;
   }
+
+  Ensures(state_ == state_t::PLAYOUT || state_ == state_t::BACKPROP);
 }
 
+  // TODO remove all this duplication
 void oos_t::search_t::create_prior(tree_t& tree,
                                    node_t::regret_map_t regrets,
                                    node_t::avg_map_t average_strategy,
                                    rng_t &rng)
 {
-  // TODO remove all this duplication
-  assert (state_ == state_t::CREATE);
-  assert (history_.player() != CHANCE);
-  assert (!history_.is_terminal());
+  Expects(state_ == state_t::CREATE);
+  Expects(history_.player() != CHANCE);
+  Expects(!history_.is_terminal());
 
   const auto infoset = history_.infoset();
   auto &nodes = tree.nodes();
 
   auto node = node_t(infoset.actions());
-  node.regrets_ = regrets;
-  node.average_strategy_ = average_strategy;
+  node.regrets_ = move(regrets);
+  node.average_strategy_ = move(average_strategy);
 
   nodes.emplace(infoset, node);
-  
+
   const auto eps = history_.player() == search_player_ ? eps_ : 0;
   const auto r = tree.sample_sigma(infoset, eps, rng);
-  assert (!r.out_of_tree);
+  Expects(!r.out_of_tree);
 
   tree_step(r.ap);
 
   if (history_.is_terminal()) {
-    enter_backprop();
+    prepare_suffix_probs();
+    state_ = state_t::BACKPROP;
   }
   else {
-    state_ = state_t::PLAYOUT;    
+    state_ = state_t::PLAYOUT;
   }
+
+  Ensures(state_ == state_t::PLAYOUT || state_ == state_t::BACKPROP);
 }
 
 void oos_t::search_t::playout_step(action_prob_t ap) {
-  assert (state_ == state_t::PLAYOUT);
-  
+  Expects(state_ == state_t::PLAYOUT);
+
   history_.act(ap.a);
   suffix_prob_.x *= ap.pr_a;
 
-  // TODO this is sort of a weird special case, make more elegant
   if (history_.is_terminal()) {
-    prob_t s1 = prefix_prob_.s1 * suffix_prob_.x;
-    prob_t s2 = prefix_prob_.s2 * suffix_prob_.x;
-
-    suffix_prob_.l = delta_ * s1 + (1.0 - delta_) * s2;
-    suffix_prob_.u = history_.utility(search_player_);
-    
+    prepare_suffix_probs();
     state_ = state_t::BACKPROP;
   }
+
+  Ensures(state_ == state_t::PLAYOUT || state_ == state_t::BACKPROP);
 }
 
 void oos_t::search_t::backprop(tree_t& tree) {
-  assert (state_ == state_t::BACKPROP);
-  assert (history_.is_terminal());
+  Expects(state_ == state_t::BACKPROP);
+  Expects(history_.is_terminal());
 
   prob_t c;
   prob_t x = suffix_prob_.x;
@@ -219,10 +217,10 @@ auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const
 {
   auto actions = infoset.actions();
   auto probs = vector<prob_t>(actions.size());
-  
+
   transform(begin(actions), end(actions), begin(probs),
             [&](const auto& a) { return pr(infoset, a); });
-  
+
   auto a_dist = discrete_distribution<>(begin(probs), end(probs));
   auto i = a_dist(rng);
 
@@ -265,14 +263,21 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
 };
 
 node_t::node_t(std::vector<action_t> actions) {
-  static const auto zero_value =
+  Expects(!actions.empty());
+
+  static const auto make_zero_value =
       [](const action_t &a) { return make_pair(a, 0); };
 
-  auto regret_in = inserter(regrets_, regrets_.end());
-  transform(begin(actions), end(actions), regret_in, zero_value);
+  transform(begin(actions), end(actions),
+            inserter(regrets_, end(regrets_)),
+            make_zero_value);
 
-  auto avg_in = inserter(average_strategy_, average_strategy_.end());
-  transform(begin(actions), end(actions), avg_in, zero_value);
+  transform(begin(actions), end(actions),
+            inserter(average_strategy_, end(average_strategy_)),
+            make_zero_value);
+
+  Ensures(!regrets_.empty());
+  Ensures(!average_strategy_.empty());
 }
 
 auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
@@ -321,7 +326,7 @@ auto tree_t::sigma_average() const -> sigma_t {
 }
 
 template <typename T>
-T rectify(T x) {
+inline T rectify(T x) {
   return x > 0 ? x : 0;
 }
 
@@ -341,7 +346,7 @@ auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
     p = (prob_t) 1/infoset.actions().size();
   }
 
-  assert(p >= 0 && p <= 1);
+  Ensures(0 <= p && p <= 1);
   return p;
 }
 
@@ -361,9 +366,12 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
             [](const auto &x) { return rectify(x.second); });
 
   auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
+  int N = weights.size() - 1;
 
-  assert (actions.size() > 0);
-  assert (weights.size() > 0);
+  Expects(N > 0);
+  Expects(!actions.empty());
+  Expects(!weights.empty());
+  Expects(actions.size() == weights.size());
 
   int i;
   if (total > 0) {
@@ -371,7 +379,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
     i = a_dist(rng);
   }
   else {
-    auto a_dist = uniform_int_distribution<>(0, weights.size()-1);
+    auto a_dist = uniform_int_distribution<>(0, N);
     i = a_dist(rng);
   }
 
@@ -379,7 +387,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   auto pr_a = total > 0 ? weights[i]/total : (prob_t) 1/weights.size();
   auto rho1 = pr_a, rho2 = pr_a;
 
-  assert (pr_a >= 0 && pr_a <= 1);
+  Ensures(0 <= pr_a && pr_a <= 1);
 
   return { a, pr_a, rho1, rho2 };
 }
@@ -406,7 +414,7 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
     p = (prob_t) 1/actions.size();
   }
 
-  assert (p >= 0 && p <= 1);
+  Ensures(0 <= p && p <= 1);
   return p;
 };
 
@@ -414,10 +422,9 @@ void oos_t::search_iter(history_t h, player_t player,
                         tree_t &tree, rng_t &rng)
 {
   using state_t = search_t::state_t;
+  auto s = search_t(move(h), player);
 
-  search_t s(move(h), player);
-
-  while (s.state() != search_t::state_t::FINISHED) {
+  while (s.state() != state_t::FINISHED) {
     switch (s.state()) {
       case state_t::SELECT:
         s.select(tree, rng);
@@ -447,6 +454,8 @@ void oos_t::search_iter(history_t h, player_t player,
 }
 
 void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng) {
+  Expects(n_iter >= 0);
+
   for(int i = 0; i < n_iter; i++) {
     search_iter(h, P1, tree, rng);
     search_iter(h, P2, tree, rng);

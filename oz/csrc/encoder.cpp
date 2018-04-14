@@ -76,11 +76,8 @@ void leduk_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
   const auto &game_infoset = cast_infoset(infoset);
   assert (game_infoset.player != CHANCE);
 
+  x.zero_();
   auto x_a = x.accessor<nn_real_t, 1>();
-
-  for (int i = 0; i < x_a.size(0); i++) {
-    x_a[i] = 0;
-  }
 
   int pos = 0;
 
@@ -102,7 +99,7 @@ auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x)
 
   for (const auto &action : actions) {
     prob_t p;
-    const auto a_leduk = action.template cast<leduk_poker_t::action_t>();
+    const auto a_leduk = action.cast<leduk_poker_t::action_t>();
     switch (a_leduk) {
       case action_t::Raise:
         p = x_a[0];
@@ -137,7 +134,8 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
 
   transform(begin(actions), end(actions), begin(weights),
             [&](const oz::action_t &action) -> prob_t {
-    switch (action.template cast<leduk_poker_t::action_t>()) {
+    const auto a_leduk = action.cast<leduk_poker_t::action_t>();
+    switch (a_leduk) {
       case action_t::Raise:
         return x_a[0];
       case action_t::Call:
@@ -150,7 +148,7 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
     }
   });
 
-  assert (all_greater_than_zero(weights));
+  assert (all_greater_equal_zero(weights));
   auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
 
   auto a_dist = discrete_distribution<>(begin(weights), end(weights));

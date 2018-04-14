@@ -21,7 +21,7 @@ struct action_prob_t {
   action_t a;
   prob_t pr_a;  // probability action was taken under policy
   prob_t rho1;  // probability of sampling action when targeted
-  prob_t rho2;  // probability of sampling action
+  prob_t rho2;  // probability of sampling action (untargeted)
 };
 
 class history_t final {
@@ -177,30 +177,13 @@ class sigma_average_t : public sigma_t::concept_t {
   const tree_t tree_;
 };
 
+static_assert(std::numeric_limits<prob_t>::has_signaling_NaN == true);
+static constexpr prob_t NaN = std::numeric_limits<prob_t>::signaling_NaN();
+
 class oos_t final {
  public:
   void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
   void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng);
-
-  struct prefix_prob_t {
-    prob_t pi_i = 1.0;  // reach probability for search player
-    prob_t pi_o = 1.0;  // reach probability for opponent player and chance
-    prob_t s1 = 1.0;    // probability of this sample when targeted
-    prob_t s2 = 1.0;    // probability of this sample
-  };
-
-  struct suffix_prob_t {
-    prob_t x = 1.0;     // suffix probability
-    prob_t l = 1.0;     // tip-to-tail sample probability
-    value_t u = 0.0;    // value at the terminal
-  };
-
-  struct path_item_t {
-    player_t player = CHANCE;
-    infoset_t infoset;
-    action_prob_t action_prob;
-    prefix_prob_t prefix_prob;
-  };
 
   // state machine representing a search
   class search_t final {
@@ -245,7 +228,27 @@ class oos_t final {
 
    private:
     void tree_step(action_prob_t ap); // take one step in-tree and extend path
-    void enter_backprop();
+    void prepare_suffix_probs();
+
+    struct prefix_prob_t {
+      prob_t pi_i = 1.0;  // reach probability for search player to current history
+      prob_t pi_o = 1.0;  // reach probability for opponent player and chance
+      prob_t s1 = 1.0;    // probability of this sample when targeted
+      prob_t s2 = 1.0;    // probability of this sample (untargeted)
+    };
+
+    struct suffix_prob_t {
+      prob_t x = 1.0;     // playout / suffix probability
+      prob_t l = NaN;     // total tip-to-tail sample probability (only known at terminal)
+      value_t u = NaN;    // value at the terminal (only known at terminal)
+    };
+
+    struct path_item_t {
+      player_t player = CHANCE;
+      infoset_t infoset;
+      action_prob_t action_prob;
+      prefix_prob_t prefix_prob;
+    };
 
     state_t state_;
 
