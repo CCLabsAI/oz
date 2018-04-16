@@ -27,9 +27,7 @@ struct action_prob_t {
 class history_t final {
  public:
   history_t(const history_t& that) : self_(that.self_->clone()) {};
-  history_t(history_t&& that) noexcept: self_(move(that.self_)) {};
-  history_t &operator =(history_t &&that) noexcept
-    { self_ = move(that.self_); return *this; }
+  history_t &operator=(history_t &&that) = default;
 
   void act(action_t a) { self_->act(a); }
   infoset_t infoset() const { return self_->infoset(); }
@@ -38,8 +36,9 @@ class history_t final {
   value_t utility(player_t player) const { return self_->utility(player); }
 
   action_prob_t sample_chance(rng_t& rng) const;
-  history_t operator >>(action_t a) const {
-    ptr_t g = self_->clone();
+
+  history_t operator>>(action_t a) const {
+    auto g = self_->clone();
     g->act(a);
     return history_t(move(g));
   }
@@ -47,7 +46,8 @@ class history_t final {
  private:
   using ptr_t = std::unique_ptr<game_t>;
 
-  explicit history_t(ptr_t game) : self_(move(game)) {};
+  explicit history_t(ptr_t self) : self_(move(self)) {};
+
   template<class Infoset, typename... Args>
   friend history_t make_history(Args&& ... args);
 
@@ -96,10 +96,10 @@ class sigma_regret_t;
 
 class node_t final {
  public:
-  explicit node_t(vector<action_t> actions);
-
   using regret_map_t = map<action_t, value_t>;
   using avg_map_t = map<action_t, prob_t>;
+
+  explicit node_t(vector<action_t> actions);
 
   sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
 
@@ -154,7 +154,7 @@ class tree_t final {
   map_t nodes_;
 };
 
-class sigma_regret_t : public sigma_t::concept_t {
+class sigma_regret_t final : public sigma_t::concept_t {
  public:
   explicit sigma_regret_t(node_t::regret_map_t regrets):
       regrets_(move(regrets)) { };
@@ -166,7 +166,7 @@ class sigma_regret_t : public sigma_t::concept_t {
   const node_t::regret_map_t regrets_;
 };
 
-class sigma_average_t : public sigma_t::concept_t {
+class sigma_average_t final : public sigma_t::concept_t {
  public:
   explicit sigma_average_t(tree_t tree):
       tree_(move(tree)) { };

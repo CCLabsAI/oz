@@ -1,8 +1,13 @@
-#include "oss.h"
+#include "oos_rec.h"
 
-auto oss_t::sample_action(history_t h, sigma_t sigma) -> action_prob_t {
+namespace oz { namespace rec {
+
+template <class tree_t, class sigma_t>
+auto oos_t<tree_t, sigma_t>::sample_action(history_t h, sigma_t sigma)
+  -> action_prob_t
+{
   if (h.player() == player_t::Chance) {
-    action_prob2_t ret = sample_chance(std::move(h));
+    action_prob2_t ret = sample_chance(move(h));
     return { ret.a, ret.s1 };
   }
   else {
@@ -11,7 +16,10 @@ auto oss_t::sample_action(history_t h, sigma_t sigma) -> action_prob_t {
   }
 }
 
-auto oss_t::playout(history_t h, prob_t s, sigma_t sigma) -> walk_ret_t {
+template <class tree_t, class sigma_t>
+auto oos_t<tree_t, sigma_t>::playout(history_t h, prob_t s, sigma_t sigma)
+  -> walk_ret_t
+{
   prob_t x = 1;
 
   while (!h.is_terminal()) {
@@ -20,17 +28,20 @@ auto oss_t::playout(history_t h, prob_t s, sigma_t sigma) -> walk_ret_t {
     x = x * ap.pr_a;
   }
 
-  value_t u = h.utility();
+  value_t u = h.utility(h.player());
   return { x, s * x, u };
 }
 
-auto oss_t::walk(history_t h,
-                 prob_t pi_i, prob_t pi_o,
-                 prob_t s1, prob_t s2, player_t i) -> walk_ret_t {
+template <class tree_t, class sigma_t>
+auto oos_t<tree_t, sigma_t>::walk(history_t h,
+                                  prob_t pi_i, prob_t pi_o,
+                                  prob_t s1, prob_t s2, player_t i)
+  -> walk_ret_t
+{
 
   if (h.is_terminal()) {
     prob_t l = delta_ * s1 + (1 - delta_) * s2;
-    value_t u = h.utility();
+    value_t u = h.utility(h.player());
     return { 1, l, u };
   }
 
@@ -45,8 +56,8 @@ auto oss_t::walk(history_t h,
 
   infoset_t infoset = h.infoset();
 
-  tree_t::lookup_ret_t lr = tree_.lookup(infoset);
-  node_t node = lr.node;
+  typename tree_t::lookup_ret_t lr = tree_.lookup(infoset);
+  typename tree_t::node_t node = lr.node;
   bool out_of_tree = lr.out_of_tree;
 
   sigma_t sigma;
@@ -57,7 +68,7 @@ auto oss_t::walk(history_t h,
     sigma = node.sigma_regret_matching();
   }
 
-  action_prob2_t ap = sample(std::move(h), sigma);
+  action_prob2_t ap = sample(move(h), sigma);
   action_t a = ap.a;
   prob_t s1_prime = ap.s1, s2_prime = ap.s2;
 
@@ -113,3 +124,5 @@ auto oss_t::walk(history_t h,
 
   return { x, l, u };
 }
+
+} } // namespace oz::rec
