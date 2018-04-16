@@ -20,6 +20,28 @@ auto exploitability(history_t h, sigma_t sigma) -> value_t {
   return v1 + v2;
 }
 
+template <typename T>
+inline auto keys(const T &m) -> vector<typename T::key_type> {
+  auto keys = vector<action_t>(m.size());
+
+  transform(begin(m), end(m), begin(keys), [](const auto& p) {
+    return p.first;
+  });
+
+  return keys;
+}
+
+static inline auto actions(const history_t& h) -> vector<action_t> {
+  if (h.player() == CHANCE) {
+    const auto actions_pr = h.chance_actions();
+    return keys(actions_pr);
+  }
+  else {
+    const auto infoset = h.infoset();
+    return infoset.actions();
+  }
+}
+
 auto gebr(history_t h, player_t i, sigma_t sigma) -> value_t {
   q_stats_t tb;
 
@@ -41,16 +63,16 @@ auto gebr_pass2(history_t h, player_t i,
   }
 
   const auto player = h.player();
-  const auto infoset = h.infoset();
-  const auto actions = infoset.actions();
-
-  assert(!actions.empty());
 
   if (player == CHANCE) {
+    const auto actions_pr = h.chance_actions();
+    Expects(!actions_pr.empty());
+
     value_t v_chance = 0;
-    for (const auto& a : actions) {
-      // FIXME handle chance actions properly
-      auto pr_a = (prob_t) 1 / actions.size();
+    for (const auto& ap : actions_pr) {
+      const action_t a = ap.first;
+      const prob_t pr_a = ap.second;
+
       value_t v_a = gebr_pass2(h >> a, i,
                                d, l + 1, pi_o * pr_a,
                                sigma, tb);
@@ -60,7 +82,13 @@ auto gebr_pass2(history_t h, player_t i,
     return v_chance;
   }
 
+  Expects(player != CHANCE);
+  const auto infoset = h.infoset();
+  const auto actions = infoset.actions();
+
   if (player == i && l > d) {
+    Expects(!actions.empty());
+
     auto value_lookup = [&](const action_t& a) -> value_t {
       return tb.at({ infoset, a }).v();
     };
@@ -101,13 +129,12 @@ auto walk_infosets(const history_t& h, player_t i, set<int>& depths, int l) -> v
   }
 
   const auto player = h.player();
-  const auto infoset = h.infoset();
 
   if (player == i) {
     depths.insert(l);
   }
 
-  for (const auto& a : infoset.actions()) {
+  for (const auto& a : actions(h)) {
     walk_infosets(h >> a, i, depths, l + 1);
   }
 }

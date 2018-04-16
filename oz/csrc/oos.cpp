@@ -24,9 +24,11 @@ void oos_t::search_t::tree_step(action_prob_t ap) {
   Expects(!history_.is_terminal());
 
   const auto acting_player = history_.player();
-  const auto infoset = history_.infoset();
 
-  // save the current infoset and prefix probabilities
+  const auto infoset = (acting_player != CHANCE) ?
+                       history_.infoset() :
+                       null_infoset();
+
   path_.emplace_back(path_item_t {
       acting_player, infoset,
       ap, prefix_prob_
@@ -281,12 +283,22 @@ node_t::node_t(std::vector<action_t> actions) {
 }
 
 auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
-  // FIXME use real probs
-  const auto actions = infoset().actions();
+  const auto actions_pr = chance_actions();
 
-  auto probs = vector<prob_t>(actions.size());
+  auto actions = vector<action_t>(actions_pr.size());
+  auto probs = vector<prob_t>(actions_pr.size());
 
-  fill(begin(probs), end(probs), (prob_t) 1/actions.size());
+  transform(begin(actions_pr), end(actions_pr), begin(actions),
+            [](const auto &x) -> action_t {
+              const action_t a = x.first;
+              return a;
+            });
+
+  transform(begin(actions_pr), end(actions_pr), begin(probs),
+            [](const auto &x) -> prob_t {
+              const prob_t pr_a = x.second;
+              return pr_a;
+            });
 
   auto a_dist = discrete_distribution<>(begin(probs), end(probs));
   auto i = a_dist(rng);
@@ -296,7 +308,21 @@ auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
   auto rho1 = pr_a;
   auto rho2 = pr_a;
 
+  Ensures(0 <= pr_a && pr_a <= 1);
+
   return { a, pr_a, rho1, rho2 };
+}
+
+action_prob_t history_t::sample_uniform(rng_t &rng) const {
+  auto actions = infoset().actions();
+  auto d = uniform_int_distribution<>(1, actions.size() - 1);
+  auto i = d(rng);
+  auto a = actions[i];
+  auto pr_a = (prob_t) 1 / actions.size();
+
+  Ensures(0 <= pr_a && pr_a <= 1);
+
+  return { a, pr_a, pr_a, pr_a };
 }
 
 void tree_t::create_node(infoset_t infoset) {
@@ -418,6 +444,18 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   return p;
 };
 
+static inline auto sample_action(const history_t &h, rng_t &rng)
+  -> action_prob_t
+{
+  const auto acting_player = h.player();
+  if (acting_player == CHANCE) {
+    return h.sample_chance(rng);
+  }
+  else {
+    return h.sample_uniform(rng);
+  }
+}
+
 void oos_t::search_iter(history_t h, player_t player,
                         tree_t &tree, rng_t &rng)
 {
@@ -433,16 +471,7 @@ void oos_t::search_iter(history_t h, player_t player,
         s.create(tree, rng);
         break;
       case state_t::PLAYOUT:
-        // FIXME handle chance nodes properly
-        {
-          auto infoset = s.infoset();
-          auto actions = infoset.actions();
-          auto d = uniform_int_distribution<>(1, actions.size() - 1);
-          auto i = d(rng);
-          auto a = actions[i];
-          auto pr_a = (prob_t) 1 / actions.size();
-          s.playout_step(action_prob_t{ a, pr_a, pr_a, pr_a });
-        }
+        s.playout_step(sample_action(s.history(), rng));
         break;
       case state_t::BACKPROP:
         s.backprop(tree);

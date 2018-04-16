@@ -8,6 +8,7 @@ namespace oz {
 using namespace std;
 
 auto flipguess_t::infoset() const -> oz::infoset_t {
+  Expects(player() != CHANCE);
   return make_infoset<infoset_t>(player_);
 }
 
@@ -53,22 +54,12 @@ void flipguess_t::act_(flipguess_t::action_t a) {
 }
 
 auto flipguess_t::infoset_t::actions() const -> vector<oz::action_t> {
-  static const vector<oz::action_t> chance_actions {
-      make_action(action_t::Heads),
-      make_action(action_t::Tails),
-  };
-
   static const vector<oz::action_t> player_actions {
       make_action(action_t::Left),
       make_action(action_t::Right),
   };
 
-  if (player_ == CHANCE) {
-    return chance_actions;
-  }
-  else {
-    return player_actions;
-  }
+  return player_actions;
 }
 
 auto flipguess_t::infoset_t::str() const -> string {
@@ -86,8 +77,8 @@ auto flipguess_t::infoset_t::str() const -> string {
   }
 }
 
-auto flipguess_t::infoset_t::is_equal(const oz::infoset_t::concept_t& that)
-const -> bool {
+bool flipguess_t::infoset_t::is_equal(const oz::infoset_t::concept_t& that)
+const {
   if (typeid(*this) == typeid(that)) {
     auto that_ = static_cast<const flipguess_t::infoset_t&>(that);
     return player_ == that_.player_;
@@ -99,6 +90,17 @@ const -> bool {
 
 size_t flipguess_t::infoset_t::hash() const {
   return std::hash<player_t>()(player_);
+}
+
+auto flipguess_t::chance_actions() const -> map<oz::action_t, prob_t> {
+  Expects(player() == CHANCE);
+
+  static const map<oz::action_t, prob_t> actions {
+    { make_action(action_t::Heads), 0.5 },
+    { make_action(action_t::Tails), 0.5 }
+  };
+
+  return actions;
 }
 
 } // namespace oz

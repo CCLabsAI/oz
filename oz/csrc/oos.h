@@ -34,8 +34,11 @@ class history_t final {
   player_t player() const { return self_->player(); }
   bool is_terminal() const { return self_->is_terminal(); }
   value_t utility(player_t player) const { return self_->utility(player); }
+  map<action_t, prob_t> chance_actions() const
+    { return self_->chance_actions(); }
 
   action_prob_t sample_chance(rng_t& rng) const;
+  action_prob_t sample_uniform(rng_t& rng) const;
 
   history_t operator>>(action_t a) const {
     auto g = self_->clone();

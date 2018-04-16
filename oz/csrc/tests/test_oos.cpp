@@ -26,12 +26,11 @@ TEST_CASE("oss simple", "[oss]") {
 }
 
 TEST_CASE("node update", "[oss]") {
-  auto h = make_history<flipguess_t>();
-  auto actions = h.infoset().actions();
-  auto heads = actions[0];
-  auto tails = actions[1];
+  auto heads = make_action(flipguess_t::action_t::Left);
+  auto tails = make_action(flipguess_t::action_t::Right);
+  auto actions = vector<action_t> { heads, tails };
 
-  node_t node(actions);
+  auto node = node_t(actions);
 
   node.regret(heads) += 7;
   CHECK(node.regret(heads) == 7);
@@ -44,8 +43,9 @@ TEST_CASE("node update", "[oss]") {
 }
 
 TEST_CASE("tree update", "[oss]") {
-  tree_t tree;
+  auto tree = tree_t();
   auto h = make_history<flipguess_t>();
+  h.act(make_action(flipguess_t::action_t::Tails));
   auto infoset = h.infoset();
   auto actions = infoset.actions();
   auto heads = actions[0];

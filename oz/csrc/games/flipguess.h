@@ -38,6 +38,7 @@ class flipguess_t final : public game_t {
   player_t player() const override { return player_; }
   bool is_terminal() const override { return finished_; }
   value_t utility(player_t player) const override;
+  map<oz::action_t, prob_t> chance_actions() const override;
 
   std::unique_ptr<game_t> clone() const override {
     return std::make_unique<flipguess_t>(*this);

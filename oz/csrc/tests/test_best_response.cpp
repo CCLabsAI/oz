@@ -82,6 +82,8 @@ TEST_CASE("best response infoset depths", "[best_response]") {
 
 TEST_CASE("best response map lookup", "[best_response]") {
   auto h = make_history<flipguess_t>();
+  h.act(make_action(flipguess_t::action_t::Heads));
+
   auto infoset = h.infoset();
   auto actions = infoset.actions();
   auto a1 = actions[0];

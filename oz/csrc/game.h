@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "util.h"
 
@@ -13,6 +14,7 @@ namespace oz {
 using std::move;
 using std::string;
 using std::vector;
+using std::map;
 
 using real_t = double;
 using prob_t = double;
@@ -73,6 +75,7 @@ class infoset_t final {
   explicit infoset_t(ptr_t self) : self_(move(self)) { };
   template<class Infoset, typename... Args>
   friend infoset_t make_infoset(Args&& ... args);
+  friend infoset_t null_infoset();
 
   ptr_t self_;
 };
@@ -82,6 +85,10 @@ auto make_infoset(Args&& ... args) -> infoset_t {
   return infoset_t(std::make_shared<Infoset>(std::forward<Args>(args)...));
 }
 
+inline auto null_infoset() -> infoset_t {
+  return infoset_t(nullptr);
+}
+
 class game_t {
  public:
   virtual void act(action_t a) = 0;
@@ -89,6 +96,8 @@ class game_t {
   virtual player_t player() const = 0;
   virtual bool is_terminal() const = 0;
   virtual value_t utility(player_t player) const = 0;
+  virtual map<action_t, prob_t> chance_actions() const = 0;
+
   virtual std::unique_ptr<game_t> clone() const = 0;
   virtual ~game_t() = default;
 };

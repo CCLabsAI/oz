@@ -161,28 +161,55 @@ auto leduk_poker_t::hand_rank(card_t card, card_t board) -> int {
 }
 
 auto leduk_poker_t::infoset() const -> oz::infoset_t {
-  if (player_ == CHANCE) {
-    card_t status = card_t::DEAL1;
-    if (hand(P1) == card_t::NA) {
-      status = card_t::DEAL1;
-    }
-    else if(hand(P2) == card_t::NA) {
-      status = card_t::DEAL2;
-    }
-    else if(board_ == card_t::NA) {
-      status = card_t::DEAL_BOARD;
-    }
+  Expects(player() != CHANCE);
+  return make_infoset<infoset_t>(player_, hand(player_), board_,
+                                 history_, pot_, raises_);
+}
 
-    return make_infoset<infoset_t>(player_, status, board_,
-                                   history_, pot_, raises_);
-  }
-  else {
-    return make_infoset<infoset_t>(player_, hand(player_), board_,
-                                   history_, pot_, raises_);
+static inline int card_idx(leduk_poker_t::card_t a) {
+  using card_t = leduk_poker_t::card_t;
+
+  switch(a) {
+    case card_t::Jack:
+      return 0;
+    case card_t::Queen:
+      return 1;
+    case card_t::King:
+      return 2;
+    default: assert(false);
+      return 0;
   }
 }
 
-auto leduk_poker_t::infoset_t::actions() const -> std::vector<oz::action_t> {
+static inline auto count_to_probs(vector<oz::action_t> actions,
+                                  vector<int> counts)
+  -> map<oz::action_t, prob_t>
+{
+  Expects(actions.size() == counts.size());
+  const prob_t total = accumulate(begin(counts), end(counts), (prob_t) 0);
+  auto m = map<oz::action_t, prob_t>();
+
+  Expects(total > 0);
+
+  // TODO cleanup loop
+  auto count_it = begin(counts);
+  for(auto action_it = begin(actions);
+      action_it != end(actions);
+      ++action_it, ++count_it) {
+    int n = *count_it;
+    if (n > 0) {
+      prob_t p = (prob_t) *count_it / total;
+      m.emplace(*action_it, p);
+      Ensures(0 <= p && p <= 1);
+    }
+  }
+
+  return m;
+}
+
+auto leduk_poker_t::chance_actions() const -> map<oz::action_t, prob_t> {
+  Expects(player() == CHANCE);
+
   static const vector<oz::action_t> chance_actions_p1 {
       make_action(action_t::J1),
       make_action(action_t::Q1),
@@ -201,6 +228,26 @@ auto leduk_poker_t::infoset_t::actions() const -> std::vector<oz::action_t> {
       make_action(action_t::K)
   };
 
+  vector<int> counts = { 2, 2, 2 };
+
+  if (hand(P1) == card_t::NA) {
+    return count_to_probs(chance_actions_p1, counts);
+  }
+  else if(hand(P2) == card_t::NA) {
+    --counts[card_idx(hand(P1))];
+    return count_to_probs(chance_actions_p2, counts);
+  }
+  else if(board_ == card_t::NA) {
+    --counts[card_idx(hand(P1))];
+    --counts[card_idx(hand(P2))];
+    return count_to_probs(chance_actions_board, counts);
+  }
+
+  assert (false);
+  return map<oz::action_t, prob_t>();
+}
+
+auto leduk_poker_t::infoset_t::actions() const -> std::vector<oz::action_t> {
   static const vector<oz::action_t> raise_call_fold {
       make_action(action_t::Raise),
       make_action(action_t::Call),
@@ -212,28 +259,11 @@ auto leduk_poker_t::infoset_t::actions() const -> std::vector<oz::action_t> {
       make_action(action_t::Fold),
   };
 
-  if (this->player == CHANCE) {
-    if (hand == card_t::DEAL1) {
-      return chance_actions_p1;
-    }
-    else if(hand == card_t::DEAL2) {
-      return chance_actions_p2;
-    }
-    else if(hand == card_t::DEAL_BOARD) {
-      return chance_actions_board;
-    }
-    else {
-      assert (false);
-      return chance_actions_p1;
-    }
+  if (raises < MAX_RAISES) {
+    return raise_call_fold;
   }
   else {
-    if (raises < MAX_RAISES) {
-      return raise_call_fold;
-    }
-    else {
-      return call_fold;
-    }
+    return call_fold;
   }
 }
 

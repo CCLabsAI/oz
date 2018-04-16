@@ -89,12 +89,8 @@ void kuhn_poker_t::deal_hand(action_t a) {
 }
 
 auto kuhn_poker_t::infoset() const -> oz::infoset_t {
-  if (player_ == CHANCE) {
-    return make_infoset<infoset_t>(player_, card_t::NA, history_);    
-  }
-  else {
-    return make_infoset<infoset_t>(player_, hand(player_), history_);
-  }
+  Expects(player() != CHANCE);
+  return make_infoset<infoset_t>(player_, hand(player_), history_);
 }
 
 auto kuhn_poker_t::utility(player_t player) const -> value_t {
@@ -132,36 +128,39 @@ auto kuhn_poker_t::utility(player_t player) const -> value_t {
   return relative_utility(player, u);
 }
 
-auto kuhn_poker_t::infoset_t::actions() const -> vector<oz::action_t> {
-  static const vector<oz::action_t> chance_actions {
-    make_action(action_t::JQ),
-    make_action(action_t::JK),
-    make_action(action_t::QJ),
-    make_action(action_t::QK),
-    make_action(action_t::KJ),
-    make_action(action_t::KQ)
+map<oz::action_t, prob_t> kuhn_poker_t::chance_actions() const {
+  Expects(player() == CHANCE);
+
+  static const prob_t p = (prob_t) 1/6;
+  static const map<oz::action_t, prob_t> chance_actions {
+      { make_action(action_t::JQ), p },
+      { make_action(action_t::JK), p },
+      { make_action(action_t::QJ), p },
+      { make_action(action_t::QK), p },
+      { make_action(action_t::KJ), p },
+      { make_action(action_t::KQ), p }
   };
 
+  return chance_actions;
+}
+
+auto kuhn_poker_t::infoset_t::actions() const -> vector<oz::action_t> {
   static const vector<oz::action_t> player_actions {
     make_action(action_t::Pass),
     make_action(action_t::Bet),
   };
 
-  if (player == CHANCE) {
-    return chance_actions;
-  } else {
-    return player_actions;
-  }
+  return player_actions;
 }
 
 auto kuhn_poker_t::infoset_t::hash() const -> size_t {
-    size_t seed = 0;
-    hash_combine(seed, player);
-    hash_combine(seed, hand);
-    for (const auto &a : history) {
-      hash_combine(seed, a);
-    }
-    return seed;
+  size_t seed = 0;
+  hash_combine(seed, player);
+  hash_combine(seed, hand);
+  for (const auto &a : history) {
+    hash_combine(seed, a);
+  }
+  return seed;
 }
 
 auto kuhn_poker_t::infoset_t::str() const -> string {
