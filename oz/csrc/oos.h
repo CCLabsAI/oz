@@ -148,7 +148,7 @@ class tree_t final {
   node_t &lookup(const infoset_t &infoset) { return nodes_.at(infoset); }
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
 
-  sample_ret_t sample_sigma(infoset_t infoset, prob_t eps, rng_t &rng) const;
+  tree_t::sample_ret_t sample_sigma(infoset_t infoset, bool targeted, prob_t eps, rng_t &rng) const;
   sigma_t sigma_average() const;
 
   map_t &nodes() { return nodes_; }

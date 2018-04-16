@@ -6,6 +6,7 @@
 #include <numeric>
 
 #include <cassert>
+#include <cmath>
 
 #define Expects(cond) assert(cond)
 #define Ensures(cond) assert(cond)
@@ -43,11 +44,17 @@ inline bool all_greater_equal_zero(T iter) {
                 [](const auto &x) { return x >= 0; });
 }
 
-// TODO lift make this prob_t or something
+// TODO make this prob_t or something instead of double
 template <typename T>
-inline double sum_probs(T iter) {
+inline double sum_probs(T col) {
   using namespace std;
-  return accumulate(begin(iter), end(iter), (double) 0);
+  return accumulate(begin(col), end(col), (double) 0);
+}
+
+template <typename T>
+bool sum_to_one(T col) {
+  using namespace std;
+  return abs(1.0 - sum_probs(col)) < 1e-9;
 }
 
 } // namespace oz

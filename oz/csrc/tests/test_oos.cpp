@@ -84,11 +84,15 @@ TEST_CASE("oss search", "[oss]") {
   tree_t tree;
   rng_t rng(1);
 
-  s.search(h, 20000, tree, rng);
+  s.search(h, 25000, tree, rng);
   CHECK(tree.size() == 2);
-  auto node = tree.lookup(make_infoset<flipguess_t::infoset_t>(P2));
-  auto nl = node.average_strategy(make_action(flipguess_t::action_t::Left));
-  auto nr = node.average_strategy(make_action(flipguess_t::action_t::Right));
+
+  static const auto left = make_action(flipguess_t::action_t::Left);
+  static const auto right = make_action(flipguess_t::action_t::Right);
+
+  const auto node = tree.lookup(make_infoset<flipguess_t::infoset_t>(P2));
+  const auto nl = node.average_strategy(left);
+  const auto nr = node.average_strategy(right);
   CHECK(nl / (nl + nr) == Approx((prob_t) 1/3).epsilon(0.05));
 }
 

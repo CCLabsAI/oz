@@ -14,11 +14,11 @@ int main(int argc, char **argv) {
   oos_t s;
   tree_t tree;
   rng_t rng(1);
-  value_t ex = std::numeric_limits<value_t>::infinity();
+  value_t ex = numeric_limits<value_t>::infinity();
 
   cout << fixed << setprecision(3);
 
-  while(ex > 0) {
+  while(ex > 0.2) {
     s.search(h, 10000, tree, rng);
     auto sigma = tree.sigma_average();
     ex = exploitability(h, sigma);
