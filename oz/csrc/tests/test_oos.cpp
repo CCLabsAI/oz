@@ -120,10 +120,8 @@ TEST_CASE("oss exploitability kuhn poker", "[oss]") {
   rng_t rng(1);
   value_t ex = numeric_limits<value_t>::max();
 
-  s.search(h, 5000, tree, rng);
-
   for(int i = 0; i < 5; ++i) {
-    s.search(h, 2000, tree, rng);
+    s.search(h, 5000, tree, rng);
     auto sigma = tree.sigma_average();
     auto ex_iter = exploitability(h, sigma);
 

@@ -81,7 +81,7 @@ class sigma_t final {
   }
 
   action_prob_t sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const;
-  action_prob_t sample_targeted(infoset_t infoset, prob_t eps, rng_t &rng) const;
+  action_prob_t sample_targeted(infoset_t infoset, bool targeted, prob_t eps, rng_t &rng) const;
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
@@ -200,7 +200,7 @@ class oos_t final {
         search_player_(search_player),
         targeted_(false),
         eps_(0.4),
-        delta_(0.1)
+        delta_(0.2)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path

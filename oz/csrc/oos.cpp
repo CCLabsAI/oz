@@ -13,11 +13,15 @@ namespace oz {
 using namespace std;
 
 void oos_t::search_t::prepare_suffix_probs() {
+  Expects(suffix_prob_.x > 0);
+
   prob_t s1 = prefix_prob_.s1 * suffix_prob_.x;
   prob_t s2 = prefix_prob_.s2 * suffix_prob_.x;
 
   suffix_prob_.l = delta_*s1 + (1.0 - delta_)*s2;
   suffix_prob_.u = history_.utility(search_player_);
+
+  Ensures(suffix_prob_.l > 0);
 }
 
 void oos_t::search_t::tree_step(action_prob_t ap) {
@@ -239,6 +243,7 @@ auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const
   return { a, pr_a, rho1, rho2 };
 };
 
+// TODO remove this function
 auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
   -> action_prob_t
 {
@@ -249,7 +254,7 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
   Expects(!actions.empty());
 
   const auto N = static_cast<int>(actions.size());
-  const auto p = (prob_t) 1/actions.size();
+  const auto p = (prob_t) 1/N;
   Expects(N > 0);
 
   if (u <= eps) {
@@ -274,12 +279,16 @@ static inline auto target() -> set<action_t> {
   return { };
 }
 
-auto sigma_t::sample_targeted(infoset_t infoset, prob_t eps, rng_t &rng) const
+// TODO break up this function
+auto sigma_t::sample_targeted(infoset_t infoset,
+                              bool targeted, prob_t eps,
+                              rng_t &rng) const
   -> action_prob_t
 {
   const auto actions = infoset.actions();
 //  const auto targets = target();
 //  const auto targets = set<action_t>(begin(actions), end(actions));
+
   const auto targets = (actions.size() > 2) ?
     set<action_t>(begin(actions), begin(actions) + 2) :
     set<action_t>(begin(actions), end(actions));
@@ -297,16 +306,17 @@ auto sigma_t::sample_targeted(infoset_t infoset, prob_t eps, rng_t &rng) const
               return this->pr(infoset, a);
             });
 
-  // epsilon greedy probabilities
-  auto probs_eps = vector<prob_t>(probs.size());
-  transform(begin(probs), end(probs), begin(probs_eps),
+  // epsilon exploration probabilities
+  auto probs_untargeted = vector<prob_t>(probs.size());
+  transform(begin(probs), end(probs), begin(probs_untargeted),
             [eps, p_eps](const prob_t &p) -> prob_t {
               return eps*p_eps + (1.0 - eps)*p;
             });
 
   // targeted action weights (unscaled)
-  auto weights = vector<prob_t>(actions.size());
-  transform(begin(actions), end(actions), begin(probs_eps), begin(weights),
+  auto weights_targeted = vector<prob_t>(actions.size());
+  transform(begin(actions), end(actions), begin(probs_untargeted),
+            begin(weights_targeted),
             [&targets](const action_t &a, const prob_t &p) -> prob_t {
               if(targets.find(a) != end(targets)) {
                 return p;
@@ -316,35 +326,36 @@ auto sigma_t::sample_targeted(infoset_t infoset, prob_t eps, rng_t &rng) const
               }
             });
 
-  const auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
+  const auto total_weight = accumulate(begin(weights_targeted),
+                                       end(weights_targeted),
+                                       (prob_t) 0);
 
-  // TODO make this more elegant
-  const auto K = static_cast<int>(targets.size());
-  if (total == 0) {
-    transform(begin(actions), end(actions), begin(probs_eps), begin(weights),
-              [&targets, K](const action_t &a, const prob_t &p) -> prob_t {
-                if(targets.find(a) != end(targets)) {
-                  return (prob_t) 1/K;
-                }
-                else {
-                  return 0;
-                }
-              });
-  }
+  // NB if the targeted weights total is zero, we have tried to target a
+  // subgame that has zero probability. In this case we bail out
+  // and proceed by sampling in an untargeted way.
+  // We also need to twiddle the rho1 probability in the case :/
 
-  auto a_dist = discrete_distribution<>(begin(weights), end(weights));
+  const auto &sample_probs = (targeted && total_weight > 0) ?
+                             weights_targeted :
+                             probs_untargeted;
+
+  auto a_dist = discrete_distribution<>(begin(sample_probs),
+                                        end(sample_probs));
   const auto i = a_dist(rng);
 
   const auto a = actions[i];
-  const auto pr_a = probs[i];      // prob of action under current policy
-  const auto rho1 = (total == 0) ? // prob with targeting
-                      (prob_t) 1/K :
-                      weights[i] / total;
-  const auto rho2 = probs_eps[i]; // prob without targeting
+  const auto pr_a = probs[i];
+
+  const auto pr_targeted   = weights_targeted[i] / total_weight;
+  const auto pr_untargeted = probs_untargeted[i];
+
+  const auto rho1 = (total_weight > 0) ? pr_targeted : pr_untargeted;
+  const auto rho2 = pr_untargeted;
 
   Ensures(0 <= pr_a && pr_a <= 1);
   Ensures(0 <= rho1 && rho1 <= 1);
   Ensures(0 <= rho2 && rho2 <= 1);
+  Ensures(!targeted || rho2 - rho1 < 1e-6);
 
   return { a, pr_a, rho1, rho2 };
 }
@@ -369,6 +380,7 @@ node_t::node_t(std::vector<action_t> actions) {
 
 auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
   const auto actions_pr = chance_actions();
+  Expects(!actions_pr.empty());
 
   auto actions = vector<action_t>(actions_pr.size());
   auto probs = vector<prob_t>(actions_pr.size());
@@ -402,10 +414,10 @@ auto history_t::sample_uniform(rng_t &rng) const -> action_prob_t {
   auto N = static_cast<int>(actions.size());
   Expects(N > 0);
 
-  auto d = uniform_int_distribution<>(1, N-1);
+  auto d = uniform_int_distribution<>(0, N-1);
   auto i = d(rng);
   auto a = actions[i];
-  auto pr_a = (prob_t) 1 / actions.size();
+  auto pr_a = (prob_t) 1/N;
   Ensures(0 <= pr_a && pr_a <= 1);
 
   return { a, pr_a, pr_a, pr_a };
@@ -428,9 +440,8 @@ auto tree_t::sample_sigma(infoset_t infoset, bool targeted,
     const auto &node = lookup(infoset);
     const auto sigma = node.sigma_regret_matching();
 
-    const auto ap = targeted ?
-                    sigma.sample_targeted(infoset, eps, rng) :
-                    sigma.sample_eps(infoset, eps, rng);
+    // const auto ap = sigma.sample_eps(infoset, eps, rng);
+    const auto ap = sigma.sample_targeted(infoset, targeted, eps, rng);
 
     return { ap, false };
   }
