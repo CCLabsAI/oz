@@ -21,12 +21,14 @@ struct action_prob_t {
   action_t a;
   prob_t pr_a;  // probability action was taken under policy
   prob_t rho1;  // probability of sampling action when targeted
-  prob_t rho2;  // probability of sampling action (untargeted)
+  prob_t rho2;  // probability of sampling action not targeted
 };
 
 class history_t final {
  public:
   history_t(const history_t& that) : self_(that.self_->clone()) {};
+  history_t(history_t&& that) = default;
+
   history_t &operator=(history_t &&that) = default;
 
   void act(action_t a) { self_->act(a); }
@@ -180,7 +182,7 @@ class sigma_average_t final : public sigma_t::concept_t {
   const tree_t tree_;
 };
 
-static_assert(std::numeric_limits<prob_t>::has_signaling_NaN == true);
+static_assert(std::numeric_limits<prob_t>::has_signaling_NaN);
 static constexpr prob_t NaN = std::numeric_limits<prob_t>::signaling_NaN();
 
 class oos_t final {

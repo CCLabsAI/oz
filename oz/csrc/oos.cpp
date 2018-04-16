@@ -307,19 +307,20 @@ auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
   auto pr_a = probs[i];
   auto rho1 = pr_a;
   auto rho2 = pr_a;
-
   Ensures(0 <= pr_a && pr_a <= 1);
 
   return { a, pr_a, rho1, rho2 };
 }
 
-action_prob_t history_t::sample_uniform(rng_t &rng) const {
+auto history_t::sample_uniform(rng_t &rng) const -> action_prob_t {
   auto actions = infoset().actions();
-  auto d = uniform_int_distribution<>(1, actions.size() - 1);
+  auto N = static_cast<int>(actions.size());
+  Expects(N > 0);
+
+  auto d = uniform_int_distribution<>(1, N-1);
   auto i = d(rng);
   auto a = actions[i];
   auto pr_a = (prob_t) 1 / actions.size();
-
   Ensures(0 <= pr_a && pr_a <= 1);
 
   return { a, pr_a, pr_a, pr_a };
@@ -392,7 +393,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
             [](const auto &x) { return rectify(x.second); });
 
   auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
-  int N = weights.size() - 1;
+  auto N = static_cast<int>(weights.size());
 
   Expects(N > 0);
   Expects(!actions.empty());
@@ -405,7 +406,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
     i = a_dist(rng);
   }
   else {
-    auto a_dist = uniform_int_distribution<>(0, N);
+    auto a_dist = uniform_int_distribution<>(0, N-1);
     i = a_dist(rng);
   }
 
