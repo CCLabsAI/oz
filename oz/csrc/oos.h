@@ -81,6 +81,7 @@ class sigma_t final {
   }
 
   action_prob_t sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const;
+  action_prob_t sample_targeted(infoset_t infoset, prob_t eps, rng_t &rng) const;
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
@@ -197,6 +198,7 @@ class oos_t final {
         state_(state_t::SELECT),
         history_(move(history)),
         search_player_(search_player),
+        targeted_(false),
         eps_(0.4),
         delta_(0.1)
     { }
@@ -263,6 +265,8 @@ class oos_t final {
     player_t search_player_;
     prefix_prob_t prefix_prob_;
     suffix_prob_t suffix_prob_;
+
+    bool targeted_;
 
     prob_t eps_;
     prob_t delta_;

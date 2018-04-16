@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 
   cout << fixed << setprecision(3);
 
-  while(ex > 0.2) {
+  while(ex > 0) {
     s.search(h, 10000, tree, rng);
     auto sigma = tree.sigma_average();
     ex = exploitability(h, sigma);

@@ -1,6 +1,7 @@
 #include <cassert>
 #include <algorithm>
 #include <iterator>
+#include <set>
 
 #include "util.h"
 #include "hash.h"
@@ -63,7 +64,7 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
     }
     else {
       const auto infoset = history_.infoset();
-      const auto eps = history_.player() == search_player_ ? eps_ : 0;
+      const auto eps = (history_.player() == search_player_) ? eps_ : 0;
       const auto r = tree.sample_sigma(infoset, eps, rng);
 
       if (r.out_of_tree) {
@@ -237,18 +238,19 @@ auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const
 auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
   -> action_prob_t
 {
-  auto d = uniform_real_distribution<>();
-  const prob_t u = d(rng);
+  auto d_eps = uniform_real_distribution<>();
+  const prob_t u = d_eps(rng);
 
   const auto actions = infoset.actions();
-  assert(actions.size() > 0);
+  Expects(!actions.empty());
 
-  const auto K = actions.size() - 1;
+  const auto N = static_cast<int>(actions.size());
   const auto p = (prob_t) 1/actions.size();
+  Expects(N > 0);
 
   if (u <= eps) {
-    auto dd = uniform_int_distribution<>(0, K);
-    const auto i = dd(rng);
+    auto d_a = uniform_int_distribution<>(0, N-1);
+    const auto i = d_a(rng);
     const auto a = actions[i];
 
     prob_t pr_a = pr(infoset, a);
@@ -263,6 +265,68 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
     return ap;
   }
 };
+
+static inline auto target() -> set<action_t> {
+  return { };
+}
+
+auto sigma_t::sample_targeted(infoset_t infoset, prob_t eps, rng_t &rng) const
+  -> action_prob_t
+{
+  const auto actions = infoset.actions();
+  const auto targets = target();
+
+  Expects(!actions.empty());
+  Expects(!targets.empty());
+
+  auto N = static_cast<int>(actions.size());
+  auto p_eps = (prob_t) 1/N;
+
+  // raw action probabilities
+  auto probs = vector<prob_t>(actions.size());
+  transform(begin(actions), end(actions), begin(probs),
+            [this, &infoset](const action_t &a) -> prob_t {
+                return pr(infoset, a);
+            });
+
+  // epsilon greedy probabilities
+  auto probs_eps = vector<prob_t>(probs.size());
+  transform(begin(probs), end(probs), begin(probs_eps),
+            [eps, p_eps](const prob_t &p) -> prob_t {
+              return eps*p_eps + (1-eps)*p;
+            });
+
+  // targeted action weights (unscaled)
+  auto weights = vector<prob_t>(actions.size());
+  transform(begin(actions), end(actions),
+            begin(probs_eps), begin(weights),
+            [&targets](const action_t &a, const prob_t &p) -> prob_t {
+              if(targets.find(a) != end(targets)) {
+                return p;
+              }
+              else {
+                return 0;
+              }
+            });
+
+  const auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
+  Expects(total > 0);
+
+  auto a_dist = discrete_distribution<>(begin(weights), end(weights));
+  const auto i = a_dist(rng);
+
+  const auto a = actions[i];
+  const auto pr_a = probs[i];           // prob of under current policy
+  const auto rho1 = weights[i] / total; // prob with targeting
+  const auto rho2 = probs_eps[i];       // prob without targeting
+
+  Ensures(0 <= pr_a && pr_a <= 1);
+  Ensures(0 <= rho1 && rho1 <= 1);
+  Ensures(0 <= rho2 && rho2 <= 1);
+
+  return { a, pr_a, rho1, rho2 };
+}
+
 
 node_t::node_t(std::vector<action_t> actions) {
   Expects(!actions.empty());
@@ -411,7 +475,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   }
 
   auto a = actions[i];
-  auto pr_a = total > 0 ? weights[i]/total : (prob_t) 1/weights.size();
+  auto pr_a = total > 0 ? weights[i]/total : (prob_t) 1/N;
   auto rho1 = pr_a, rho2 = pr_a;
 
   Ensures(0 <= pr_a && pr_a <= 1);

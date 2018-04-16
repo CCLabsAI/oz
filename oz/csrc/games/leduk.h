@@ -39,11 +39,6 @@ class leduk_poker_t final : public game_t {
     Jack = 1,
     Queen,
     King,
-
-    // TODO clean this up
-    DEAL1 = -2,
-    DEAL2 = -3,
-    DEAL_BOARD = -4
   };
 
   static constexpr int N_PLAYERS = 2;
@@ -91,7 +86,7 @@ class leduk_poker_t final : public game_t {
   static constexpr action_t CHANCE_FINISH = action_t::K;
 
   player_t player_ = CHANCE;
-  array<card_t, N_PLAYERS> hand_ { {card_t::NA, card_t::NA} };
+  array<card_t, N_PLAYERS> hand_ {{ card_t::NA, card_t::NA }};
   card_t board_ = card_t::NA;
   array<int, N_PLAYERS> pot_ {{ ANTE, ANTE }};
   int round_ = 0;
@@ -101,12 +96,12 @@ class leduk_poker_t final : public game_t {
   array<bool, N_PLAYERS> folded_ {{ false, false }};
 
   player_t other_player() const {
-    assert(player_ == P1 || player_ == P2);
+    Expects(player_ == P1 || player_ == P2);
     return player_ == P1 ? P2 : P1;
   }
 
   inline static int player_idx(player_t p) {
-    assert(p == P1 || p == P2);
+    Expects(p == P1 || p == P2);
     switch (p) {
       case P1: return 0;
       case P2: return 1;
