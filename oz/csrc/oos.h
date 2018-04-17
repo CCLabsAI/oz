@@ -7,6 +7,7 @@
 #include <map>
 
 #include "game.h"
+#include "target.h"
 
 namespace oz {
 
@@ -86,7 +87,8 @@ class sigma_t final {
   action_prob_t sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const;
 
   action_prob_t sample_targeted(infoset_t infoset,
-                                bool targeted, prob_t eps, prob_t gamma,
+                                set<action_t> targets, bool targeted,
+                                prob_t eps, prob_t gamma,
                                 rng_t &rng) const;
 
  private:
@@ -155,7 +157,8 @@ class tree_t final {
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
 
   sample_ret_t sample_sigma(infoset_t infoset,
-                            bool targeted, prob_t eps, prob_t gamma,
+                            set<action_t> targets, bool targeted,
+                            prob_t eps, prob_t gamma,
                             rng_t &rng) const;
 
   sigma_t sigma_average() const;
@@ -197,8 +200,14 @@ static constexpr prob_t NaN = std::numeric_limits<prob_t>::signaling_NaN();
 
 class oos_t final {
  public:
-  void search(history_t h, int n_iter, tree_t &tree, rng_t &rng);
-  void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng);
+  void search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
+              target_t target = target_t{},
+              prob_t eps = 0.4,
+              prob_t delta = 0.2,
+              prob_t gamma = 0.01);
+
+  void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
+                   target_t target, prob_t eps, prob_t delta, prob_t gamma);
 
   // state machine representing a search
   class search_t final {
@@ -211,6 +220,18 @@ class oos_t final {
         eps_(0.4),
         delta_(0.2),
         gamma_(0.01)
+    { }
+
+    search_t(history_t history, player_t search_player, target_t target,
+             prob_t eps = 0.4, prob_t delta = 0.2, prob_t gamma = 0.01):
+        state_(state_t::SELECT),
+        history_(move(history)),
+        target_(move(target)),
+        search_player_(search_player),
+        targeted_(false),
+        eps_(eps),
+        delta_(delta),
+        gamma_(gamma)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
@@ -247,6 +268,10 @@ class oos_t final {
     void tree_step(action_prob_t ap); // take one step in-tree and extend path
     void prepare_suffix_probs();
 
+    tree_t::sample_ret_t sample_tree(const tree_t &tree,
+                                     const infoset_t &infoset,
+                                     rng_t &rng) const;
+
     struct prefix_prob_t {
       prob_t pi_i = 1.0;  // reach probability for search player to current history
       prob_t pi_o = 1.0;  // reach probability for opponent player and chance
@@ -271,12 +296,13 @@ class oos_t final {
 
     history_t history_;
     vector<path_item_t> path_;
+    target_t target_;
 
     player_t search_player_;
     prefix_prob_t prefix_prob_;
     suffix_prob_t suffix_prob_;
 
-    bool targeted_;
+    bool targeted_; // is this iteration targeted?
 
     prob_t eps_;
     prob_t delta_;

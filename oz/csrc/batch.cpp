@@ -46,8 +46,8 @@ static inline auto count_needs_eval(const search_list_t &searches_) {
 }
 
 auto batch_search_t::generate_batch() -> Tensor {
-  const auto N = static_cast<unsigned long>(searches_.size());
-  const auto D = static_cast<unsigned long>(encoder_->encoding_size());
+  const auto N = static_cast<int>(searches_.size());
+  const auto D = encoder_->encoding_size();
   Tensor d = CPU(kFloat).zeros({ N, D });
 
   int search_eval_n = 0;

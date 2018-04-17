@@ -1,3 +1,4 @@
+#include "oos.h"
 #include "target.h"
 
 namespace oz {
@@ -8,13 +9,13 @@ auto leduk_target_t::cast_history(const history_t &h) -> const leduk_poker_t& {
   return h.cast<leduk_poker_t>();
 }
 
-auto leduk_target_t::target_actions(const history_t &current_history,
-                                    const history_t &target_history,
-                                    vector<action_t> actions) const
+auto leduk_target_t::target_actions(const history_t &current_history) const
   -> set<action_t>
 {
   const auto &current_game = cast_history(current_history);
-  const auto &target_game = cast_history(target_history);
+
+  // NB returning an empty set here means no targeting needs
+  // TODO create custom return type
 
   // TODO clean this up
   if (current_game.player() == CHANCE) {
@@ -29,7 +30,7 @@ auto leduk_target_t::target_actions(const history_t &current_history,
         case leduk_poker_t::card_t::King:
           return { make_action(leduk_poker_t::action_t::K) };
         default:
-          return set<action_t>(begin(actions), end(actions));
+          return { };
       }
     }
   }
@@ -52,7 +53,7 @@ auto leduk_target_t::target_actions(const history_t &current_history,
     return { make_action(target) };
   }
   else {
-    return set<action_t>(begin(actions), end(actions));
+    return { };
   }
 }
 

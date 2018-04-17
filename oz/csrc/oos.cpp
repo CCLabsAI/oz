@@ -54,6 +54,25 @@ void oos_t::search_t::tree_step(action_prob_t ap) {
   history_.act(ap.a);
 }
 
+auto oos_t::search_t::sample_tree(const tree_t &tree,
+                                  const infoset_t &infoset,
+                                  rng_t &rng) const
+  -> tree_t::sample_ret_t
+{
+  const auto eps = (history_.player() == search_player_) ? eps_ : 0;
+  const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
+  const auto targets = target_ && targeted_ ?
+                       target_.target_actions(history_) :
+                       set<action_t> { };
+
+  const auto r = tree.sample_sigma(infoset,
+                                   targets, targeted_,
+                                   eps, gamma,
+                                   rng);
+
+  return r;
+}
+
 void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
   Expects(state_ == state_t::SELECT);
 
@@ -71,10 +90,7 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
       tree_step(ap);
     }
     else {
-      const auto infoset = history_.infoset();
-      const auto eps = (history_.player() == search_player_) ? eps_ : 0;
-      const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
-      const auto r = tree.sample_sigma(infoset, targeted_, eps, gamma, rng);
+      const auto r = sample_tree(tree, history_.infoset(), rng);
 
       if (r.out_of_tree) {
         state_ = state_t::CREATE;
@@ -96,9 +112,7 @@ void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
   const auto infoset = history_.infoset();
   tree.create_node(infoset);
 
-  const auto eps = history_.player() == search_player_ ? eps_ : 0;
-  const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
-  const auto r = tree.sample_sigma(infoset, targeted_, eps, gamma, rng);
+  const auto r = sample_tree(tree, infoset, rng);
   Expects(!r.out_of_tree);
 
   tree_step(r.ap);
@@ -133,9 +147,7 @@ void oos_t::search_t::create_prior(tree_t& tree,
 
   nodes.emplace(infoset, node);
 
-  const auto eps = history_.player() == search_player_ ? eps_ : 0;
-  const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
-  const auto r = tree.sample_sigma(infoset, targeted_, eps, gamma, rng);
+  const auto r = sample_tree(tree, infoset, rng);
   Expects(!r.out_of_tree);
 
   tree_step(r.ap);
@@ -284,27 +296,25 @@ static inline auto target() -> set<action_t> {
 
 // TODO break up this function
 auto sigma_t::sample_targeted(infoset_t infoset,
-                              bool targeted, prob_t eps, prob_t gamma,
+                              set<action_t> targets, bool targeted,
+                              prob_t eps, prob_t gamma,
                               rng_t &rng) const
   -> action_prob_t
 {
   const auto actions = infoset.actions();
-//  const auto targets = target();
-//  const auto targets = set<action_t>(begin(actions), end(actions));
 
   // FIXME testing and experimentation only
-  const auto targets = (actions.size() > 2) ?
-    set<action_t>(begin(actions), begin(actions) + 2) :
-    set<action_t>(begin(actions), end(actions));
+  //  const auto targets = (actions.size() > 2) ?
+  //    set<action_t>(begin(actions), begin(actions) + 2) :
+  //    set<action_t>(begin(actions), end(actions));
 
   Expects(!actions.empty());
-  Expects(!targets.empty());
 
   const auto N = static_cast<int>(actions.size());
   const auto p_eps = (prob_t) 1/N;
   const auto p_gamma = (prob_t) 1/N;
 
-  // The differene between gamma and epsilon here is that
+  // The difference between gamma and epsilon here is that
   // epsilon is extrinsic exploration that is accounted for by
   // importance weights (e.g. appears as a factor in rho)
   // gamma is considered part of the opponent strategy and models
@@ -314,7 +324,7 @@ auto sigma_t::sample_targeted(infoset_t infoset,
   // raw action probabilities (with gamma "mistake" model)
   auto probs = vector<prob_t>(actions.size());
   transform(begin(actions), end(actions), begin(probs),
-            [&] (const action_t &a) -> prob_t {
+            [&](const action_t &a) -> prob_t {
               return gamma*p_gamma + (1 - gamma)*this->pr(infoset, a);
             });
 
@@ -327,16 +337,21 @@ auto sigma_t::sample_targeted(infoset_t infoset,
 
   // targeted action weights (unscaled)
   auto weights_targeted = vector<prob_t>(actions.size());
-  transform(begin(actions), end(actions), begin(probs_untargeted),
-            begin(weights_targeted),
-            [&](const action_t &a, const prob_t &p) -> prob_t {
-              if(targets.find(a) != end(targets)) {
-                return p;
-              }
-              else {
-                return 0;
-              }
-            });
+  if (targets.empty()) {
+    weights_targeted = probs_untargeted;
+  }
+  else {
+    transform(begin(actions), end(actions),
+              begin(probs_untargeted), begin(weights_targeted),
+              [&](const action_t &a, const prob_t &p) -> prob_t {
+                if(targets.find(a) != end(targets)) {
+                  return p;
+                }
+                else {
+                  return 0;
+                }
+              });
+  }
 
   const auto total_weight = accumulate(begin(weights_targeted),
                                        end(weights_targeted),
@@ -440,7 +455,8 @@ void tree_t::create_node(infoset_t infoset) {
 }
 
 auto tree_t::sample_sigma(infoset_t infoset,
-                          bool targeted, prob_t eps, prob_t gamma,
+                          set<action_t> targets, bool targeted,
+                          prob_t eps, prob_t gamma,
                           rng_t &rng) const
   -> tree_t::sample_ret_t
 {
@@ -454,7 +470,10 @@ auto tree_t::sample_sigma(infoset_t infoset,
     const auto sigma = node.sigma_regret_matching();
 
     // const auto ap = sigma.sample_eps(infoset, eps, rng);
-    const auto ap = sigma.sample_targeted(infoset, targeted, eps, gamma, rng);
+    const auto ap = sigma.sample_targeted(infoset,
+                                          targets, targeted,
+                                          eps, gamma,
+                                          rng);
 
     return { ap, false };
   }
@@ -568,10 +587,14 @@ static inline auto sample_action(const history_t &h, rng_t &rng)
 }
 
 void oos_t::search_iter(history_t h, player_t player,
-                        tree_t &tree, rng_t &rng)
+                        tree_t &tree, rng_t &rng,
+                        target_t target,
+                        prob_t eps,
+                        prob_t delta,
+                        prob_t gamma)
 {
   using state_t = search_t::state_t;
-  auto s = search_t(move(h), player);
+  auto s = search_t(move(h), player, move(target), eps, delta, gamma);
 
   while (s.state() != state_t::FINISHED) {
     switch (s.state()) {
@@ -593,12 +616,16 @@ void oos_t::search_iter(history_t h, player_t player,
   }
 }
 
-void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng) {
+void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
+                   target_t target,
+                   prob_t eps,
+                   prob_t delta,
+                   prob_t gamma) {
   Expects(n_iter >= 0);
 
   for(int i = 0; i < n_iter; i++) {
-    search_iter(h, P1, tree, rng);
-    search_iter(h, P2, tree, rng);
+    search_iter(h, P1, tree, rng, target, eps, delta, gamma);
+    search_iter(h, P2, tree, rng, target, eps, delta, gamma);
   }
 }
 
