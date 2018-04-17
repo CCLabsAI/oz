@@ -81,7 +81,10 @@ class sigma_t final {
   }
 
   action_prob_t sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const;
-  action_prob_t sample_targeted(infoset_t infoset, bool targeted, prob_t eps, rng_t &rng) const;
+
+  action_prob_t sample_targeted(infoset_t infoset,
+                                bool targeted, prob_t eps, prob_t gamma,
+                                rng_t &rng) const;
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
@@ -148,7 +151,10 @@ class tree_t final {
   node_t &lookup(const infoset_t &infoset) { return nodes_.at(infoset); }
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
 
-  tree_t::sample_ret_t sample_sigma(infoset_t infoset, bool targeted, prob_t eps, rng_t &rng) const;
+  sample_ret_t sample_sigma(infoset_t infoset,
+                            bool targeted, prob_t eps, prob_t gamma,
+                            rng_t &rng) const;
+
   sigma_t sigma_average() const;
 
   map_t &nodes() { return nodes_; }
@@ -200,7 +206,8 @@ class oos_t final {
         search_player_(search_player),
         targeted_(false),
         eps_(0.4),
-        delta_(0.2)
+        delta_(0.2),
+        gamma_(0.01)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
@@ -251,7 +258,7 @@ class oos_t final {
     };
 
     struct path_item_t {
-      player_t player = CHANCE;
+      player_t player;
       infoset_t infoset;
       action_prob_t action_prob;
       prefix_prob_t prefix_prob;
@@ -270,6 +277,7 @@ class oos_t final {
 
     prob_t eps_;
     prob_t delta_;
+    prob_t gamma_;
   }; // class search_t
 
 }; // class oos_t

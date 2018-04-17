@@ -73,7 +73,8 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
     else {
       const auto infoset = history_.infoset();
       const auto eps = (history_.player() == search_player_) ? eps_ : 0;
-      const auto r = tree.sample_sigma(infoset, targeted_, eps, rng);
+      const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
+      const auto r = tree.sample_sigma(infoset, targeted_, eps, gamma, rng);
 
       if (r.out_of_tree) {
         state_ = state_t::CREATE;
@@ -96,7 +97,8 @@ void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
   tree.create_node(infoset);
 
   const auto eps = history_.player() == search_player_ ? eps_ : 0;
-  const auto r = tree.sample_sigma(infoset, targeted_, eps, rng);
+  const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
+  const auto r = tree.sample_sigma(infoset, targeted_, eps, gamma, rng);
   Expects(!r.out_of_tree);
 
   tree_step(r.ap);
@@ -132,7 +134,8 @@ void oos_t::search_t::create_prior(tree_t& tree,
   nodes.emplace(infoset, node);
 
   const auto eps = history_.player() == search_player_ ? eps_ : 0;
-  const auto r = tree.sample_sigma(infoset, targeted_, eps, rng);
+  const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
+  const auto r = tree.sample_sigma(infoset, targeted_, eps, gamma, rng);
   Expects(!r.out_of_tree);
 
   tree_step(r.ap);
@@ -281,7 +284,7 @@ static inline auto target() -> set<action_t> {
 
 // TODO break up this function
 auto sigma_t::sample_targeted(infoset_t infoset,
-                              bool targeted, prob_t eps,
+                              bool targeted, prob_t eps, prob_t gamma,
                               rng_t &rng) const
   -> action_prob_t
 {
@@ -289,6 +292,7 @@ auto sigma_t::sample_targeted(infoset_t infoset,
 //  const auto targets = target();
 //  const auto targets = set<action_t>(begin(actions), end(actions));
 
+  // FIXME testing and experimentation only
   const auto targets = (actions.size() > 2) ?
     set<action_t>(begin(actions), begin(actions) + 2) :
     set<action_t>(begin(actions), end(actions));
@@ -298,26 +302,34 @@ auto sigma_t::sample_targeted(infoset_t infoset,
 
   const auto N = static_cast<int>(actions.size());
   const auto p_eps = (prob_t) 1/N;
+  const auto p_gamma = (prob_t) 1/N;
 
-  // raw action probabilities
+  // The differene between gamma and epsilon here is that
+  // epsilon is extrinsic exploration that is accounted for by
+  // importance weights (e.g. appears as a factor in rho)
+  // gamma is considered part of the opponent strategy and models
+  // a slightly fallible opponent that "slips" and plays a random
+  // move with gamma probability.
+
+  // raw action probabilities (with gamma "mistake" model)
   auto probs = vector<prob_t>(actions.size());
   transform(begin(actions), end(actions), begin(probs),
-            [this, &infoset](const action_t &a) -> prob_t {
-              return this->pr(infoset, a);
+            [&] (const action_t &a) -> prob_t {
+              return gamma*p_gamma + (1 - gamma)*this->pr(infoset, a);
             });
 
   // epsilon exploration probabilities
   auto probs_untargeted = vector<prob_t>(probs.size());
   transform(begin(probs), end(probs), begin(probs_untargeted),
-            [eps, p_eps](const prob_t &p) -> prob_t {
-              return eps*p_eps + (1.0 - eps)*p;
+            [&](const prob_t &p) -> prob_t {
+              return eps*p_eps + (1 - eps)*p;
             });
 
   // targeted action weights (unscaled)
   auto weights_targeted = vector<prob_t>(actions.size());
   transform(begin(actions), end(actions), begin(probs_untargeted),
             begin(weights_targeted),
-            [&targets](const action_t &a, const prob_t &p) -> prob_t {
+            [&](const action_t &a, const prob_t &p) -> prob_t {
               if(targets.find(a) != end(targets)) {
                 return p;
               }
@@ -427,8 +439,9 @@ void tree_t::create_node(infoset_t infoset) {
   nodes_.emplace(infoset, node_t(infoset.actions()));
 }
 
-auto tree_t::sample_sigma(infoset_t infoset, bool targeted,
-                          prob_t eps, rng_t &rng) const
+auto tree_t::sample_sigma(infoset_t infoset,
+                          bool targeted, prob_t eps, prob_t gamma,
+                          rng_t &rng) const
   -> tree_t::sample_ret_t
 {
   const auto it = nodes_.find(infoset);
@@ -441,7 +454,7 @@ auto tree_t::sample_sigma(infoset_t infoset, bool targeted,
     const auto sigma = node.sigma_regret_matching();
 
     // const auto ap = sigma.sample_eps(infoset, eps, rng);
-    const auto ap = sigma.sample_targeted(infoset, targeted, eps, rng);
+    const auto ap = sigma.sample_targeted(infoset, targeted, eps, gamma, rng);
 
     return { ap, false };
   }
@@ -479,11 +492,8 @@ auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   -> action_prob_t
 {
-  static auto actions = vector<action_t>(regrets_.size());
-  static auto weights = vector<prob_t>(regrets_.size());
-
-  actions.resize(regrets_.size());
-  weights.resize(regrets_.size());
+  auto actions = vector<action_t>(regrets_.size());
+  auto weights = vector<prob_t>(regrets_.size());
 
   transform(begin(regrets_), end(regrets_), begin(actions),
             [](const auto &x) { return x.first; });
@@ -520,6 +530,8 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
 
 auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   const auto actions = infoset.actions();
+  const auto N = static_cast<int>(actions.size());
+
   const auto &nodes = tree_.nodes();
   const auto it = nodes.find(infoset);
 
@@ -529,15 +541,15 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 
     const auto total =
         accumulate(begin(actions), end(actions), (prob_t) 0,
-                   [&](const auto &r, const auto &a_prime)
-                   { return r + node.average_strategy(a_prime); });
+                   [&](const auto &x, const auto &a_prime)
+                   { return x + node.average_strategy(a_prime); });
 
     p = total > 0 ?
       node.average_strategy(a) / total :
-      (prob_t) 1/actions.size();
+      (prob_t) 1/N;
   }
   else {
-    p = (prob_t) 1/actions.size();
+    p = (prob_t) 1/N;
   }
 
   Ensures(0 <= p && p <= 1);
@@ -547,8 +559,7 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 static inline auto sample_action(const history_t &h, rng_t &rng)
   -> action_prob_t
 {
-  const auto acting_player = h.player();
-  if (acting_player == CHANCE) {
+  if (h.player() == CHANCE) {
     return h.sample_chance(rng);
   }
   else {

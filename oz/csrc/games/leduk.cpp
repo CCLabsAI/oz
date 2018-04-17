@@ -313,12 +313,13 @@ auto leduk_poker_t::infoset_t::str() const -> std::string {
 bool leduk_poker_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
   if (typeid(*this) == typeid(that)) {
     auto that_ = static_cast<const leduk_poker_t::infoset_t &>(that);
-    return player == that_.player &&
-        hand == that_.hand &&
-        board == that_.board &&
+    return
+        player  == that_.player  &&
+        hand    == that_.hand    &&
+        board   == that_.board   &&
         history == that_.history &&
-        pot == that_.pot &&
-        raises == that_.raises;
+        pot     == that_.pot     &&
+        raises  == that_.raises;
   }
   else {
     return false;
