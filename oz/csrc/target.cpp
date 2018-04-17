@@ -12,6 +12,9 @@ auto leduk_target_t::cast_history(const history_t &h) -> const leduk_poker_t& {
 auto leduk_target_t::target_actions(const history_t &current_history) const
   -> set<action_t>
 {
+  using card_t = leduk_poker_t::card_t;
+  using action_t = leduk_poker_t::action_t;
+
   const auto &current_game = cast_history(current_history);
 
   // NB returning an empty set here means no targeting needs
@@ -19,16 +22,16 @@ auto leduk_target_t::target_actions(const history_t &current_history) const
 
   // TODO clean this up
   if (current_game.player() == CHANCE) {
-    if (current_game.hand(P1) != leduk_poker_t::card_t::NA &&
-        current_game.hand(P2) != leduk_poker_t::card_t::NA &&
-        current_game.board() == leduk_poker_t::card_t::NA) {
+    if (current_game.hand(P1) != card_t::NA &&
+        current_game.hand(P2) != card_t::NA &&
+        current_game.board() == card_t::NA) {
       switch (target_game.board()) {
-        case leduk_poker_t::card_t::Jack:
-          return { make_action(leduk_poker_t::action_t::J) };
-        case leduk_poker_t::card_t::Queen:
-          return { make_action(leduk_poker_t::action_t::Q) };
-        case leduk_poker_t::card_t::King:
-          return { make_action(leduk_poker_t::action_t::K) };
+        case card_t::Jack:
+          return { make_action(action_t::J) };
+        case card_t::Queen:
+          return { make_action(action_t::Q) };
+        case card_t::King:
+          return { make_action(action_t::K) };
         default:
           return { };
       }
@@ -43,12 +46,12 @@ auto leduk_target_t::target_actions(const history_t &current_history) const
 
   if (current_actions.size() < target_actions.size()) {
     const auto target = target_actions[next_ply_n];
-    Ensures(target != leduk_poker_t::action_t::NextRound);
+    Ensures(target != action_t::NextRound);
 
     Ensures(
-        target == leduk_poker_t::action_t::Raise ||
-        target == leduk_poker_t::action_t::Call  ||
-        target == leduk_poker_t::action_t::Fold);
+        target == action_t::Raise ||
+        target == action_t::Call  ||
+        target == action_t::Fold);
 
     return { make_action(target) };
   }

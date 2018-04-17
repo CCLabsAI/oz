@@ -59,9 +59,19 @@ auto oos_t::search_t::sample_tree(const tree_t &tree,
                                   rng_t &rng) const
   -> tree_t::sample_ret_t
 {
-  const auto eps = (history_.player() == search_player_) ? eps_ : 0;
-  const auto gamma = (history_.player() == search_player_) ? 0 : gamma_;
-  const auto targets = target_ && targeted_ ?
+  const auto acting_player = history_.player();
+
+  prob_t eps, gamma;
+  if (acting_player == search_player_) {
+    eps = eps_;
+    gamma = 0;
+  }
+  else {
+    eps = 0;
+    gamma = gamma_;
+  }
+
+  const auto targets = (target_ && targeted_) ?
                        target_.target_actions(history_) :
                        set<action_t> { };
 
@@ -227,7 +237,7 @@ void oos_t::search_t::backprop(tree_t& tree) {
     else {
       const auto sigma = node.sigma_regret_matching();
 
-      const prob_t q = delta_*s1 + (1.0 - delta_)*s2;
+      const prob_t q = delta_*s1 + (1 - delta_)*s2;
       for (const auto& a_prime : infoset.actions()) {
         const prob_t s = (pi_o * sigma.pr(infoset, a_prime)) / q;
         node.average_strategy(a_prime) += s;

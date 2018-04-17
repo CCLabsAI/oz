@@ -67,7 +67,7 @@ class infoset_t final {
   size_t hash() const { return self_->hash(); };
 
   template <class T>
-  const T &cast() const { return assert_cast<const T&>(*self_.get()); }
+  const T &cast() const { return assert_cast<const T&>(*self_); }
 
  private:
   using ptr_t = std::shared_ptr<const concept_t>;

@@ -43,14 +43,14 @@ class history_t final {
   action_prob_t sample_chance(rng_t& rng) const;
   action_prob_t sample_uniform(rng_t& rng) const;
 
-  history_t operator>>(action_t a) const {
+  history_t operator >>(action_t a) const {
     auto g = self_->clone();
     g->act(a);
     return history_t(move(g));
   }
 
   template <class T>
-  const T &cast() const { return assert_cast<const T&>(*self_.get()); }
+  const T &cast() const { return assert_cast<const T&>(*self_); }
 
  private:
   using ptr_t = std::unique_ptr<game_t>;
