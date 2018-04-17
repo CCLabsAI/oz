@@ -22,7 +22,7 @@ batch_search_t::batch_search_t(history_t root,
   generate_n(back_inserter(searches_), batch_size_, [&]() {
     auto search_player = player;
     player = (player == P1 ? P2 : P1);
-    return { root_, search_player };
+    return search_t { root_, search_player };
   });
 }
 
@@ -46,8 +46,8 @@ static inline auto count_needs_eval(const search_list_t &searches_) {
 }
 
 auto batch_search_t::generate_batch() -> Tensor {
-  const auto N = searches_.size();
-  const auto D = encoder_->encoding_size();
+  const auto N = static_cast<unsigned long>(searches_.size());
+  const auto D = static_cast<unsigned long>(encoder_->encoding_size());
   Tensor d = CPU(kFloat).zeros({ N, D });
 
   int search_eval_n = 0;

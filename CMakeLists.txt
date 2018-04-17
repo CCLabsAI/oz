@@ -26,6 +26,8 @@ add_executable("tests"
         "oz/csrc/oos.cpp"
         "oz/csrc/tests/test_leduk.cpp"
         "oz/csrc/games/leduk.cpp"
+        "oz/csrc/tests/test_target.cpp"
+        "oz/csrc/target.cpp"
         "oz/csrc/oos_rec.cpp"
         )
 

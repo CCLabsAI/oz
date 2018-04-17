@@ -10,7 +10,7 @@ namespace oz {
 
 using namespace std;
 
-constexpr int leduk_poker_t::RAISE_PER_ROUND[];
+// constexpr int leduk_poker_t::RAISE_PER_ROUND[];
 
 void leduk_poker_t::act_(action_t a) {
   if (player_ == CHANCE) {

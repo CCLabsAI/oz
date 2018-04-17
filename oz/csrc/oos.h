@@ -48,6 +48,9 @@ class history_t final {
     return history_t(move(g));
   }
 
+  template <class T>
+  const T &cast() const { return assert_cast<const T&>(*self_.get()); }
+
  private:
   using ptr_t = std::unique_ptr<game_t>;
 

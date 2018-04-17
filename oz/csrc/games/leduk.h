@@ -124,6 +124,8 @@ class leduk_poker_t final : public game_t {
   bool folded(player_t p) const { return folded_[player_idx(p)]; }
   bool &folded(player_t p) { return folded_[player_idx(p)]; }
 
+  const vector<action_t> &history() const { return history_; }
+
   int round() const { return round_; }
   card_t board() const { return board_; }
 };
