@@ -493,7 +493,7 @@ auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   auto sum_positive = accumulate(
     begin(regrets_), end(regrets_), (value_t) 0,
     [](const auto &r, const auto &x) {
-        return r + rectify(x.second);
+        return r + max((value_t) 0, x.second);
     });
 
   prob_t p;

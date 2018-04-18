@@ -34,7 +34,7 @@ static auto actions(const history_t& h) -> vector<action_t> {
 auto gebr(history_t h, player_t i, sigma_t sigma) -> value_t {
   q_stats_t tb;
 
-  for (const auto& d : infoset_depths(h, i)) {
+  for (int d : infoset_depths(h, i)) {
     gebr_pass2(h, i, d, 0, 1.0, sigma, tb);
   }
 
