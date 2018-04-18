@@ -152,18 +152,18 @@ void bind_oz(py::module &m) {
       .def(py::init<int>());
 
   auto py_Encoder =
-      py::class_<encoder_t, batch_search_t::encoder_ptr_t>(m, "Encoder")
+      py::class_<encoder_t, std::shared_ptr<encoder_t>>(m, "Encoder")
           .def("encoding_size", &encoder_t::encoding_size)
           .def("max_actions", &encoder_t::max_actions)
           .def("encode", &encoder_t::encode)
           .def("decode", &encoder_t::decode)
           .def("decode_and_sample", &encoder_t::decode_and_sample);
 
-  py::class_<leduk_encoder_t>(m, "LedukEncoder", py_Encoder)
+  py::class_<leduk_encoder_t, std::shared_ptr<leduk_encoder_t>>(m, "LedukEncoder", py_Encoder)
       .def(py::init<>());
 
   py::class_<batch_search_t>(m, "BatchSearch")
-      .def(py::init<history_t, batch_search_t::encoder_ptr_t, int>())
+      .def(py::init<history_t, std::shared_ptr<encoder_t>, int>())
       .def("generate_batch", &batch_search_t::generate_batch)
       .def("step", &batch_search_t::step)
       .def_property_readonly("tree", &batch_search_t::tree);

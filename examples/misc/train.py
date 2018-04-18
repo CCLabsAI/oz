@@ -73,7 +73,7 @@ print(ex)
 
 # while ex > .1:
 for i in range(100):
-    n_iter = 10000
+    n_iter = 1000
     for j in range(n_iter):
         batch = bs.generate_batch()
         if len(batch) == 0:

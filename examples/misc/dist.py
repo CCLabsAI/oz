@@ -1,9 +1,10 @@
-#!/usr/bin/env python
-import os
-import torch
-import torch.distributed as dist
-from torch.multiprocessing import Process
+from copy import copy
+import random
 
+import oz
+import oz.dist
+
+import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,86 +24,88 @@ class Net(nn.Module):
         x = F.log_softmax(x, dim=1)
         return x
 
-n_iter = 50
-batch_size = 50
-input_size = 100
-output_size = 3
+search_size = 50
+batch_size = 100
 
-def simulate(net, data, targets):
-    data *= 0.9
-    targets *= 0.9
+def make_simulate():
+    root = oz.make_leduk_history()
+    enc = oz.LedukEncoder()
+    rng = oz.Random() # TODO seed based on rank
 
-def train(net, all_train_data, all_train_targets, optimizer, criterion):
-    train_data_var = Variable(all_train_data)
-    train_targets_var = Variable(all_train_targets)
+    bs = oz.BatchSearch(root, enc, search_size)
+    empty_tensor = torch.Tensor()
+
+    def simulate(net, data, targets):
+        n_iter = 5000
+        for j in range(n_iter):
+            batch = bs.generate_batch()
+            if len(batch) == 0:
+                bs.step(empty_tensor, empty_tensor, rng)
+            else:
+                batch_var = Variable(batch, volatile=True)
+                sigma_logits = net.forward(batch_var)
+                regret_est = torch.zeros_like(sigma_logits)
+                sigma_probs = sigma_logits.exp()
+                bs.step(sigma_probs.data, regret_est.data, rng)
+
+        tree = bs.tree
+        sigma = tree.sigma_average()
+        node_list = random.sample(tree.nodes.items(), batch_size)
+        bigX_list = []
+        sigma_target_list = []
+        
+        for infoset, node in node_list:
+            d = torch.zeros(encoding_size)
+            enc.encode(infoset, d)
+            bigX_list.append(d)
+
+            pr = torch.Tensor([sigma.pr(infoset, a) for a in infoset.actions])
+            if len(pr) == 2: # FIXME!!
+                pr = torch.cat([torch.zeros(1), pr])
+            sigma_target_list.append(pr)
+
+        torch.stack(bigX_list, out=data)
+        torch.stack(sigma_target_list, out=targets)
+
+
+    return simulate
+
+def train(net, all_data, all_targets, optimizer, criterion):
+    data_var = Variable(all_data)
+    targets_var = Variable(all_targets)
     
-    optimizer.zero_grad()
-    output = net.forward(train_data_var);
-    loss = criterion(output, train_targets_var)
-    loss.backward()
-    optimizer.step()
+    for i in range(50):
+        optimizer.zero_grad()
+        output = net(data_var);
+        loss = criterion(output, targets_var)
+        loss.backward()
+        optimizer.step()
 
-    print(loss.data[0])
+    def pr_nn(infoset, action):
+        d = torch.zeros(encoding_size)
+        enc.encode(infoset, d)
+        sigma_logits = net.forward(Variable(d.unsqueeze(0)))
+        sigma_pr = sigma_logits.exp()
+        m = enc.decode(infoset, sigma_pr.data[0])
+        return m[action]
+    sigma_nn = oz.make_py_sigma(pr_nn)
+    h = oz.make_leduk_history()
 
-def gather_experience_rank0(size, data, targets):
-    data_gather_list = [torch.zeros(batch_size, input_size)
-                           for i in range(size)]
-
-    target_gather_list = [torch.zeros(batch_size, output_size)
-                             for i in range(size)]
-
-    dist.gather(data, dst=0, gather_list=data_gather_list)
-    dist.gather(targets, dst=0, gather_list=target_gather_list)
-    
-    all_train_data = torch.cat(data_gather_list)
-    all_train_targets = torch.cat(target_gather_list)
-    
-    return all_train_data, all_train_targets
-
-def gather_experience(data, targets):
-    dist.gather(data, dst=0)
-    dist.gather(targets, dst=0)
-
-def broadcast_net(net):
-    for param in net.parameters():
-        dist.broadcast(param.data, src=0)    
-
-def run(rank, size):
-    net = Net(input_size=input_size, hidden_size=18, output_size=output_size)
-    data = torch.randn(batch_size, input_size)
-    targets = torch.randn(batch_size, output_size)
-
-    if rank == 0:
-        optimizer = optim.Adam(net.parameters(), lr=1e-3)
-        criterion = nn.MSELoss(size_average=True)
-
-        for i in range(n_iter):
-            simulate(net, data, targets)
-            all_data, all_targets = gather_experience_rank0(size, data, targets)
-            train(net, all_data, all_targets, optimizer, criterion)
-            broadcast_net(net)
-    
-    else:
-        for i in range(n_iter):
-            simulate(net, data, targets)
-            gather_experience(data, targets)
-            broadcast_net(net)
-
-def init_processes(rank, size, fn, backend='tcp'):
-    """ Initialize the distributed environment. """
-    os.environ['MASTER_ADDR'] = '127.0.0.1'
-    os.environ['MASTER_PORT'] = '29500'
-    dist.init_process_group(backend, rank=rank, world_size=size)
-    fn(rank, size)
-
+    loss_val = loss.data[0]
+    ex_nn = oz.exploitability(h, sigma_nn)
+    print("%.3f, %.5f" % (ex_nn, loss_val))
 
 if __name__ == "__main__":
-    size = 9
-    processes = []
-    for rank in range(size):
-        p = Process(target=init_processes, args=(rank, size, run))
-        p.start()
-        processes.append(p)
+    enc = oz.LedukEncoder()
 
-    for p in processes:
-        p.join()
+    encoding_size = enc.encoding_size()
+    max_actions = enc.max_actions()
+
+    runspec = oz.dist.RunSpec(n_iter=500, batch_size=batch_size, input_size=encoding_size, output_size=max_actions)
+    net = Net(input_size=runspec.input_size, hidden_size=256, output_size=runspec.output_size)
+    simulate = make_simulate()
+
+    # simulate(net, None, None)
+    run = oz.dist.make_runner(runspec, net, train, simulate)
+    oz.dist.start_proceses(run, size=4)
+
