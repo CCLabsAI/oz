@@ -300,10 +300,6 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
   }
 };
 
-static inline auto target() -> set<action_t> {
-  return { };
-}
-
 // TODO break up this function
 auto sigma_t::sample_targeted(infoset_t infoset,
                               set<action_t> targets, bool targeted,
