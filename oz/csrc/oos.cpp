@@ -489,11 +489,6 @@ auto tree_t::sigma_average() const -> sigma_t {
   return make_sigma<sigma_average_t>(*this);
 }
 
-template <typename T>
-inline T rectify(T x) {
-  return x > 0 ? x : 0;
-}
-
 auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   auto sum_positive = accumulate(
     begin(regrets_), end(regrets_), (value_t) 0,

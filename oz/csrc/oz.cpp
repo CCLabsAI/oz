@@ -13,6 +13,7 @@
 #include "games/flipguess.h"
 #include "games/kuhn.h"
 #include "games/leduk.h"
+#include "encoder/leduk_encoder.h"
 
 auto sigmoid_add(at::Tensor x, at::Tensor y) -> at::Tensor {
   return at::sigmoid(x + y);

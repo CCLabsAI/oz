@@ -1,7 +1,7 @@
 #include <cassert>
 
 #include "util.h"
-#include "encoder.h"
+#include "leduk_encoder.h"
 
 namespace oz {
 

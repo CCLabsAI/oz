@@ -1,6 +1,8 @@
 #include <catch.hpp>
 
 #include "target.h"
+#include "target/leduk_target.h"
+
 #include "oos.h"
 
 using namespace std;

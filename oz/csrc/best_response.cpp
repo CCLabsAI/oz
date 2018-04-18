@@ -20,18 +20,7 @@ auto exploitability(history_t h, sigma_t sigma) -> value_t {
   return v1 + v2;
 }
 
-template <typename T>
-inline auto keys(const T &m) -> vector<typename T::key_type> {
-  auto keys = vector<action_t>(m.size());
-
-  transform(begin(m), end(m), begin(keys), [](const auto& p) {
-    return p.first;
-  });
-
-  return keys;
-}
-
-static inline auto actions(const history_t& h) -> vector<action_t> {
+static auto actions(const history_t& h) -> vector<action_t> {
   if (h.player() == CHANCE) {
     const auto actions_pr = h.chance_actions();
     return keys(actions_pr);
@@ -123,7 +112,7 @@ auto gebr_pass2(history_t h, player_t i,
   return v;
 }
 
-auto walk_infosets(const history_t& h, player_t i, set<int>& depths, int l) -> void {
+void walk_infosets(const history_t& h, player_t i, set<int>& depths, int l) {
   if (h.is_terminal()) {
     return;
   }
@@ -147,4 +136,4 @@ auto infoset_depths(history_t h, player_t i) -> vector<int> {
   return depth_list;
 }
 
-}
+} // namespace oz

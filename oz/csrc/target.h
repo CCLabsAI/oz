@@ -3,13 +3,12 @@
 
 #include <set>
 
-#include "games/leduk.h"
+#include "game.h"
 
 namespace oz {
 
 class history_t;
 
-using std::vector;
 using std::set;
 
 class target_t final {
@@ -43,17 +42,6 @@ template<class T, typename... Args>
 target_t make_target(Args&& ... args) {
   return target_t(std::make_shared<T>(std::forward<Args>(args)...));
 }
-
-
-class leduk_target_t final : public target_t::concept_t {
- public:
-  set<action_t> target_actions(const history_t &current_history) const override;
-
-  leduk_poker_t target_game;
-
- private:
-  static inline const leduk_poker_t &cast_history(const history_t &h);
-};
 
 } // namespace oz
 

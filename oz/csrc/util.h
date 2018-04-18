@@ -4,6 +4,7 @@
 #include <functional>
 #include <algorithm>
 #include <numeric>
+#include <vector>
 
 #include <cassert>
 #include <cmath>
@@ -38,7 +39,7 @@ ForwardIt max_element_by(ForwardIt first, ForwardIt last, Projection f) {
 };
 
 template <typename T>
-inline bool all_greater_equal_zero(T iter) {
+bool all_greater_equal_zero(T iter) {
   using namespace std;
   return all_of(begin(iter), end(iter),
                 [](const auto &x) { return x >= 0; });
@@ -46,7 +47,7 @@ inline bool all_greater_equal_zero(T iter) {
 
 // TODO make this prob_t or something instead of double
 template <typename T>
-inline double sum_probs(T col) {
+double sum_probs(T col) {
   using namespace std;
   return accumulate(begin(col), end(col), (double) 0);
 }
@@ -55,6 +56,23 @@ template <typename T>
 bool sum_to_one(T col) {
   using namespace std;
   return abs(1.0 - sum_probs(col)) < 1e-9;
+}
+
+template <typename T>
+auto keys(const T &m) -> std::vector<typename T::key_type> {
+  using namespace std;
+  auto keys = vector<typename T::key_type>();
+
+  transform(begin(m), end(m), back_inserter(keys), [](const auto& p) {
+    return p.first;
+  });
+
+  return keys;
+}
+
+template <typename T>
+T rectify(T x) {
+  return x > 0 ? x : 0;
 }
 
 } // namespace oz

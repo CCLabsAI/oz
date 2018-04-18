@@ -26,7 +26,7 @@ batch_search_t::batch_search_t(history_t root,
   });
 }
 
-inline bool search_needs_eval(const search_t &search) {
+bool search_needs_eval(const search_t &search) {
   using state_t = search_t::state_t;
 
   return (
@@ -37,11 +37,11 @@ inline bool search_needs_eval(const search_t &search) {
   );
 }
 
-static inline auto size0(const Tensor &x) {
+static auto size0(const Tensor &x) {
   return x.dim() <= 0 ? 0 : x.size(0);
 }
 
-static inline auto count_needs_eval(const search_list_t &searches_) {
+static auto count_needs_eval(const search_list_t &searches_) {
   return count_if(begin(searches_), end(searches_), search_needs_eval);
 }
 
