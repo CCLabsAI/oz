@@ -15,17 +15,10 @@ goofspiel2_t::goofspiel2_t(int n_cards) :
   score1_(0),
   score2_(0)
 {
-  int n;
-
-  n = 0;
-  auto &h1 = hand(P1);
-  generate_n(inserter(h1, end(h1)), n_cards,
-             [&]() { return n++; });
-
-  n = 0;
-  auto &h2 = hand(P2);
-  generate_n(inserter(h2, end(h2)), n_cards,
-             [&]() { return n++; });
+  for (int n = 0; n < n_cards; n++) {
+    hand(P1).insert(n);
+    hand(P2).insert(n);
+  }
 }
 
 auto goofspiel2_t::infoset() const -> oz::infoset_t {

@@ -1,6 +1,10 @@
 #ifndef OZ_OOS_REC_H
 #define OZ_OOS_REC_H
 
+/////////////////////////
+// UNDER CONSTRUCTION  //
+/////////////////////////
+
 #include "oos.h"
 
 namespace oz { namespace rec {

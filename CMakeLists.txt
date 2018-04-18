@@ -17,17 +17,27 @@ include_directories("oz/csrc")
 
 add_executable("tests"
         "oz/csrc/tests/tests.cpp"
+
         "oz/csrc/tests/test_flipguess.cpp"
         "oz/csrc/games/flipguess.cpp"
+
         "oz/csrc/games/kuhn.cpp"
+
         "oz/csrc/tests/test_best_response.cpp"
         "oz/csrc/best_response.cpp"
+
         "oz/csrc/tests/test_oos.cpp"
         "oz/csrc/oos.cpp"
+
         "oz/csrc/tests/test_leduk.cpp"
         "oz/csrc/games/leduk.cpp"
+
+        "oz/csrc/tests/test_goofspiel2.cpp"
+        "oz/csrc/games/goofspiel2.cpp"
+
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduk_target.cpp"
+
         "oz/csrc/oos_rec.cpp"
         )
 
@@ -38,8 +48,8 @@ add_executable("solve_leduk"
         "oz/csrc/oos.cpp"
         )
 
-add_executable("solve_goofspiel"
-        "oz/csrc/solve_goofspiel.cpp"
+add_executable("solve_goofspiel2"
+        "oz/csrc/solve_goofspiel2.cpp"
         "oz/csrc/games/goofspiel2.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"

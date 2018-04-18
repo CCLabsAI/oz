@@ -11,7 +11,6 @@
 namespace oz {
 
 using std::map;
-
 using at::Tensor;
 
 class encoder_t {
