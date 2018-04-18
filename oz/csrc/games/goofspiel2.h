@@ -21,10 +21,11 @@ class goofspiel2_t final : public game_t {
 
   class infoset_t : public oz::infoset_t::concept_t {
    public:
-    explicit infoset_t(set<card_t> hand,
+    explicit infoset_t(player_t player,
+                       set<card_t> hand,
                        vector<card_t> bids,
                        vector<player_t> wins) :
-      hand_(hand), bids_(bids), wins_(wins) { };
+      player_(player), hand_(hand), bids_(bids), wins_(wins) { };
 
     vector<oz::action_t> actions() const override;
     string str() const override;
@@ -32,6 +33,7 @@ class goofspiel2_t final : public game_t {
     size_t hash() const override;
 
    private:
+    player_t player_;
     set<card_t> hand_;
     vector<card_t> bids_;
     vector<player_t> wins_;

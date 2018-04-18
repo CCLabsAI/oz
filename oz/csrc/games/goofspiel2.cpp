@@ -23,7 +23,7 @@ goofspiel2_t::goofspiel2_t(int n_cards) :
 
 auto goofspiel2_t::infoset() const -> oz::infoset_t {
   Expects(player() != CHANCE);
-  return make_infoset<infoset_t>(hand(player_), bids(player_), wins_);
+  return make_infoset<infoset_t>(player_, hand(player_), bids(player_), wins_);
 }
 
 auto goofspiel2_t::utility(player_t p) const -> value_t {
@@ -104,7 +104,8 @@ bool goofspiel2_t::infoset_t::is_equal(const oz::infoset_t::concept_t& that)
 const {
   if (typeid(*this) == typeid(that)) {
     auto that_ = static_cast<const goofspiel2_t::infoset_t&>(that);
-    return bids_ == that_.bids_ &&
+    return player_ == that_.player_ &&
+           bids_ == that_.bids_ &&
            wins_ == that_.wins_;
   }
   else {
@@ -114,6 +115,7 @@ const {
 
 size_t goofspiel2_t::infoset_t::hash() const {
   size_t seed = 0;
+  hash_combine(seed, player_);
   for (const auto& bid : bids_) { hash_combine(seed, bid); }
   for (const auto& win : wins_) { hash_combine(seed, win); }
   return seed;
