@@ -199,7 +199,7 @@ void oos_t::search_t::backprop(tree_t& tree) {
 
   for (auto i = rbegin(path_); i != rend(path_); ++i) {
     const auto& path_item = *i;
-    const auto& active_player = path_item.player;
+    const auto& acting_player = path_item.player;
     const auto& infoset = path_item.infoset;
 
     const auto a = path_item.action_prob.a;
@@ -212,13 +212,13 @@ void oos_t::search_t::backprop(tree_t& tree) {
     c = x;
     x = pr_a * x;
 
-    if (active_player == CHANCE) { // TODO make this more elegant
+    if (acting_player == CHANCE) { // TODO make this more elegant
       continue;
     }
 
     auto &node = tree.lookup(infoset);
 
-    if (active_player == search_player_) {
+    if (acting_player == search_player_) {
       const value_t w = u * pi_o / l;
       for (const auto& a_prime : infoset.actions()) {
         value_t r;

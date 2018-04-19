@@ -18,13 +18,12 @@ namespace std {
 
 template<typename S, typename T>
 struct hash<pair<S, T>> {
-inline size_t operator ()(const pair<S, T>& v) const {
-  size_t seed = 0;
-  oz::hash_combine(seed, v.first);
-  oz::hash_combine(seed, v.second);
-  return seed;
-}
-
+  inline size_t operator ()(const pair<S, T>& v) const {
+    size_t seed = 0;
+    oz::hash_combine(seed, v.first);
+    oz::hash_combine(seed, v.second);
+    return seed;
+  }
 };
 
 } // namespace std

@@ -44,12 +44,14 @@ auto goofspiel2_t::utility(player_t p) const -> value_t {
 }
 
 template <typename T>
-inline bool contains(const set<T> s, T x) {
+bool contains(const set<T> &s, T x) {
   return s.find(x) != end(s);
 }
 
 void goofspiel2_t::act_(goofspiel2_t::action_t a) {
   card_t card = a;
+
+  Expects(player() != CHANCE);
   Expects(contains(hand(player_), card));
 
   if (player_ == P1) {

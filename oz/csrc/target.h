@@ -33,7 +33,7 @@ class target_t final {
 
   template<class T, typename... Args>
   friend target_t make_target(Args&& ... args);
-  friend target_t make_null_target();
+  friend target_t null_target();
 
   ptr_t self_;
 };
@@ -43,7 +43,7 @@ target_t make_target(Args&& ... args) {
   return target_t(std::make_shared<T>(std::forward<Args>(args)...));
 }
 
-inline target_t make_null_target() {
+inline target_t null_target() {
   return target_t { };
 }
 
