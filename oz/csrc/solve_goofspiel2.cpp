@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
   for(int j = 0; j < 30; j++) {
     for(int i = 0; i < 1000; i++) {
-      s.search(h, 1000, tree, rng);
+      s.search(h, 1000, tree, rng, make_null_target(), 0.4, 0.2, 0.0);
       cout << '.' << flush;
     }
     cout << endl;

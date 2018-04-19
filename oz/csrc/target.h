@@ -13,8 +13,6 @@ using std::set;
 
 class target_t final {
  public:
-  target_t() = default;
-
   struct concept_t {
     virtual set<action_t> target_actions(const history_t &h) const = 0;
   };
@@ -30,10 +28,12 @@ class target_t final {
  private:
   using ptr_t = std::shared_ptr<concept_t>;
 
+  target_t() = default;
   explicit target_t(ptr_t self): self_(move(self)) { }
 
   template<class T, typename... Args>
   friend target_t make_target(Args&& ... args);
+  friend target_t make_null_target();
 
   ptr_t self_;
 };
@@ -41,6 +41,10 @@ class target_t final {
 template<class T, typename... Args>
 target_t make_target(Args&& ... args) {
   return target_t(std::make_shared<T>(std::forward<Args>(args)...));
+}
+
+inline target_t make_null_target() {
+  return target_t { };
 }
 
 } // namespace oz
