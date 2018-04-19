@@ -1,6 +1,5 @@
 import oz
 
-# h = oz.make_kuhn_history()
 h = oz.make_leduk_history()
 
 tree = oz.Tree()
