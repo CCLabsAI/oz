@@ -209,7 +209,19 @@ class oos_t final {
   void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
                    target_t target, prob_t eps, prob_t delta, prob_t gamma);
 
+  prob_t avg_targeting_ratio() const { return avg_targeting_ratio_; }
+
+  void retarget() {
+    avg_targeting_ratio_ = 1;
+    avg_targeting_ratio_N_ = 1;
+  }
+
+ private:
+  int avg_targeting_ratio_N_ = 1;
+  prob_t avg_targeting_ratio_ = 1;
+
   // state machine representing a search
+ public:
   class search_t final {
    public:
     search_t(history_t history, player_t search_player):
@@ -265,6 +277,15 @@ class oos_t final {
     state_t state() const { return state_; };
     player_t search_player() const { return search_player_; }
 
+    prob_t targeting_ratio() const {
+      return prefix_prob_.s2 / prefix_prob_.s1;
+    };
+
+    void set_initial_weight(prob_t w) {
+      prefix_prob_.s1 = w;
+      prefix_prob_.s2 = w;
+    }
+
    private:
     void tree_step(action_prob_t ap); // take one step in-tree and extend path
     void prepare_suffix_probs();
@@ -309,7 +330,6 @@ class oos_t final {
     prob_t delta_;
     prob_t gamma_;
   }; // class search_t
-
 }; // class oos_t
 
 } // namespace oz

@@ -596,6 +596,7 @@ void oos_t::search_iter(history_t h, player_t player,
 {
   using state_t = search_t::state_t;
   auto s = search_t(move(h), player, move(target), eps, delta, gamma);
+  s.set_initial_weight(1.0/avg_targeting_ratio_);
 
   while (s.state() != state_t::FINISHED) {
     switch (s.state()) {
@@ -612,9 +613,13 @@ void oos_t::search_iter(history_t h, player_t player,
         s.backprop(tree);
         break;
       case state_t::FINISHED:
-        return;
+        break;
     }
   }
+
+  avg_targeting_ratio_N_ += 1;
+  avg_targeting_ratio_ +=
+      (s.targeting_ratio() - avg_targeting_ratio_) / avg_targeting_ratio_N_;
 }
 
 void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,

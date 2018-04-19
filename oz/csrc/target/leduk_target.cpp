@@ -18,7 +18,7 @@ auto leduk_target_t::target_actions(const history_t &current_history) const
 
   const auto &current_game = cast_history(current_history);
 
-  // NB returning an empty set here means no targeting needs
+  // NB returning an empty set here means no targeting
   // TODO create custom return type
 
   // TODO clean this up
