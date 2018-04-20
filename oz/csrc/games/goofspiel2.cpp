@@ -10,7 +10,7 @@ namespace oz {
 using namespace std;
 
 goofspiel2_t::goofspiel2_t(int n_cards) :
-  n_turns_(n_cards),
+  n_cards_(n_cards),
   turn_(0),
   player_(P1),
   score1_(0),

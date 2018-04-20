@@ -44,7 +44,7 @@ class goofspiel2_t final : public game_t {
   void act(oz::action_t a) override { act_(a.cast<action_t>()); };
   oz::infoset_t infoset() const override;
   player_t player() const override { return player_; }
-  bool is_terminal() const override { return turn_ == n_turns_; }
+  bool is_terminal() const override { return turn_ == n_cards_; }
   value_t utility(player_t player) const override;
   map<oz::action_t, prob_t> chance_actions() const override;
 
@@ -85,6 +85,8 @@ class goofspiel2_t final : public game_t {
     }
   }
 
+  int n_cards() const { return n_cards_; }
+
   const set<card_t> &hand(player_t p) const
     { return const_cast<goofspiel2_t*>(this)->hand(p); }
 
@@ -101,7 +103,7 @@ class goofspiel2_t final : public game_t {
   // virtual ~goofspiel2_t() override;
 
  private:
-  int n_turns_;
+  int n_cards_;
   int turn_;
   player_t player_;
 
