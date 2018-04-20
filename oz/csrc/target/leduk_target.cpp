@@ -61,4 +61,8 @@ auto leduk_target_t::target_actions(const history_t &current_history) const
   }
 }
 
+game_t &leduk_target_t::game() {
+  return target_game;
+}
+
 } // namespace oz

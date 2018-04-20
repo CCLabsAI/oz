@@ -37,6 +37,7 @@ add_executable("tests"
 
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduk_target.cpp"
+        "oz/csrc/target/goofspiel2_target.cpp"
 
         "oz/csrc/oos_rec.cpp"
         )
@@ -65,6 +66,8 @@ pybind11_add_module(_ext
         "oz/csrc/games/kuhn.cpp"
         "oz/csrc/games/leduk.cpp"
         "oz/csrc/encoder/leduk_encoder.cpp"
+        "oz/csrc/games/goofspiel2.cpp"
+        "oz/csrc/target/goofspiel2_target.cpp"
         )
 
 target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}" "lib/torch-stub/include")

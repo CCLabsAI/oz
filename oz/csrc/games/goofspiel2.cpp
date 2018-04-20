@@ -1,5 +1,6 @@
 #include "goofspiel2.h"
 
+#include <iostream>
 #include <sstream>
 
 #include "hash.h"
@@ -123,5 +124,10 @@ size_t goofspiel2_t::infoset_t::hash() const {
   return seed;
 }
 
+// #include <iostream>
+
+// goofspiel2_t::~goofspiel2_t() {
+//   cout << "~goofspiel2_t()" << endl << flush;
+// }
 
 } // namespace oz

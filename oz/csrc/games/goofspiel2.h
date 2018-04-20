@@ -91,10 +91,14 @@ class goofspiel2_t final : public game_t {
   const vector<card_t> &bids(player_t p) const
     { return const_cast<goofspiel2_t*>(this)->bids(p); }
 
-  const int &score(player_t p) const
+  int score(player_t p) const
     { return const_cast<goofspiel2_t*>(this)->score(p); }
 
-  vector<player_t> wins() { return wins_; }
+  const vector<player_t> &wins() const { return wins_; }
+
+  int turn() const { return turn_; }
+
+  // virtual ~goofspiel2_t() override;
 
  private:
   int n_turns_;

@@ -2,6 +2,7 @@
 
 #include "target.h"
 #include "target/leduk_target.h"
+#include "target/goofspiel2_target.h"
 
 #include "oos.h"
 
@@ -48,6 +49,29 @@ TEST_CASE("targeting leduk histories", "[target]") {
 
   CHECK(targets4.size() == 1);
   CHECK(*begin(targets4) == make_action(leduk_poker_t::action_t::K));
+}
+
+TEST_CASE("targeting goofspiel2 histories", "[target]") {
+  auto targeter = make_target<goofspiel2_target_t>(P2, 3);
+  auto& goof_targeter = targeter.cast<goofspiel2_target_t>();
+
+  auto game = make_history<goofspiel2_t>(3);
+  auto &target_game = goof_targeter.target_game;
+
+  target_game.act(make_action(1));
+  target_game.act(make_action(2));
+
+  {
+    const auto targets = targeter.target_actions(game);
+    CHECK(targets.empty());
+  }
+
+  game.act(make_action(0));
+
+  {
+    const auto targets = targeter.target_actions(game);
+    CHECK(*begin(targets) == make_action(2));
+  }
 }
 
 TEST_CASE("targeting oos search", "[target]") {

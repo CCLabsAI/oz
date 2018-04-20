@@ -1,0 +1,10 @@
+Low priority:
+
+* average_sigma currently stores a reference, this will cause bugs if you keep
+  a reference to the sigma without a reference to the underlying tree, maybe a
+  shared pointer should be used? I don't really want to copy the tree into the
+  strategy...
+
+* Add code to give names to actions
+
+* Make code to generically play a game

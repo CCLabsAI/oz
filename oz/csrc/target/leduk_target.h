@@ -11,6 +11,7 @@ namespace oz {
 class leduk_target_t final : public target_t::concept_t {
  public:
   set<action_t> target_actions(const history_t &current_history) const override;
+  game_t &game() override;
 
   leduk_poker_t target_game;
 
