@@ -59,19 +59,46 @@ TEST_CASE("targeting goofspiel2 histories", "[target]") {
   auto &target_game = goof_targeter.target_game;
 
   target_game.act(make_action(1));
-  target_game.act(make_action(2));
+  target_game.act(make_action(0));
 
   {
     const auto targets = targeter.target_actions(game);
-    CHECK(targets.empty());
+    CHECK(targets == set<action_t> { make_action(1), make_action(2) });
   }
 
-  game.act(make_action(0));
+  game.act(make_action(1));
 
   {
     const auto targets = targeter.target_actions(game);
-    CHECK(*begin(targets) == make_action(2));
+    CHECK(targets == set<action_t> { make_action(0) });
   }
+}
+
+TEST_CASE("targeting goofspiel2 regression 1", "[target]") {
+  auto n_cards = 4;
+  auto targeter = make_target<goofspiel2_target_t>(P2, n_cards);
+  auto& goof_targeter = targeter.cast<goofspiel2_target_t>();
+
+  auto game = make_history<goofspiel2_t>(n_cards);
+  auto &target_game = goof_targeter.target_game;
+
+  target_game.act(make_action(3)); // P1
+  target_game.act(make_action(0)); // P2
+  
+  target_game.act(make_action(2)); // P1
+  target_game.act(make_action(3)); // P2
+
+  target_game.act(make_action(1)); // P1
+  target_game.act(make_action(2)); // P2
+
+  game.act(make_action(1)); // P1
+  game.act(make_action(0)); // P2
+
+  game.act(make_action(0)); // P1
+  game.act(make_action(3)); // P2
+
+  // this checks there is not an assertion error
+  const auto targets = targeter.target_actions(game);
 }
 
 TEST_CASE("targeting oos search", "[target]") {

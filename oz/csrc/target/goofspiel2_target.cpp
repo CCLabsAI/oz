@@ -29,6 +29,8 @@ static auto other_player(player_t p) -> player_t {
 auto goofspiel2_target_t::target_actions(const history_t &current_history) const
   -> set<action_t>
 {
+  Expects(!target_game.is_terminal());
+
   const auto match_player = this->match_player;
   const auto &current_game = cast_history(current_history);
 
@@ -48,8 +50,9 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
   else {
     // NB There are no public actions in II Goofspiel and we
     // only know the outcome of the bid, not the card that
-    // was bid, we just make sure the opponent bids a card
-    // consistent with the observed outcome...
+    // was bid, we neet to make sure the opponent bids a card
+    // consistent with the observed outcomes, which requires
+    // seem to require reasonably sophisticated constraint solving
     if (current_bids.size() < target_bids.size()) {
       const auto &wins = target_game.wins();
       const auto winner = wins[next_turn_n];
@@ -78,6 +81,8 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
 
       transform(begin(cards), end(cards), action_ins,
                 [](const auto& card) { return make_action(card); });
+
+      Expects(!actions.empty());
 
       return actions;
     }
