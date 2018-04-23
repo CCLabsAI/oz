@@ -96,12 +96,6 @@ TEST_CASE("targeting goofspiel2 regression 1", "[target]") {
 
   const auto target = targeter.target_actions(game);
   CHECK(target == set<action_t> { make_action(2) });
-
-  // game.act(make_action(0)); // P1
-  // game.act(make_action(3)); // P2
-
-  // this checks there is not an assertion error
-  // targeter.target_actions(game);
 }
 
 TEST_CASE("targeting oos search", "[target]") {
