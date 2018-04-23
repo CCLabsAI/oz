@@ -26,81 +26,55 @@ static auto other_player(player_t p) -> player_t {
   }
 }
 
-static bool consistent(player_t player,
-                      vector<bool> &opponent_cards,
-                      int turn,
-                      int max_turn,
-                      const vector <goofspiel2_t::card_t> &target_bids,
-                      const vector <player_t> &wins)
+static auto playable(int turn,
+                     goofspiel2_t::card_t card,
+                     set<goofspiel2_t::card_t> hand, int n_cards,
+                     player_t match_player,
+                     const vector<goofspiel2_t::card_t> &bids,
+                     const vector<player_t> &wins) -> bool
 {
+  Expects(bids.size() == wins.size());
+
+  // Base case: we have no more history to be consistent with.
+  const auto max_turn = static_cast<int>(bids.size());
   if (turn >= max_turn) {
     return true;
   }
 
-  auto known_bid = target_bids[turn];
-
-  // This was a draw, opponent must have played specific card
+  bool card_playable;
   if (wins[turn] == CHANCE) {
-    if(!opponent_cards[known_bid]) {
-      return false;
-    }
-    else {
-      opponent_cards[known_bid] = false;
-      auto b = consistent(player,
-                          opponent_cards,
-                          turn + 1,
-                          max_turn,
-                          target_bids,
-                          wins);
-      opponent_cards[known_bid] = true;
-      return b;
-    }
+    // If we know this turn was a draw, only once choice is possible
+    card_playable = (card == bids[turn]);
+  }
+  else if (wins[turn] == match_player) {
+    // If we know this was a win, card value must be lower than bid
+    card_playable = (card < bids[turn]);
+  }
+  else {
+    // If we know this was a loss, card value must be higher than bid
+    card_playable = (card > bids[turn]);
   }
 
-  // player won, lower card must be playable
-  if (wins[turn] == player) {
-    for (int i = known_bid - 1; i > 0; --i) {
-      if (!opponent_cards[known_bid]) {
-        continue;
-      }
-      else {
-        opponent_cards[known_bid] = false;
-        auto b =
-            consistent(player,
-                       opponent_cards,
-                       turn + 1,
-                       max_turn,
-                       target_bids,
-                       wins);
-        opponent_cards[known_bid] = true;
-        if (b) return true;
-      }
-    }
-  }
+  if (card_playable) {
+    // Recursive case: at least one card must be playable next turn
+    bool next_playable = false;
 
-  // player lost, opponent must have higher card
-  if (wins[turn] == other_player(player)) {
-    auto n = static_cast<int>(opponent_cards.size());
-    for (int i = known_bid + 1; i < n; i++) {
-      if (!opponent_cards[known_bid]) {
-        continue;
-      }
-      else {
-        opponent_cards[known_bid] = false;
-        auto b =
-            consistent(player,
-                       opponent_cards,
-                       turn + 1,
-                       max_turn,
-                       target_bids,
-                       wins);
-        opponent_cards[known_bid] = true;
-        if (b) return true;
-      }
-    }
-  }
+    for (const auto &next_card : hand) {
+      set<goofspiel2_t::card_t> next_hand(hand);
+      next_hand.erase(next_card);
 
-  return false;
+      next_playable = playable(turn+1,
+                               next_card, next_hand, n_cards,
+                               match_player, bids, wins);
+
+      if (next_playable) break;
+    }
+
+    return next_playable;
+  }
+  else {
+    return false;
+  }
 }
 
 auto goofspiel2_target_t::target_actions(const history_t &current_history) const
@@ -115,7 +89,9 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
   const auto &current_bids = current_game.bids(match_player);
   const auto &target_bids = target_game.bids(match_player);
   const auto &target_wins = target_game.wins();
-  const auto next_turn_n = current_bids.size();
+  const auto next_turn_n = static_cast<int>(current_bids.size());
+  const auto opponent = other_player(match_player);
+  const auto &opponent_hand = current_game.hand(opponent);
 
   if (current_bids.size() < target_bids.size()) {
     if (current_game.player() == match_player) {
@@ -123,28 +99,23 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
       return { make_action(target) };
     }
     else {
-      // NB we need to do some simple constraint solving here to find
-      // infosets that are consistent with our observations
-      auto cards = vector<bool>(target_game.n_cards(), false);
-      for(auto card : current_game.hand(other_player(match_player))) {
-        cards[card] = true;
-      }
-
       auto s = set<action_t> { };
-      for(auto card : current_game.hand(other_player(match_player))) {
-        cards[card] = false;
-        bool b = consistent(match_player,
-                            cards,
-                            current_game.turn(),
-                            target_game.turn(),
-                            target_bids, target_wins);
-        if(b) {
+
+      for (const auto &card : opponent_hand) {
+        set<goofspiel2_t::card_t> remaining_hand(opponent_hand);
+        remaining_hand.erase(card);
+
+        bool b = playable(next_turn_n,
+                          card, remaining_hand, target_game.n_cards(),
+                          match_player, target_bids, target_wins);
+
+        if (b) {
           s.insert(make_action(card));
         }
-        cards[card] = true;
       }
 
       Expects(!s.empty());
+
       return s;
     }
   }
