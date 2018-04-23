@@ -31,7 +31,6 @@ class leduk_encoder_t final : public encoder_t {
   action_prob_t decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &rng) override;
 
  private:
-  static inline const leduk_poker_t::infoset_t &cast_infoset(const oz::infoset_t &infoset);
   static void card_one_hot(card_t card, ta_t &x_a, int i);
   static void action_one_hot(action_t action, ta_t &x_a, int i);
   static void rounds_one_hot(const vector<action_t> &actions, ta_t &x_a, int i);

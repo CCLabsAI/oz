@@ -8,7 +8,7 @@ namespace oz {
 using namespace std;
 using namespace at;
 
-auto leduk_encoder_t::cast_infoset(const infoset_t &infoset)
+static auto cast_infoset(const infoset_t &infoset)
   -> const leduk_poker_t::infoset_t &
 {
   // TODO this whole thing is still somewhat distressing
@@ -69,7 +69,6 @@ void leduk_encoder_t::rounds_one_hot(const vector<action_t> &actions,
     }
   }
 }
-
 
 // TODO write tests
 void leduk_encoder_t::encode(oz::infoset_t infoset, Tensor x) {

@@ -6,10 +6,9 @@
 namespace oz {
 
 using namespace std;
+using card_t = goofspiel2_t::card_t;
 
-auto goofspiel2_target_t::cast_history(const history_t &h)
-  -> const goofspiel2_t&
-{
+static auto cast_history(const history_t &h) -> const goofspiel2_t& {
   return h.cast<goofspiel2_t>();
 }
 
@@ -26,24 +25,30 @@ static auto other_player(player_t p) -> player_t {
   }
 }
 
-static auto playable(int turn,
-                     goofspiel2_t::card_t card,
-                     set<goofspiel2_t::card_t> hand, int n_cards,
-                     player_t match_player,
-                     const vector<goofspiel2_t::card_t> &bids,
+template<typename T>
+static auto set_without(const set<T> &s, T x) {
+  auto t = set<T>(s);
+  t.erase(x);
+  return t;
+}
+
+static auto playable(const int turn,
+                     const card_t card,
+                     const set<card_t> &hand,
+                     const player_t match_player,
+                     const vector<card_t> &bids,
                      const vector<player_t> &wins) -> bool
 {
   Expects(bids.size() == wins.size());
 
-  // Base case: we have no more history to be consistent with.
-  const auto max_turn = static_cast<int>(bids.size());
-  if (turn >= max_turn) {
+  // Base case: we have no more history remaining
+  if ((unsigned) turn >= bids.size()) {
     return true;
   }
 
   bool card_playable;
   if (wins[turn] == CHANCE) {
-    // If we know this turn was a draw, only once choice is possible
+    // If we know this turn was a draw, only one choice is possible
     card_playable = (card == bids[turn]);
   }
   else if (wins[turn] == match_player) {
@@ -57,20 +62,15 @@ static auto playable(int turn,
 
   if (card_playable) {
     // Recursive case: at least one card must be playable next turn
-    bool next_playable = false;
+    const auto next_hand = set_without(hand, card);
 
-    for (const auto &next_card : hand) {
-      set<goofspiel2_t::card_t> next_hand(hand);
-      next_hand.erase(next_card);
+    const auto playable_next = [&](const auto &next_card) {
+      return playable(turn + 1,
+                      next_card, next_hand,
+                      match_player, bids, wins);
+    };
 
-      next_playable = playable(turn+1,
-                               next_card, next_hand, n_cards,
-                               match_player, bids, wins);
-
-      if (next_playable) break;
-    }
-
-    return next_playable;
+    return any_of(begin(next_hand), end(next_hand), playable_next);
   }
   else {
     return false;
@@ -83,40 +83,38 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
   Expects(!target_game.is_terminal());
 
   const auto &current_game = cast_history(current_history);
-
-  Expects(target_game.n_cards() == current_game.n_cards());
-
   const auto &current_bids = current_game.bids(match_player);
   const auto &target_bids = target_game.bids(match_player);
   const auto &target_wins = target_game.wins();
-  const auto next_turn_n = static_cast<int>(current_bids.size());
+
+  Expects(target_game.n_cards() == current_game.n_cards());
+
   const auto opponent = other_player(match_player);
   const auto &opponent_hand = current_game.hand(opponent);
+
+  const auto next_turn_n = current_bids.size();
 
   if (current_bids.size() < target_bids.size()) {
     if (current_game.player() == match_player) {
       const auto target = target_bids[next_turn_n];
       return { make_action(target) };
     }
-    else {
-      auto s = set<action_t> { };
+    else { // current_game.player() == other_player(match_player)
+      const auto opponent_playable = [&](const auto &card) {
+        return playable(next_turn_n,
+                        card, opponent_hand,
+                        match_player, target_bids, target_wins);
+      };
 
+      auto actions = set<action_t> { };
       for (const auto &card : opponent_hand) {
-        set<goofspiel2_t::card_t> remaining_hand(opponent_hand);
-        remaining_hand.erase(card);
-
-        bool b = playable(next_turn_n,
-                          card, remaining_hand, target_game.n_cards(),
-                          match_player, target_bids, target_wins);
-
-        if (b) {
-          s.insert(make_action(card));
+        if (opponent_playable(card)) {
+          actions.insert(make_action(card));
         }
       }
 
-      Expects(!s.empty());
-
-      return s;
+      Ensures(!actions.empty());
+      return actions;
     }
   }
 

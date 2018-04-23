@@ -18,9 +18,6 @@ class goofspiel2_target_t final : public target_t::concept_t {
 
   player_t match_player;
   goofspiel2_t target_game;
-
- private:
-  static inline const goofspiel2_t &cast_history(const history_t &h);
 };
 
 } // namespace oz

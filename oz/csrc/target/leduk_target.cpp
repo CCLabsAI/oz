@@ -47,6 +47,7 @@ auto leduk_target_t::target_actions(const history_t &current_history) const
 
   if (current_actions.size() < target_actions.size()) {
     const auto target = target_actions[next_ply_n];
+
     Ensures(target != action_t::NextRound);
 
     Ensures(
