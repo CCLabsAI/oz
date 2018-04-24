@@ -632,17 +632,28 @@ void oos_t::search_iter(history_t h, player_t player,
       (s.targeting_ratio() - avg_targeting_ratio_) / avg_targeting_ratio_N_;
 }
 
-void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
+void oos_t::search_targeted(history_t h, int n_iter, tree_t &tree, rng_t &rng,
                    target_t target, infoset_t target_infoset,
                    const prob_t eps,
                    const prob_t delta,
-                   const prob_t gamma) {
+                   const prob_t gamma)
+{
   Expects(n_iter >= 0);
 
   for(int i = 0; i < n_iter; i++) {
     search_iter(h, P1, tree, rng, target, target_infoset, eps, delta, gamma);
     search_iter(h, P2, tree, rng, target, target_infoset, eps, delta, gamma);
   }
+}
+
+void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
+                   const prob_t eps,
+                   const prob_t delta,
+                   const prob_t gamma)
+{
+  search_targeted(move(h), n_iter, tree, rng,
+                  null_target(), null_infoset(),
+                  eps, delta, gamma);
 }
 
 }

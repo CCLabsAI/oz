@@ -203,11 +203,15 @@ static constexpr prob_t NaN = std::numeric_limits<prob_t>::signaling_NaN();
 class oos_t final {
  public:
   void search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
-              target_t target = null_target(),
-              infoset_t target_infoset = null_infoset(),
               prob_t eps = 0.4,
-              prob_t delta = 0.2,
-              prob_t gamma = 0.01);
+              prob_t delta = 0.6,
+              prob_t gamma = 0.0);
+
+  void search_targeted(history_t h, int n_iter, tree_t &tree, rng_t &rng,
+                       target_t target, infoset_t target_infoset,
+                       prob_t eps = 0.2,
+                       prob_t delta = 0.6,
+                       prob_t gamma = 0.01);
 
   void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
                    target_t target, infoset_t target_infoset,

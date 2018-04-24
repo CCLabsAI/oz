@@ -117,23 +117,30 @@ void bind_oz(py::module &m) {
 
   // NB this needs to be before OOS, because of the default argument
   // TODO clean up the api so this isn't necessary
-  py::class_<target_t>(m, "Target")
-      .def_property_readonly("game", // TODO figure out if there is a better way
-        &target_t::game, py::return_value_policy::reference_internal);
+  py::class_<target_t>(m, "Target");
 
   py::class_<oos_t>(m, "OOS")
       .def(py::init<>())
       .def("retarget", &oos_t::retarget)
       .def_property_readonly("avg_targeting_ratio", &oos_t::avg_targeting_ratio)
       .def("search", &oos_t::search,
-        py::arg("history"),
-        py::arg("n_iter"),
-        py::arg("tree"),
-        py::arg("rng"),
-        py::arg("target") = null_target(),
-        py::arg("eps") = 0.4,
-        py::arg("delta") = 0.4,
-        py::arg("gamma") = 0.01);
+           py::arg("history"),
+           py::arg("n_iter"),
+           py::arg("tree"),
+           py::arg("rng"),
+           py::arg("eps") = 0.4,
+           py::arg("delta") = 0.9,
+           py::arg("gamma") = 0.01)
+      .def("search_targeted", &oos_t::search_targeted,
+           py::arg("history"),
+           py::arg("n_iter"),
+           py::arg("tree"),
+           py::arg("rng"),
+           py::arg("target"),
+           py::arg("target_infoset"),
+           py::arg("eps") = 0.4,
+           py::arg("delta") = 0.9,
+           py::arg("gamma") = 0.01);
 
   py::class_<sigma_t>(m, "Sigma")
       .def("pr", &sigma_t::pr)
@@ -251,8 +258,8 @@ void bind_oz(py::module &m) {
     return make_history<goofspiel2_t>(n);
   });
 
-  m.def("make_goofspiel2_target", [](player_t p, int n) {
-    return make_target<goofspiel2_target_t>(p, n);
+  m.def("make_goofspiel2_target", []() {
+    return make_target<goofspiel2_target_t>();
   });
 
 }

@@ -122,7 +122,9 @@ TEST_CASE("targeting oos search", "[target]") {
   const auto &target_infoset = h_target.infoset();
 
   s.retarget();
-  s.search(h, 2000, tree_targeted, rng_targeted, target, target_infoset);
+  s.search_targeted(h, 2000, tree_targeted, rng_targeted,
+                    target, target_infoset,
+                    0.1, 0.6, 0.01);
   const auto tr_targeted = s.avg_targeting_ratio();
 
   s.retarget();
@@ -142,9 +144,9 @@ TEST_CASE("targeting oos search", "[target]") {
   tree_t tree_targeted_strong;
 
   s.retarget();
-  s.search(h, 2000, tree_targeted_strong, rng_targeted,
-           target, target_infoset,
-           0.1, 0.9, 0.01);
+  s.search_targeted(h, 2000, tree_targeted_strong, rng_targeted,
+                    target, target_infoset,
+                    0.1, 0.9, 0.01);
 
   const auto tr_strong = s.avg_targeting_ratio();
   const auto &node_strong = tree_targeted_strong.lookup(infoset);
