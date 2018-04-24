@@ -18,8 +18,6 @@ target = oz.make_goofspiel2_target(oz.P2, n_cards)
 
 oos.search(root, 10000, tree, rng, eps=0.4, delta=0, gamma=0.05)
 
-sigma = tree.sigma_average()
-
 
 def print_history(h, actions):
     print("bidding on:", h.game.turn)
@@ -33,7 +31,11 @@ def input_action(actions):
 
     while True:
         a_str = input("enter card number to play: ")
-        a_idx = int(a_str)
+
+        try:
+            a_idx = int(a_str)
+        except ValueError:
+            continue
 
         if a_idx in action_indexes:
             break
@@ -60,11 +62,13 @@ while not h.is_terminal():
     target.game.act(a)
 
     oos.retarget()
-    oos.search(root, 5000, tree, rng, target, eps=0.2, delta=0.9, gamma=0.01)
+    oos.search(root, 5000, tree, rng, target, eps=0.4, delta=0.9, gamma=0.01)
 
 
     infoset2 = h.infoset()
     node = tree.lookup(infoset2)
+    sigma = tree.sigma_average()
+
     print("average targeting ratio:", oos.avg_targeting_ratio)
     print("updates at AI node:", node.regret_n)
 
@@ -75,7 +79,7 @@ while not h.is_terminal():
     print("AI action probs:", a_probs)
 
     print("AI regrets:", [(a.index, r)
-                          for a, r in node.regrets.items()])
+                           for a, r in node.regrets.items()])
 
     print("AI avg strategy:", [(a.index, s)
                                 for a, s in node.average_strategy.items()])
