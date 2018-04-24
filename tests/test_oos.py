@@ -40,7 +40,7 @@ class TestPlayoutSigma:
             raise RuntimeError
 
 
-class TestOSS(unittest.TestCase):
+class TestOOS(unittest.TestCase):
 
     def test_terminal(self):
         h = TerminalHistory()

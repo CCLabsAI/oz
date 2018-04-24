@@ -20,7 +20,7 @@ batch_search_t::batch_search_t(history_t root,
   auto player = P1;
 
   generate_n(back_inserter(searches_), batch_size_, [&]() {
-    auto search_player = player;
+    const auto search_player = player;
     player = (player == P1 ? P2 : P1);
     return search_t { root_, search_player };
   });

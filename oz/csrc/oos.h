@@ -1,5 +1,5 @@
-#ifndef OZ_OSS_H
-#define OZ_OSS_H
+#ifndef OZ_OOS_H
+#define OZ_OOS_H
 
 #include <tuple>
 #include <random>
@@ -168,6 +168,8 @@ class tree_t final {
 
   map_t::size_type size() const { return nodes_.size(); }
 
+  void clear();
+
  private:
   map_t nodes_;
 };
@@ -186,13 +188,13 @@ class sigma_regret_t final : public sigma_t::concept_t {
 
 class sigma_average_t final : public sigma_t::concept_t {
  public:
-  explicit sigma_average_t(tree_t tree):
-      tree_(move(tree)) { };
+  explicit sigma_average_t(const tree_t &tree):
+      tree_(tree) { };
 
   prob_t pr(infoset_t infoset, action_t a) const override;
 
  private:
-  const tree_t tree_;
+  const tree_t &tree_;
 };
 
 static_assert(std::numeric_limits<prob_t>::has_signaling_NaN);
@@ -334,4 +336,4 @@ class oos_t final {
 
 } // namespace oz
 
-#endif // OZ_OSS_H
+#endif // OZ_OOS_H

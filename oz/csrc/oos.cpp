@@ -489,11 +489,15 @@ auto tree_t::sigma_average() const -> sigma_t {
   return make_sigma<sigma_average_t>(*this);
 }
 
+void tree_t::clear() {
+  nodes_.clear();
+}
+
 auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   auto sum_positive = accumulate(
     begin(regrets_), end(regrets_), (value_t) 0,
     [](const auto &r, const auto &x) {
-        return r + max((value_t) 0, x.second);
+        return r + max<value_t>(0, x.second);
     });
 
   prob_t p;
@@ -519,7 +523,7 @@ auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
             [](const auto &x) { return x.first; });
 
   transform(begin(regrets_), end(regrets_), begin(weights),
-            [](const auto &x) { return rectify(x.second); });
+            [](const auto &x) { return max<value_t>(0, x.second); });
 
   auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
   auto N = static_cast<int>(weights.size());
@@ -561,8 +565,9 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 
     const auto total =
         accumulate(begin(actions), end(actions), (prob_t) 0,
-                   [&](const auto &x, const auto &a_prime)
-                   { return x + node.average_strategy(a_prime); });
+                   [&node](const auto &x, const auto &a_prime) {
+                     return x + node.average_strategy(a_prime);
+                   });
 
     p = total > 0 ?
       node.average_strategy(a) / total :
@@ -590,9 +595,9 @@ static inline auto sample_action(const history_t &h, rng_t &rng)
 void oos_t::search_iter(history_t h, player_t player,
                         tree_t &tree, rng_t &rng,
                         target_t target,
-                        prob_t eps,
-                        prob_t delta,
-                        prob_t gamma)
+                        const prob_t eps,
+                        const prob_t delta,
+                        const prob_t gamma)
 {
   using state_t = search_t::state_t;
   auto s = search_t(move(h), player, move(target), eps, delta, gamma);
@@ -624,9 +629,9 @@ void oos_t::search_iter(history_t h, player_t player,
 
 void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
                    target_t target,
-                   prob_t eps,
-                   prob_t delta,
-                   prob_t gamma) {
+                   const prob_t eps,
+                   const prob_t delta,
+                   const prob_t gamma) {
   Expects(n_iter >= 0);
 
   for(int i = 0; i < n_iter; i++) {

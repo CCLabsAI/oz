@@ -12,7 +12,7 @@
 using namespace std;
 using namespace oz;
 
-TEST_CASE("oss simple", "[oss]") {
+TEST_CASE("oos simple", "[oos]") {
   auto h = make_history<kuhn_poker_t>();
   oos_t::search_t s(h, P1);
   tree_t tree;
@@ -25,7 +25,7 @@ TEST_CASE("oss simple", "[oss]") {
   REQUIRE(s.state() == oos_t::search_t::state_t::PLAYOUT);
 }
 
-TEST_CASE("node update", "[oss]") {
+TEST_CASE("node update", "[oos]") {
   auto heads = make_action(flipguess_t::action_t::Left);
   auto tails = make_action(flipguess_t::action_t::Right);
   auto actions = vector<action_t> { heads, tails };
@@ -42,7 +42,7 @@ TEST_CASE("node update", "[oss]") {
 
 }
 
-TEST_CASE("tree update", "[oss]") {
+TEST_CASE("tree update", "[oos]") {
   auto tree = tree_t();
   auto h = make_history<flipguess_t>();
   h.act(make_action(flipguess_t::action_t::Tails));
@@ -61,7 +61,7 @@ TEST_CASE("tree update", "[oss]") {
   CHECK(node2.regret(tails) == 0);
 }
 
-TEST_CASE("oss playout", "[oss]") {
+TEST_CASE("oos playout", "[oos]") {
   auto h = make_history<kuhn_poker_t>();
   oos_t::search_t s(h, P1);
   tree_t tree;
@@ -78,7 +78,7 @@ TEST_CASE("oss playout", "[oss]") {
   s.backprop(tree);
 }
 
-TEST_CASE("oss search", "[oss]") {
+TEST_CASE("oos search", "[oos]") {
   auto h = make_history<flipguess_t>();
   oos_t s;
   tree_t tree;
@@ -96,7 +96,7 @@ TEST_CASE("oss search", "[oss]") {
   CHECK(nl / (nl + nr) == Approx((prob_t) 1/3).epsilon(0.05));
 }
 
-TEST_CASE("oss exploitability flipguess", "[oss]") {
+TEST_CASE("oos exploitability flipguess", "[oos]") {
   auto h = make_history<flipguess_t>();
   oos_t s;
   tree_t tree;
@@ -113,7 +113,7 @@ TEST_CASE("oss exploitability flipguess", "[oss]") {
   CHECK(ex2 < ex1);
 }
 
-TEST_CASE("oss exploitability kuhn poker", "[oss]") {
+TEST_CASE("oos exploitability kuhn poker", "[oos]") {
   auto h = make_history<kuhn_poker_t>();
   oos_t s;
   tree_t tree;

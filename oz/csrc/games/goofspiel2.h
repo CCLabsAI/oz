@@ -32,6 +32,9 @@ class goofspiel2_t final : public game_t {
     bool is_equal(const oz::infoset_t::concept_t& that) const override;
     size_t hash() const override;
 
+    const vector<card_t> &bids() const { return bids_; }
+    const vector<player_t> &wins() const { return wins_; }
+
    private:
     player_t player_;
     set<card_t> hand_;

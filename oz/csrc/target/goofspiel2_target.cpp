@@ -13,20 +13,12 @@ static auto cast_history(const history_t &h) -> const goofspiel2_t& {
 }
 
 static auto other_player(player_t p) -> player_t {
-  switch(p) {
-    case P1:
-      return P2;
-    case P2:
-      return P1;
-    case CHANCE:
-      return CHANCE;
-    default:
-      return p;
-  }
+  Expects(p == P1 || p == P2);
+  return p == P1 ? P2 : P1;
 }
 
 template<typename T>
-static auto set_without(const set<T> &s, T x) {
+static auto set_without(const set<T> &s, T x) -> set<T> {
   auto t = set<T>(s);
   t.erase(x);
   return t;
@@ -46,7 +38,7 @@ static auto playable(const int turn,
     return true;
   }
 
-  bool card_playable;
+  bool card_playable = false;
   if (wins[turn] == CHANCE) {
     // If we know this turn was a draw, only one choice is possible
     card_playable = (card == bids[turn]);
@@ -64,7 +56,7 @@ static auto playable(const int turn,
     // Recursive case: at least one card must be playable next turn
     const auto next_hand = set_without(hand, card);
 
-    const auto playable_next = [&](const auto &next_card) {
+    const auto playable_next = [&](const card_t &next_card) -> bool {
       return playable(turn + 1,
                       next_card, next_hand,
                       match_player, bids, wins);
@@ -92,16 +84,16 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
   const auto opponent = other_player(match_player);
   const auto &opponent_hand = current_game.hand(opponent);
 
-  const auto next_turn_n = current_bids.size();
+  const auto next_turn = current_bids.size();
 
   if (current_bids.size() < target_bids.size()) {
     if (current_game.player() == match_player) {
-      const auto target = target_bids[next_turn_n];
+      const auto target = target_bids[next_turn];
       return { make_action(target) };
     }
-    else { // current_game.player() == other_player(match_player)
-      const auto opponent_playable = [&](const auto &card) {
-        return playable(next_turn_n,
+    else {
+      const auto opponent_playable = [&](const card_t &card) -> bool {
+        return playable(next_turn,
                         card, opponent_hand,
                         match_player, target_bids, target_wins);
       };

@@ -64,9 +64,13 @@ pybind11_add_module(_ext
         "oz/csrc/py_sigma.cpp"
         "oz/csrc/games/flipguess.cpp"
         "oz/csrc/games/kuhn.cpp"
+
         "oz/csrc/games/leduk.cpp"
         "oz/csrc/encoder/leduk_encoder.cpp"
+        "oz/csrc/target/leduk_target.cpp"
+
         "oz/csrc/games/goofspiel2.cpp"
+        "oz/csrc/encoder/goofspiel2_encoder.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
         )
 

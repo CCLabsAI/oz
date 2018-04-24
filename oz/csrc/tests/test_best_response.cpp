@@ -8,14 +8,14 @@
 using namespace std;
 using namespace oz;
 
-class sigma_uniform_t : public sigma_t::concept_t {
+class sigma_uniform_t final : public sigma_t::concept_t {
   prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
     auto n = infoset.actions().size();
     return (prob_t) 1 / n;
   }
 };
 
-class sigma_flip_t : public sigma_t::concept_t {
+class sigma_flip_t final : public sigma_t::concept_t {
  public:
   prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
     static const auto chance = make_infoset<flipguess_t::infoset_t>(CHANCE);
@@ -45,7 +45,7 @@ class sigma_flip_t : public sigma_t::concept_t {
   }
 };
 
-class sigma_kuhn_t : public sigma_t::concept_t {
+class sigma_kuhn_t final : public sigma_t::concept_t {
  public:
   prob_t pr(oz::infoset_t infoset, oz::action_t a) const override {
     const auto &infoset_ = infoset.cast<kuhn_poker_t::infoset_t>();

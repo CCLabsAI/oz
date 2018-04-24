@@ -70,10 +70,12 @@ void leduk_encoder_t::rounds_one_hot(const vector<action_t> &actions,
   }
 }
 
-// TODO write tests
 void leduk_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
+  // TODO write tests
+  Expects(x.size(0) == encoding_size());
+
   const auto &game_infoset = cast_infoset(infoset);
-  assert (game_infoset.player != CHANCE);
+  Expects(game_infoset.player != CHANCE);
 
   x.zero_();
   auto x_a = x.accessor<nn_real_t, 1>();
@@ -123,8 +125,8 @@ auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x)
 auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &rng)
   -> action_prob_t
 {
-  assert (cast_infoset(infoset).player != CHANCE);
-  assert (x.size(0) == max_actions());
+  Expects(cast_infoset(infoset).player != CHANCE);
+  Expects(x.size(0) == max_actions());
 
   const auto actions = infoset.actions();
   auto weights = vector<prob_t>(actions.size());
@@ -147,7 +149,7 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
     }
   });
 
-  assert (all_greater_equal_zero(weights));
+  Expects(all_greater_equal_zero(weights));
   auto total = accumulate(begin(weights), end(weights), (prob_t) 0);
 
   auto a_dist = discrete_distribution<>(begin(weights), end(weights));
@@ -157,8 +159,8 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
   auto pr_a = weights[i]/total;
   auto rho1 = pr_a, rho2 = pr_a;
 
-  assert (total >= 0);
-  assert (pr_a >= 0 && pr_a <= 1);
+  Ensures(total >= 0);
+  Ensures(pr_a >= 0 && pr_a <= 1);
 
   return { a, pr_a, rho1, rho2 };
 }

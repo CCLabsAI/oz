@@ -14,8 +14,10 @@
 #include "games/kuhn.h"
 #include "games/leduk.h"
 #include "encoder/leduk_encoder.h"
+#include "target/leduk_target.h"
 #include "games/goofspiel2.h"
 #include "target/goofspiel2_target.h"
+#include "encoder/goofspiel2_encoder.h"
 
 auto sigmoid_add(at::Tensor x, at::Tensor y) -> at::Tensor {
   return at::sigmoid(x + y);
@@ -98,11 +100,12 @@ void bind_oz(py::module &m) {
       .def_property_readonly("player", &history_t::player)
       .def("is_terminal", &history_t::is_terminal)
       .def("utility", &history_t::utility)
-      .def("__copy__", [](const history_t &h) { return history_t(h); })
+      .def("sample_chance", &history_t::sample_chance)
       .def_property_readonly("game", // TODO figure out if there is a better way
         [](const history_t &target) -> const game_t& {
           return target.cast<game_t>();
-        }, py::return_value_policy::reference_internal);
+        }, py::return_value_policy::reference_internal)
+      .def("__copy__", [](const history_t &h) { return history_t(h); });
 
   m.def("exploitability", &exploitability);
 
@@ -116,9 +119,7 @@ void bind_oz(py::module &m) {
   // TODO clean up the api so this isn't necessary
   py::class_<target_t>(m, "Target")
       .def_property_readonly("game", // TODO figure out if there is a better way
-        [](target_t &t) -> game_t& {
-          return t.game();
-        }, py::return_value_policy::reference_internal);
+        &target_t::game, py::return_value_policy::reference_internal);
 
   py::class_<oos_t>(m, "OOS")
       .def(py::init<>())
@@ -167,7 +168,9 @@ void bind_oz(py::module &m) {
 
   py::class_<tree_t>(m, "Tree")
       .def(py::init<>())
-      .def("sigma_average", &tree_t::sigma_average)
+      .def("sigma_average", &tree_t::sigma_average,
+        py::return_value_policy::move,
+        py::keep_alive<0, 1>())
       .def("size", &tree_t::size)
       .def("create_node", &tree_t::create_node)
       .def("lookup", (node_t &(tree_t::*)(const infoset_t &)) &tree_t::lookup)
@@ -183,8 +186,12 @@ void bind_oz(py::module &m) {
                              &node_t::average_strategy_map);
 
   py::class_<rng_t>(m, "Random")
-      .def(py::init<>())
-      .def(py::init<int>());
+      .def(py::init<int>())
+      .def(py::init<>([]() -> rng_t {
+        std::random_device r;
+        std::seed_seq seed { r(), r(), r(), r(), r(), r(), r(), r() };
+        return rng_t(seed);
+      }));
 
   auto py_Encoder =
       py::class_<encoder_t, std::shared_ptr<encoder_t>>(m, "Encoder")
@@ -197,6 +204,10 @@ void bind_oz(py::module &m) {
   py::class_<leduk_encoder_t,
              std::shared_ptr<leduk_encoder_t>>(m, "LedukEncoder", py_Encoder)
       .def(py::init<>());
+
+  py::class_<goofspiel2_encoder_t,
+             std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder)
+      .def(py::init<int>());
 
   py::class_<batch_search_t>(m, "BatchSearch")
       .def(py::init<history_t, std::shared_ptr<encoder_t>, int>())
@@ -226,6 +237,10 @@ void bind_oz(py::module &m) {
 
   m.def("make_leduk_history", []() {
     return make_history<leduk_poker_t>();
+  });
+
+  m.def("make_leduk_target", []() {
+    return make_target<leduk_target_t>();
   });
 
   m.def("make_goofspiel2", [](int n) {

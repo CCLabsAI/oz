@@ -41,8 +41,9 @@ ForwardIt max_element_by(ForwardIt first, ForwardIt last, Projection f) {
 template <typename T>
 bool all_greater_equal_zero(T iter) {
   using namespace std;
+
   return all_of(begin(iter), end(iter),
-                [](const auto &x) { return x >= 0; });
+                [](auto x){ return x >= 0; });
 }
 
 // TODO make this prob_t or something instead of double
@@ -53,7 +54,7 @@ double sum_probs(T col) {
 }
 
 template <typename T>
-bool sum_to_one(T col) {
+bool sums_to_one(T col) {
   using namespace std;
   return abs(1.0 - sum_probs(col)) < 1e-9;
 }
@@ -68,11 +69,6 @@ auto keys(const T &m) -> std::vector<typename T::key_type> {
   });
 
   return keys;
-}
-
-template <typename T>
-T rectify(T x) {
-  return x > 0 ? x : 0;
 }
 
 } // namespace oz

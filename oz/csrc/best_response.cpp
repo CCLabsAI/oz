@@ -71,13 +71,11 @@ auto gebr_pass2(history_t h, player_t i,
     return v_chance;
   }
 
-  Expects(player != CHANCE);
   const auto infoset = h.infoset();
   const auto actions = infoset.actions();
+  Expects(!actions.empty());
 
   if (player == i && l > d) {
-    Expects(!actions.empty());
-
     auto value_lookup = [&](const action_t& a) -> value_t {
       return tb.at({ infoset, a }).v();
     };
