@@ -14,7 +14,7 @@ oos = oz.OOS()
 # force = True
 force = False
 
-target = oz.make_goofspiel2_target(oz.P2, n_cards)
+target = oz.make_goofspiel2_target()
 
 oos.search(root, 10000, tree, rng, eps=0.4, delta=0, gamma=0.05)
 
@@ -59,13 +59,14 @@ while not h.is_terminal():
 
     a = input_action(infoset.actions)
     h.act(a)
-    target.game.act(a)
-
-    oos.retarget()
-    oos.search(root, 5000, tree, rng, target, eps=0.4, delta=0.9, gamma=0.01)
-
 
     infoset2 = h.infoset()
+
+    oos.retarget()
+    oos.search_targeted(root, 5000, tree, rng,
+                        target, infoset2,
+                        eps=0.4, delta=0.9, gamma=0.01)
+
     node = tree.lookup(infoset2)
     sigma = tree.sigma_average()
 
@@ -73,7 +74,6 @@ while not h.is_terminal():
     print("updates at AI node:", node.regret_n)
 
     assert h.player == oz.P2
-    assert target.game.player == oz.P2
 
     a_probs = [(a.index, sigma.pr(infoset2, a)) for a in infoset2.actions]
     print("AI action probs:", a_probs)
@@ -89,11 +89,9 @@ while not h.is_terminal():
     if force:
         a = input_action(infoset2.actions)
         h.act(a)
-        target.game.act(a)
 
     else:
         h.act(ap.a)
-        target.game.act(ap.a)
 
     print()
 
