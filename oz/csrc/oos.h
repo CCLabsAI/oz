@@ -204,12 +204,14 @@ class oos_t final {
  public:
   void search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
               target_t target = null_target(),
+              infoset_t target_infoset = null_infoset(),
               prob_t eps = 0.4,
               prob_t delta = 0.2,
               prob_t gamma = 0.01);
 
   void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
-                   target_t target, prob_t eps, prob_t delta, prob_t gamma);
+                   target_t target, infoset_t target_infoset,
+                   prob_t eps, prob_t delta, prob_t gamma);
 
   prob_t avg_targeting_ratio() const { return avg_targeting_ratio_; }
 
@@ -230,6 +232,7 @@ class oos_t final {
         state_(state_t::SELECT),
         history_(move(history)),
         target_(null_target()),
+        target_infoset_(null_infoset()),
         search_player_(search_player),
         targeted_(false),
         eps_(0.4),
@@ -237,11 +240,13 @@ class oos_t final {
         gamma_(0.01)
     { }
 
-    search_t(history_t history, player_t search_player, target_t target,
+    search_t(history_t history, player_t search_player,
+             target_t target, infoset_t target_infoset,
              prob_t eps = 0.4, prob_t delta = 0.2, prob_t gamma = 0.01):
         state_(state_t::SELECT),
         history_(move(history)),
         target_(move(target)),
+        target_infoset_(move(target_infoset)),
         search_player_(search_player),
         targeted_(false),
         eps_(eps),
@@ -321,6 +326,7 @@ class oos_t final {
     history_t history_;
     vector<path_item_t> path_;
     target_t target_;
+    infoset_t target_infoset_;
 
     player_t search_player_;
     prefix_prob_t prefix_prob_;

@@ -12,6 +12,11 @@ static auto cast_history(const history_t &h) -> const goofspiel2_t& {
   return h.cast<goofspiel2_t>();
 }
 
+static auto cast_infoset(const infoset_t &infoset)
+  -> const goofspiel2_t::infoset_t& {
+  return infoset.cast<goofspiel2_t::infoset_t>();
+}
+
 static auto other_player(player_t p) -> player_t {
   Expects(p == P1 || p == P2);
   return p == P1 ? P2 : P1;
@@ -69,25 +74,27 @@ static auto playable(const int turn,
   }
 }
 
-auto goofspiel2_target_t::target_actions(const history_t &current_history) const
+auto goofspiel2_target_t::target_actions(const infoset_t &infoset,
+                                         const history_t &current_history) const
   -> set<action_t>
 {
-  Expects(!target_game.is_terminal());
+  const auto &target_infoset = cast_infoset(infoset);
+  const auto &target_player = target_infoset.player();
 
   const auto &current_game = cast_history(current_history);
-  const auto &current_bids = current_game.bids(match_player);
-  const auto &target_bids = target_game.bids(match_player);
-  const auto &target_wins = target_game.wins();
+  const auto &current_bids = current_game.bids(target_player);
+  const auto &target_bids = target_infoset.bids();
+  const auto &target_wins = target_infoset.wins();
 
-  Expects(target_game.n_cards() == current_game.n_cards());
+  Expects(target_bids.size() <= (unsigned) current_game.n_cards());
 
-  const auto opponent = other_player(match_player);
+  const auto opponent = other_player(target_player);
   const auto &opponent_hand = current_game.hand(opponent);
 
   const auto next_turn = current_bids.size();
 
   if (current_bids.size() < target_bids.size()) {
-    if (current_game.player() == match_player) {
+    if (current_game.player() == target_player) {
       const auto target = target_bids[next_turn];
       return { make_action(target) };
     }
@@ -95,7 +102,7 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
       const auto opponent_playable = [&](const card_t &card) -> bool {
         return playable(next_turn,
                         card, opponent_hand,
-                        match_player, target_bids, target_wins);
+                        target_player, target_bids, target_wins);
       };
 
       auto actions = set<action_t> { };
@@ -111,10 +118,6 @@ auto goofspiel2_target_t::target_actions(const history_t &current_history) const
   }
 
   return { };
-}
-
-game_t &goofspiel2_target_t::game() {
-  return target_game;
 }
 
 } // namespace oz

@@ -71,8 +71,10 @@ auto oos_t::search_t::sample_tree(const tree_t &tree,
     gamma = gamma_;
   }
 
+  Expects(!target_ || target_infoset_);
+
   const auto targets = (target_ && targeted_) ?
-                       target_.target_actions(history_) :
+                       target_.target_actions(target_infoset_, history_) :
                        set<action_t> { };
 
   const auto r = tree.sample_sigma(infoset,
@@ -595,12 +597,15 @@ static inline auto sample_action(const history_t &h, rng_t &rng)
 void oos_t::search_iter(history_t h, player_t player,
                         tree_t &tree, rng_t &rng,
                         target_t target,
+                        infoset_t target_infoset,
                         const prob_t eps,
                         const prob_t delta,
                         const prob_t gamma)
 {
   using state_t = search_t::state_t;
-  auto s = search_t(move(h), player, move(target), eps, delta, gamma);
+  auto s = search_t(move(h), player,
+                    move(target), move(target_infoset),
+                    eps, delta, gamma);
   s.set_initial_weight(1.0/avg_targeting_ratio_);
 
   while (s.state() != state_t::FINISHED) {
@@ -628,15 +633,15 @@ void oos_t::search_iter(history_t h, player_t player,
 }
 
 void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
-                   target_t target,
+                   target_t target, infoset_t target_infoset,
                    const prob_t eps,
                    const prob_t delta,
                    const prob_t gamma) {
   Expects(n_iter >= 0);
 
   for(int i = 0; i < n_iter; i++) {
-    search_iter(h, P1, tree, rng, target, eps, delta, gamma);
-    search_iter(h, P2, tree, rng, target, eps, delta, gamma);
+    search_iter(h, P1, tree, rng, target, target_infoset, eps, delta, gamma);
+    search_iter(h, P2, tree, rng, target, target_infoset, eps, delta, gamma);
   }
 }
 

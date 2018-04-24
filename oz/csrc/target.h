@@ -14,15 +14,15 @@ using std::set;
 class target_t final {
  public:
   struct concept_t {
-    virtual set<action_t> target_actions(const history_t &h) const = 0;
-    virtual game_t &game() = 0;
+    virtual set<action_t>
+      target_actions(const infoset_t &target_infoset,
+                     const history_t &current_history) const = 0;
   };
 
-  set<action_t> target_actions(const history_t &h) const {
-    return self_->target_actions(h);
+  set<action_t> target_actions(const infoset_t &target_infoset,
+                               const history_t &current_history) const {
+    return self_->target_actions(target_infoset, current_history);
   }
-
-  game_t &game() { return self_->game(); }
 
   explicit operator bool() const { return bool(self_); }
 

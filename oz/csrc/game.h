@@ -66,6 +66,8 @@ class infoset_t final {
   bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
   size_t hash() const { return self_->hash(); };
 
+  explicit operator bool() const { return bool(self_); }
+
   template <class T>
   const T &cast() const { return assert_cast<const T&>(*self_); }
 
