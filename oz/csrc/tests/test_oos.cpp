@@ -84,7 +84,7 @@ TEST_CASE("oos search", "[oos]") {
   tree_t tree;
   rng_t rng(1);
 
-  s.search(h, 25000, tree, rng);
+  s.search(h, 20000, tree, rng);
   CHECK(tree.size() == 2);
 
   static const auto left = make_action(flipguess_t::action_t::Left);

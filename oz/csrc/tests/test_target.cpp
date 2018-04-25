@@ -92,6 +92,21 @@ TEST_CASE("targeting goofspiel2 regression 1", "[target]") {
   h_target.act(make_action(1)); // P1
   h_target.act(make_action(2)); // P2
 
+  h_target.act(make_action(0)); // P1
+
+  CHECK(h_target.player() == P2);
+
+  // target game
+  // P1: 3 - 2 - 1 - 0
+  //     >   <   <
+  // P2: 0 - 3 - 2
+
+  // current game
+  // P1: 1 - (2) - (0)
+  //       - (0) -  X
+  //     >    <     <
+  // P2: 0 - (3) - (2)
+
   h.act(make_action(1)); // P1
   h.act(make_action(0)); // P2
 
