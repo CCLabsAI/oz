@@ -58,9 +58,11 @@ static auto playable(const int turn,
   // https://en.wikipedia.org/wiki/AC-3_algorithm
   // specialised to this problem. (the CSP one, not the ML one)
 
+  using var_t = bitset<MAX_CARDS>;
+
   int n_vars = bids.size() - turn; // turns remaining
-  bitset<MAX_CARDS> hand_bits, work;
-  bitset<MAX_CARDS> var[MAX_CARDS];
+  var_t hand_bits, work;
+  var_t var[MAX_CARDS];
 
   for (const auto &hand_card : hand) {
     hand_bits[hand_card] = true;
@@ -73,17 +75,17 @@ static auto playable(const int turn,
   // apply unit constraints
   for (int i = 0; i < n_vars; i++) {
     if (wins[turn + i] == CHANCE) {
-      int j = bids[turn + i];
-      var[i][j] = hand_bits[j];
+      int n = bids[turn + i];
+      var[i][n] = hand_bits[n];
     }
     else if (wins[turn + i] == match_player) {
-      for (int j = 0; j < bids[turn + i]; j++) {
-        var[i][j] = hand_bits[j];
+      for (int n = 0; n < bids[turn + i]; n++) {
+        var[i][n] = hand_bits[n];
       }
     }
     else if (wins[turn + i] == other_player(match_player)) {
-      for (int j = bids[turn + i]+1; j < n_cards; j++) {
-        var[i][j] = hand_bits[j];
+      for (int n = bids[turn + i]+1; n < n_cards; n++) {
+        var[i][n] = hand_bits[n];
       }
     }
   }
@@ -97,31 +99,6 @@ static auto playable(const int turn,
     return false;
   }
 
-
-  // propagate constraints
-//  while (work.any()) {
-//    for (int i = 0; i < n_vars; i++) {
-//      if(!work[i]) continue;
-//      work[i] = false;
-//
-//      int n_vals = var[i].count();
-//
-//      if (n_vals == 0) {
-//        return false;
-//      }
-//
-//      if (n_vals == 1) {
-//        for (int j = 0; j < n_vars; j++) {
-//          if (i == j) continue;
-//          auto old_var = var[j];
-//          var[j] &= ~var[i];
-//          bool changed = (var[j] != old_var);
-//          work[j] = work[j] || changed;
-//        }
-//      }
-//    }
-//  }
-
   bool changed = true;
   while (changed) {
     changed = false;
@@ -132,18 +109,14 @@ static auto playable(const int turn,
           auto old_var = var[i];
           var[i] &= ~var[j];
 
-          if (var[i] != old_var) {
-            changed = true;
-          }
+          if (var[i] != old_var) changed = true;
         }
 
         if (var[i].count() == 1) {
           auto old_var = var[j];
           var[j] &= ~var[i];
 
-          if (var[j] != old_var) {
-            changed = true;
-          }
+          if (var[j] != old_var) changed = true;
         }
       }
 
@@ -151,6 +124,40 @@ static auto playable(const int turn,
         return false;
       }
     }
+
+    for (int a = 0; a < n_cards; a++) {
+      if (!hand_bits[a]) continue;
+      for (int b = a + 1; b < n_cards; b++) {
+        if (!hand_bits[b]) continue;
+
+        var_t range;
+        for (int n = 0; n < n_cards; n++) {
+          if (a <= n && n <= b) range.set(n, hand_bits[n]);
+        }
+
+        int range_size = range.count();
+
+        int count = 0;
+        for (int i = 0; i < n_vars; i++) {
+          if ((var[i] & ~range) == 0) count++;
+        }
+
+        if (count > range_size) {
+          return false;
+        }
+
+        if (count == range_size) {
+          for (int i = 0; i < n_vars; i++) {
+            if ((var[i] & ~range) == 0) continue;
+
+            auto old_var = var[i];
+            var[i] &= ~range;
+            if (var[i] != old_var) changed = true;
+          }
+        }
+      }
+    }
+
   }
 
   return true;
