@@ -4,6 +4,9 @@ project (oz)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# set(CMAKE_CXX_FLAGS_RELEASE "-O3 -NDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+
 add_compile_options("-Wall")
 add_compile_options("$<$<CONFIG:Release>:-march=native>")
 
