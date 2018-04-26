@@ -4,7 +4,8 @@
 #include <tuple>
 #include <random>
 #include <unordered_map>
-#include <map>
+
+#include "boost/container/flat_map.hpp"
 
 #include "game.h"
 #include "target.h"
@@ -16,7 +17,8 @@ using rng_t = std::mt19937;
 using std::move;
 using std::vector;
 using std::unordered_map;
-using std::map;
+
+using boost::container::flat_map;
 
 struct action_prob_t {
   action_t a;
@@ -110,8 +112,8 @@ class sigma_regret_t;
 
 class node_t final {
  public:
-  using regret_map_t = map<action_t, value_t>;
-  using avg_map_t = map<action_t, prob_t>;
+  using regret_map_t = flat_map<action_t, value_t>;
+  using avg_map_t = flat_map<action_t, prob_t>;
 
   explicit node_t(vector<action_t> actions);
 

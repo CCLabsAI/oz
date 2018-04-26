@@ -86,8 +86,14 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
           const auto regrets = encoder_->decode(infoset, regret[i]);
           const auto average_strategy = encoder_->decode(infoset, avg[i]);
 
+          const auto regrets_map = node_t::regret_map_t(begin(regrets),
+                                                        end(regrets));
+
+          const auto avg_map = node_t::avg_map_t(begin(average_strategy),
+                                                 end(average_strategy));
+
           // search.create(tree_, rng);
-          search.create_prior(tree_, regrets, average_strategy, rng);
+          search.create_prior(tree_, regrets_map, avg_map, rng);
         }
         break;
 
