@@ -8,9 +8,15 @@
 
 #include "oos.h"
 
+#include "boost/container/small_vector.hpp"
+
 namespace oz {
 
 using namespace std;
+
+static constexpr int N_ACTIONS_SMALL = 16;
+using action_vector = boost::container::small_vector<action_t, N_ACTIONS_SMALL>;
+using prob_vector = boost::container::small_vector<prob_t, N_ACTIONS_SMALL>;
 
 void oos_t::search_t::prepare_suffix_probs() {
   Expects(suffix_prob_.x > 0);
@@ -25,14 +31,20 @@ void oos_t::search_t::prepare_suffix_probs() {
 }
 
 void oos_t::search_t::tree_step(action_prob_t ap) {
-  Expects(state_ == state_t::SELECT || state_ == state_t::CREATE);
-  Expects(!history_.is_terminal());
-
   const auto acting_player = history_.player();
 
   const auto infoset = (acting_player != CHANCE) ?
                        history_.infoset() :
                        null_infoset();
+
+  tree_step(ap, infoset);
+}
+
+void oos_t::search_t::tree_step(action_prob_t ap, const infoset_t &infoset) {
+  Expects(state_ == state_t::SELECT || state_ == state_t::CREATE);
+  Expects(!history_.is_terminal());
+
+  const auto acting_player = history_.player();
 
   path_.emplace_back(path_item_t {
       acting_player, infoset,
@@ -102,13 +114,14 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
       tree_step(ap);
     }
     else {
-      const auto r = sample_tree(tree, history_.infoset(), rng);
+      const auto infoset = history_.infoset();
+      const auto r = sample_tree(tree, infoset, rng);
 
       if (r.out_of_tree) {
         state_ = state_t::CREATE;
       }
       else {
-        tree_step(r.ap);
+        tree_step(r.ap, infoset);
       }
     }
   }
@@ -127,7 +140,7 @@ void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
   const auto r = sample_tree(tree, infoset, rng);
   Expects(!r.out_of_tree);
 
-  tree_step(r.ap);
+  tree_step(r.ap, infoset);
 
   if (history_.is_terminal()) {
     prepare_suffix_probs();
@@ -162,7 +175,7 @@ void oos_t::search_t::create_prior(tree_t& tree,
   const auto r = sample_tree(tree, infoset, rng);
   Expects(!r.out_of_tree);
 
-  tree_step(r.ap);
+  tree_step(r.ap, infoset);
 
   if (history_.is_terminal()) {
     prepare_suffix_probs();
@@ -254,7 +267,7 @@ auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const
   -> action_prob_t
 {
   auto actions = infoset.actions();
-  auto probs = vector<prob_t>(actions.size());
+  auto probs = prob_vector(actions.size());
 
   transform(begin(actions), end(actions), begin(probs),
             [&](const auto& a) { return pr(infoset, a); });
@@ -330,27 +343,27 @@ auto sigma_t::sample_targeted(infoset_t infoset,
   // move with gamma probability.
 
   // raw action probabilities (with gamma "mistake" model)
-  auto probs = vector<prob_t>(actions.size());
-  transform(begin(actions), end(actions), begin(probs),
+  auto probs = prob_vector { };
+  transform(begin(actions), end(actions), back_inserter(probs),
             [&](const action_t &a) -> prob_t {
               return gamma*p_gamma + (1 - gamma)*this->pr(infoset, a);
             });
 
   // epsilon exploration probabilities
-  auto probs_untargeted = vector<prob_t>(probs.size());
-  transform(begin(probs), end(probs), begin(probs_untargeted),
+  auto probs_untargeted = prob_vector { };
+  transform(begin(probs), end(probs), back_inserter(probs_untargeted),
             [&](const prob_t &p) -> prob_t {
               return eps*p_eps + (1 - eps)*p;
             });
 
   // targeted action weights (unscaled)
-  auto weights_targeted = vector<prob_t>(actions.size());
+  auto weights_targeted = prob_vector { };
   if (targets.empty()) {
     weights_targeted = probs_untargeted;
   }
   else {
     transform(begin(actions), end(actions),
-              begin(probs_untargeted), begin(weights_targeted),
+              begin(probs_untargeted), back_inserter(weights_targeted),
               [&](const action_t &a, const prob_t &p) -> prob_t {
                 if(targets.find(a) != end(targets)) {
                   return p;
@@ -417,16 +430,16 @@ auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
   const auto actions_pr = chance_actions();
   Expects(!actions_pr.empty());
 
-  auto actions = vector<action_t>(actions_pr.size());
-  auto probs = vector<prob_t>(actions_pr.size());
+  auto actions = action_vector { };
+  auto probs = prob_vector { };
 
-  transform(begin(actions_pr), end(actions_pr), begin(actions),
+  transform(begin(actions_pr), end(actions_pr), back_inserter(actions),
             [](const auto &x) -> action_t {
               const action_t a = x.first;
               return a;
             });
 
-  transform(begin(actions_pr), end(actions_pr), begin(probs),
+  transform(begin(actions_pr), end(actions_pr), back_inserter(probs),
             [](const auto &x) -> prob_t {
               const prob_t pr_a = x.second;
               return pr_a;
@@ -518,13 +531,13 @@ auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 auto sigma_regret_t::sample_pr(infoset_t infoset, rng_t &rng) const
   -> action_prob_t
 {
-  auto actions = vector<action_t>(regrets_.size());
-  auto weights = vector<prob_t>(regrets_.size());
+  auto actions = action_vector { };
+  auto weights = prob_vector { };
 
-  transform(begin(regrets_), end(regrets_), begin(actions),
+  transform(begin(regrets_), end(regrets_), back_inserter(actions),
             [](const auto &x) { return x.first; });
 
-  transform(begin(regrets_), end(regrets_), begin(weights),
+  transform(begin(regrets_), end(regrets_), back_inserter(weights),
             [](const auto &x) { return max<value_t>(0, x.second); });
 
   auto total = accumulate(begin(weights), end(weights), (prob_t) 0);

@@ -299,6 +299,7 @@ class oos_t final {
 
    private:
     void tree_step(action_prob_t ap); // take one step in-tree and extend path
+    void tree_step(action_prob_t ap, const infoset_t& infoset); // take one step in-tree and extend path
     void prepare_suffix_probs();
 
     tree_t::sample_ret_t sample_tree(const tree_t &tree,

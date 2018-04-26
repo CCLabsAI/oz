@@ -15,6 +15,7 @@ find_package(PyTorch 0.3.0 REQUIRED)
 
 add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
 include_directories("lib/catch/include")
+include_directories("lib/boost/include")
 
 include_directories("oz/csrc")
 
