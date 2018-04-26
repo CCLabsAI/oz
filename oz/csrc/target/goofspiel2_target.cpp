@@ -13,63 +13,42 @@ static auto cast_history(const history_t &h) -> const goofspiel2_t& {
 }
 
 static auto cast_infoset(const infoset_t &infoset)
-  -> const goofspiel2_t::infoset_t& {
+  -> const goofspiel2_t::infoset_t&
+{
   return infoset.cast<goofspiel2_t::infoset_t>();
 }
 
 static auto other_player(player_t p) -> player_t {
-  Expects(p == P1 || p == P2);
   return p == P1 ? P2 : P1;
 }
 
-template<typename T>
-static auto set_without(const set<T> &s, T x) -> set<T> {
-  auto t = set<T>(s);
-  t.erase(x);
-  return t;
-}
-
-static constexpr size_t MAX_CARDS = 32;
-
-auto bitset_to_set(bitset<MAX_CARDS> b) -> set<int> {
-  auto s = set<int> { };
-
-  for (int i = 0; i < b.size(); i++) {
-    if (b[i]) {
-      s.insert(i);
-    }
-  }
-
-  return s;
-}
+static constexpr size_t MAX_CARDS = std::numeric_limits<unsigned int>::digits;
+using var_t = bitset<MAX_CARDS>;
 
 static auto playable(const int turn,
-                     const card_t card,
                      const set<card_t> &hand,
                      const int n_cards,
                      const player_t match_player,
                      const vector<card_t> &bids,
-                     const vector<player_t> &wins) -> bool
+                     const vector<player_t> &wins) -> var_t
 {
   Expects(bids.size() == wins.size());
   Expects(n_cards <= MAX_CARDS);
 
-  // This is basically the AC-3 algorithm
+  // This takes elements of the AC-3 (the CSP one, not the ML one) algorithm
+  // with the Leconte algorithm and the idea of hall sets
+  // https://people.eng.unimelb.edu.au/pstuckey/papers/alldiff.pdf
   // https://en.wikipedia.org/wiki/AC-3_algorithm
-  // specialised to this problem. (the CSP one, not the ML one)
-
-  using var_t = bitset<MAX_CARDS>;
+  // It's fairly specialised to this problem.
+  // NB. we only require "range consistency" because all
+  // our constraints are essentially ranges.
 
   int n_vars = bids.size() - turn; // turns remaining
-  var_t hand_bits, work;
+  var_t hand_bits;
   var_t var[MAX_CARDS];
 
   for (const auto &hand_card : hand) {
     hand_bits[hand_card] = true;
-  }
-
-  for (int i = 0; i < n_vars; i++) {
-    work[i] = true;
   }
 
   // apply unit constraints
@@ -90,77 +69,74 @@ static auto playable(const int turn,
     }
   }
 
-  // assign card to be played this turn
-  if(var[0][card]) {
-    var[0].reset();
-    var[0][card] = true;
-  }
-  else {
-    return false;
-  }
-
-  bool changed = true;
-  while (changed) {
+  // loop until stable
+  bool changed;
+  do {
     changed = false;
 
+    // propagate vars with one value
     for (int i = 1; i < n_vars; i++) {
       for (int j = 0; j < i; j++) {
         if (var[j].count() == 1) {
           auto old_var = var[i];
           var[i] &= ~var[j];
-
           if (var[i] != old_var) changed = true;
         }
 
         if (var[i].count() == 1) {
           auto old_var = var[j];
           var[j] &= ~var[i];
-
           if (var[j] != old_var) changed = true;
         }
       }
 
       if (var[i].count() == 0) {
-        return false;
+        return var_t { };
       }
     }
 
+    // find and propagate hall sets
+    // 1) loop through all ranges
     for (int a = 0; a < n_cards; a++) {
       if (!hand_bits[a]) continue;
       for (int b = a + 1; b < n_cards; b++) {
         if (!hand_bits[b]) continue;
 
-        var_t range;
+        var_t range_bits;
         for (int n = 0; n < n_cards; n++) {
-          if (a <= n && n <= b) range.set(n, hand_bits[n]);
+          if (a <= n && n <= b) range_bits[n] = hand_bits[n];
         }
 
-        int range_size = range.count();
+        int range_size = range_bits.count();
 
-        int count = 0;
+        // 2) count the number of vars fully contained in this range
+        int count_in_range = 0;
         for (int i = 0; i < n_vars; i++) {
-          if ((var[i] & ~range) == 0) count++;
+          if ((var[i] & ~range_bits) == 0) count_in_range++;
         }
 
-        if (count > range_size) {
-          return false;
+        // 3a) there are more vars than range elements: fail
+        if (count_in_range > range_size) {
+          return var_t { };
         }
 
-        if (count == range_size) {
+        // 3b) there are exactly as many vars a range elements:
+        // remove range from vars with any values outside this range
+        if (count_in_range == range_size) {
           for (int i = 0; i < n_vars; i++) {
-            if ((var[i] & ~range) == 0) continue;
+            if ((var[i] & ~range_bits) == 0) continue;
 
             auto old_var = var[i];
-            var[i] &= ~range;
+            var[i] &= ~range_bits;
             if (var[i] != old_var) changed = true;
           }
         }
       }
     }
 
-  }
+  } while (changed);
 
-  return true;
+  return var[0];
 }
 
 
@@ -191,17 +167,14 @@ auto goofspiel2_target_t::target_actions(const infoset_t &infoset,
       return { make_action(target) };
     }
     else {
-      const auto opponent_playable = [&](const card_t &card) -> bool {
-        return playable(next_turn,
-                        card, opponent_hand, n_cards,
-                        target_player, target_bids, target_wins);
-      };
+      var_t var = playable(next_turn,
+                           opponent_hand, n_cards,
+                           target_player, target_bids, target_wins);
 
       auto actions = set<action_t> { };
-      for (const auto &card : opponent_hand) {
-        if (opponent_playable(card)) {
-          actions.insert(make_action(card));
-        }
+
+      for(int n = 0; n < n_cards; n++) {
+        if(var[n]) actions.insert(make_action(n));
       }
 
       Ensures(!actions.empty());
