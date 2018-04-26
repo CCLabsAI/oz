@@ -3,6 +3,8 @@
 #include "util.h"
 #include "goofspiel2_target.h"
 
+#include <bitset>
+
 namespace oz {
 
 using namespace std;
