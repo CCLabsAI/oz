@@ -1,22 +1,25 @@
-cmake_minimum_required (VERSION 3.1)
-project (oz)
+cmake_minimum_required(VERSION 3.9)
+project(oz)
 
-set (CMAKE_CXX_STANDARD 17)
-set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
 
-# set(CMAKE_CXX_FLAGS_RELEASE "-O3 -NDEBUG")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+include(CheckIPOSupported)
 
 add_compile_options("-Wall")
+
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+
 add_compile_options("$<$<CONFIG:Release>:-march=native>")
+add_compile_options("$<$<CONFIG:RelWithDebInfo>:-march=native>")
 
 find_package(PythonInterp 3.4 REQUIRED)
 find_package(PyTorch 0.4.0 REQUIRED)
 
-add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
-include_directories("lib/catch/include")
-include_directories("lib/boost/include")
-
+include_directories(SYSTEM "lib/boost/include")
 include_directories("oz/csrc")
 
 add_executable("tests"
@@ -45,6 +48,9 @@ add_executable("tests"
 
         "oz/csrc/oos_rec.cpp"
         )
+
+target_include_directories(tests SYSTEM PRIVATE "lib/catch/include")
+
 
 add_executable("solve_leduk"
         "oz/csrc/solve_leduk.cpp"
@@ -79,3 +85,9 @@ pybind11_add_module(_ext
         )
 
 target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
+
+check_ipo_supported(RESULT result)
+if(result)
+  set_property(TARGET solve_leduk PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
