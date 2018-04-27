@@ -10,7 +10,10 @@ include(CheckIPOSupported)
 
 add_compile_options("-Wall")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG")
+# NB fast changes results, due to floating point optimizations
+# set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG")
+
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 
 add_compile_options("$<$<CONFIG:Release>:-march=native>")
