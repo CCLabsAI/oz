@@ -11,7 +11,7 @@ add_compile_options("-Wall")
 add_compile_options("$<$<CONFIG:Release>:-march=native>")
 
 find_package(PythonInterp 3.4 REQUIRED)
-find_package(PyTorch 0.3.0 REQUIRED)
+find_package(PyTorch 0.4.0 REQUIRED)
 
 add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
 include_directories("lib/catch/include")
@@ -78,4 +78,4 @@ pybind11_add_module(_ext
         "oz/csrc/target/goofspiel2_target.cpp"
         )
 
-target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}" "lib/torch-stub/include")
+target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
