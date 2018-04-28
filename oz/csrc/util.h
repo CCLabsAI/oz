@@ -59,18 +59,6 @@ bool sums_to_one(T col) {
   return abs(1.0 - sum_probs(col)) < 1e-9;
 }
 
-template <typename T>
-auto keys(const T &m) -> std::vector<typename T::key_type> {
-  using namespace std;
-  auto keys = vector<typename T::key_type>();
-
-  transform(begin(m), end(m), back_inserter(keys), [](const auto& p) {
-    return p.first;
-  });
-
-  return keys;
-}
-
 } // namespace oz
 
 #endif // OZ_UTIL_H

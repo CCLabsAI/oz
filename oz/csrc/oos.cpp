@@ -415,7 +415,7 @@ auto sigma_t::sample_targeted(infoset_t infoset,
   return { a, pr_a, rho1, rho2 };
 }
 
-node_t::node_t(std::vector<action_t> actions) {
+node_t::node_t(infoset_t::actions_list_t actions) {
   Expects(!actions.empty());
 
   static const auto make_zero_value =

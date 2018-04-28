@@ -6,7 +6,6 @@
 namespace oz {
 
 using std::string;
-using std::vector;
 
 class flipguess_t final : public game_t {
  public:
@@ -22,7 +21,7 @@ class flipguess_t final : public game_t {
    public:
     explicit infoset_t(player_t player) : player_(player) {};
 
-    vector<oz::action_t> actions() const override;
+    actions_list_t actions() const override;
     string str() const override;
     bool is_equal(const oz::infoset_t::concept_t& that) const override;
     size_t hash() const override;

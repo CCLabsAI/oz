@@ -28,7 +28,7 @@ TEST_CASE("oos simple", "[oos]") {
 TEST_CASE("node update", "[oos]") {
   auto heads = make_action(flipguess_t::action_t::Left);
   auto tails = make_action(flipguess_t::action_t::Right);
-  auto actions = vector<action_t> { heads, tails };
+  auto actions = infoset_t::actions_list_t { heads, tails };
 
   auto node = node_t(actions);
 

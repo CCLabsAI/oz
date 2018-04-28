@@ -13,7 +13,6 @@ namespace oz {
 
 using std::move;
 using std::string;
-using std::vector;
 
 class kuhn_poker_t final : public game_t {
  public:
@@ -45,7 +44,7 @@ class kuhn_poker_t final : public game_t {
     infoset_t(player_t player, card_t hand, vector<action_t> history):
       player(player), hand(hand), history(move(history)) { }
 
-    vector<oz::action_t> actions() const override;
+    actions_list_t actions() const override;
     string str() const override;
     bool is_equal(const concept_t &that) const override;
     size_t hash() const override;

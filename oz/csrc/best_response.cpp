@@ -20,7 +20,18 @@ auto exploitability(history_t h, sigma_t sigma) -> value_t {
   return v1 + v2;
 }
 
-static auto actions(const history_t& h) -> vector<action_t> {
+template <typename T>
+auto keys(const T &m) {
+  infoset_t::actions_list_t keys;
+
+  transform(begin(m), end(m), back_inserter(keys), [](const auto& p) {
+    return p.first;
+  });
+
+  return keys;
+}
+
+static auto actions(const history_t& h) -> infoset_t::actions_list_t {
   if (h.player() == CHANCE) {
     const auto actions_pr = h.chance_actions();
     return keys(actions_pr);

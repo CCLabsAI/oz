@@ -144,8 +144,8 @@ map<oz::action_t, prob_t> kuhn_poker_t::chance_actions() const {
   return chance_actions;
 }
 
-auto kuhn_poker_t::infoset_t::actions() const -> vector<oz::action_t> {
-  static const vector<oz::action_t> player_actions {
+auto kuhn_poker_t::infoset_t::actions() const -> actions_list_t {
+  static const actions_list_t player_actions {
     make_action(action_t::Pass),
     make_action(action_t::Bet),
   };

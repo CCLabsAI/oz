@@ -258,14 +258,14 @@ auto leduk_poker_t::chance_actions() const -> map<oz::action_t, prob_t> {
   return map<oz::action_t, prob_t>();
 }
 
-auto leduk_poker_t::infoset_t::actions() const -> std::vector<oz::action_t> {
-  static const vector<oz::action_t> raise_call_fold {
+auto leduk_poker_t::infoset_t::actions() const -> actions_list_t {
+  static const actions_list_t raise_call_fold {
       make_action(action_t::Raise),
       make_action(action_t::Call),
       make_action(action_t::Fold),
   };
 
-  static const vector<oz::action_t> call_fold {
+  static const actions_list_t call_fold {
       make_action(action_t::Call),
       make_action(action_t::Fold),
   };

@@ -1,10 +1,10 @@
 #ifndef OZ_GOOFSPIEL2_H
 #define OZ_GOOFSPIEL2_H
 
+#include "game.h"
+
 #include <vector>
 #include <set>
-
-#include "game.h"
 
 namespace oz {
 
@@ -27,7 +27,7 @@ class goofspiel2_t final : public game_t {
                        vector<player_t> wins) :
       player_(player), hand_(hand), bids_(bids), wins_(wins) { };
 
-    vector<oz::action_t> actions() const override;
+    actions_list_t actions() const override;
     string str() const override;
     bool is_equal(const oz::infoset_t::concept_t& that) const override;
     size_t hash() const override;

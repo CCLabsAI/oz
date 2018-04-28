@@ -6,9 +6,9 @@
 #include <memory>
 #include <functional>
 #include <string>
-#include <vector>
 #include <map>
 
+#include <boost/container/small_vector.hpp>
 #include <boost/container/pmr/polymorphic_allocator.hpp>
 
 namespace oz {
@@ -18,7 +18,11 @@ using std::string;
 using std::vector;
 using std::map;
 
+using std::unique_ptr;
+using std::shared_ptr;
+
 using boost::container::pmr::polymorphic_allocator;
+using boost::container::small_vector;
 
 using real_t = double;
 using prob_t = double;
@@ -57,17 +61,22 @@ action_t make_action(Action a) {
 
 class infoset_t final {
  public:
+  static constexpr int N_ACTIONS_STATIC = 16;
+
+  using actions_list_t = small_vector<action_t, N_ACTIONS_STATIC>;
   using allocator_t = polymorphic_allocator<infoset_t>;
 
   struct concept_t {
-    virtual vector<action_t> actions() const = 0;
+    using actions_list_t = infoset_t::actions_list_t;
+
+    virtual actions_list_t actions() const = 0;
     virtual string str() const = 0;
     virtual bool is_equal(const concept_t& that) const = 0;
     virtual size_t hash() const = 0;
     virtual ~concept_t() = default;
   };
 
-  vector<action_t> actions() const { return self_->actions(); }
+  actions_list_t actions() const { return self_->actions(); }
   string str() const { return self_->str(); }
   bool is_equal(const infoset_t& that) const { return self_->is_equal(*that.self_); };
   size_t hash() const { return self_->hash(); };
@@ -78,7 +87,7 @@ class infoset_t final {
   const T &cast() const { return assert_cast<const T&>(*self_); }
 
  private:
-  using ptr_t = std::shared_ptr<const concept_t>;
+  using ptr_t = shared_ptr<const concept_t>;
 
   explicit infoset_t(ptr_t self) : self_(move(self)) { };
 
@@ -116,7 +125,7 @@ class game_t {
   virtual value_t utility(player_t player) const = 0;
   virtual map<action_t, prob_t> chance_actions() const = 0;
 
-  virtual std::unique_ptr<game_t> clone() const = 0;
+  virtual unique_ptr<game_t> clone() const = 0;
   virtual ~game_t() = default;
 
   virtual infoset_t infoset(infoset_t::allocator_t alloc) const

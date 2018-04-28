@@ -53,8 +53,8 @@ void flipguess_t::act_(flipguess_t::action_t a) {
   }
 }
 
-auto flipguess_t::infoset_t::actions() const -> vector<oz::action_t> {
-  static const vector<oz::action_t> player_actions {
+auto flipguess_t::infoset_t::actions() const -> actions_list_t {
+  static const actions_list_t player_actions {
       make_action(action_t::Left),
       make_action(action_t::Right),
   };

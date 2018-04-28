@@ -121,7 +121,7 @@ class node_t final {
   using regret_map_t = flat_map<action_t, value_t>;
   using avg_map_t = flat_map<action_t, prob_t>;
 
-  explicit node_t(vector<action_t> actions);
+  explicit node_t(infoset_t::actions_list_t actions);
 
   sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
 

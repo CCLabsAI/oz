@@ -91,8 +91,13 @@ auto goofspiel2_t::chance_actions() const -> map<oz::action_t, prob_t> {
   return { };
 }
 
-auto goofspiel2_t::infoset_t::actions() const -> vector<oz::action_t> {
-  return vector<oz::action_t>(begin(hand_), end(hand_));
+auto goofspiel2_t::infoset_t::actions() const -> actions_list_t {
+  actions_list_t actions;
+
+  transform(begin(hand_), end(hand_), back_inserter(actions),
+            [](card_t card) { return make_action(card); });
+
+  return actions;
 }
 
 auto goofspiel2_t::infoset_t::str() const -> string {

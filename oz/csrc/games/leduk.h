@@ -62,7 +62,7 @@ class leduk_poker_t final : public game_t {
         player(player), hand(hand), board(board),
         history(move(history)), pot(pot), raises(raises) { }
 
-    vector<oz::action_t> actions() const override;
+    actions_list_t actions() const override;
     string str() const override;
     bool is_equal(const concept_t &that) const override;
     size_t hash() const override;
