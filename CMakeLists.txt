@@ -52,16 +52,17 @@ add_executable("tests"
         "oz/csrc/oos_rec.cpp"
         )
 
-file(GLOB boost_container_SRC
-    "lib/boost/libs/container/src/*.c"
-    "lib/boost/libs/container/src/*.cpp"
-)
 
 target_include_directories(tests SYSTEM PRIVATE "lib/catch/include")
 
 
 
+file(GLOB boost_container_SRC
+    "lib/boost/libs/container/src/*.c"
+    "lib/boost/libs/container/src/*.cpp"
+)
 add_library("boost_container" STATIC ${boost_container_SRC})
+set_property(TARGET "boost_container" PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 
 add_executable("solve_leduk"
@@ -100,6 +101,7 @@ target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
 
 check_ipo_supported(RESULT result)
 if(result)
+  set_property(TARGET boost_container PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
   set_property(TARGET solve_leduk PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
   set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
