@@ -16,15 +16,15 @@ int main(int argc, char **argv) {
   rng_t rng(1);
   value_t ex;
 
-  cout << fixed << setprecision(3);
+  // cout << fixed << setprecision(3);
 
-  for(int i = 0; i < 100; i++) {
-    s.search(h, 10000, tree, rng);
-    auto sigma = tree.sigma_average();
-    ex = exploitability(h, sigma);
+  // do {
+    s.search(h, 100000, tree, rng);
+    // auto sigma = tree.sigma_average();
+    // ex = exploitability(h, sigma);
 
-    cout << '\r' << ex << flush;
-  }
+    // cout << '\r' << ex << flush;
+  // } while(ex > 0.1);
 
-  cout << endl;
+  // cout << endl;
 }
