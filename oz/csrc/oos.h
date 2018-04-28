@@ -230,8 +230,9 @@ class oos_t final {
 
  private:
   void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
-                 target_t target, infoset_t target_infoset,
-                 prob_t eps, prob_t delta, prob_t gamma);
+                   target_t target, infoset_t target_infoset,
+                   void *buffer, size_t buffer_size,
+                   prob_t eps, prob_t delta, prob_t gamma);
 
   int avg_targeting_ratio_N_ = 1;
   prob_t avg_targeting_ratio_ = 1;

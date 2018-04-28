@@ -618,13 +618,14 @@ void oos_t::search_iter(history_t h, player_t player,
                         tree_t &tree, rng_t &rng,
                         target_t target,
                         infoset_t target_infoset,
+                        void *buffer, size_t buffer_size,
                         const prob_t eps,
                         const prob_t delta,
                         const prob_t gamma)
 {
   using state_t = search_t::state_t;
 
-  monotonic_buffer_resource buf_rsrc;
+  monotonic_buffer_resource buf_rsrc(buffer, buffer_size);
 
   search_t s(move(h), player,
              move(target), move(target_infoset),
@@ -657,6 +658,13 @@ void oos_t::search_iter(history_t h, player_t player,
       (s.targeting_ratio() - avg_targeting_ratio_) / avg_targeting_ratio_N_;
 }
 
+static constexpr int WORK_BUFFER_SIZE = 64 * (2 << 20);
+
+static unique_ptr<uint8_t[]> make_work_buffer(size_t size) {
+  unique_ptr<uint8_t[]> ptr(new uint8_t[size]);
+  return ptr;
+}
+
 void oos_t::search_targeted(history_t h, int n_iter, tree_t &tree, rng_t &rng,
                    target_t target, infoset_t target_infoset,
                    const prob_t eps,
@@ -665,9 +673,18 @@ void oos_t::search_targeted(history_t h, int n_iter, tree_t &tree, rng_t &rng,
 {
   Expects(n_iter >= 0);
 
+  auto ptr = make_work_buffer(WORK_BUFFER_SIZE);
+
   for(int i = 0; i < n_iter; i++) {
-    search_iter(h, P1, tree, rng, target, target_infoset, eps, delta, gamma);
-    search_iter(h, P2, tree, rng, target, target_infoset, eps, delta, gamma);
+    search_iter(h, P1, tree, rng,
+                target, target_infoset,
+                ptr.get(), WORK_BUFFER_SIZE,
+                eps, delta, gamma);
+
+    search_iter(h, P2, tree, rng,
+                target, target_infoset,
+                ptr.get(), WORK_BUFFER_SIZE,
+                eps, delta, gamma);
   }
 }
 
