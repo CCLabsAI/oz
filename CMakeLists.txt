@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(oz)
+project(oz LANGUAGES C CXX)
 
 add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
 
@@ -16,13 +16,18 @@ add_compile_options("-Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 
+set(CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+set(CMAKE_C_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+
 add_compile_options("$<$<CONFIG:Release>:-march=native>")
 add_compile_options("$<$<CONFIG:RelWithDebInfo>:-march=native>")
 
 find_package(PythonInterp 3.4 REQUIRED)
 find_package(PyTorch 0.4.0 REQUIRED)
 
+include_directories(SYSTEM "lib/gsl-lite/include")
 include_directories(SYSTEM "lib/boost/include")
+
 include_directories("oz/csrc")
 
 add_executable("tests"
