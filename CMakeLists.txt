@@ -19,13 +19,10 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 add_compile_options("$<$<CONFIG:Release>:-march=native>")
 add_compile_options("$<$<CONFIG:RelWithDebInfo>:-march=native>")
 
-find_package(Boost 1.63 REQUIRED COMPONENTS container)
-
 find_package(PythonInterp 3.4 REQUIRED)
 find_package(PyTorch 0.4.0 REQUIRED)
 
-# include_directories(SYSTEM "lib/boost/include")
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM "lib/boost/include")
 include_directories("oz/csrc")
 
 add_executable("tests"
@@ -55,7 +52,16 @@ add_executable("tests"
         "oz/csrc/oos_rec.cpp"
         )
 
+file(GLOB boost_container_SRC
+    "lib/boost/libs/container/src/*.c"
+    "lib/boost/libs/container/src/*.cpp"
+)
+
 target_include_directories(tests SYSTEM PRIVATE "lib/catch/include")
+
+
+
+add_library("boost_container" STATIC ${boost_container_SRC})
 
 
 add_executable("solve_leduk"
@@ -98,7 +104,7 @@ if(result)
   set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-target_link_libraries(tests PRIVATE ${Boost_LIBRARIES})
-target_link_libraries(solve_leduk PRIVATE ${Boost_LIBRARIES})
-target_link_libraries(solve_goofspiel2 PRIVATE ${Boost_LIBRARIES})
-target_link_libraries(_ext PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(tests PRIVATE boost_container)
+target_link_libraries(solve_leduk PRIVATE boost_container)
+target_link_libraries(solve_goofspiel2 PRIVATE boost_container)
+target_link_libraries(_ext PRIVATE boost_container)
