@@ -1,14 +1,16 @@
-#include <cassert>
-#include <algorithm>
-#include <iterator>
-#include <set>
-
 #include "util.h"
 #include "hash.h"
 
 #include "oos.h"
 
-#include "boost/container/small_vector.hpp"
+#include <cassert>
+#include <algorithm>
+#include <iterator>
+#include <set>
+
+#include <boost/container/small_vector.hpp>
+#include <boost/container/pmr/polymorphic_allocator.hpp>
+#include <boost/container/pmr/monotonic_buffer_resource.hpp>
 
 namespace oz {
 
@@ -17,6 +19,9 @@ using namespace std;
 static constexpr int N_ACTIONS_SMALL = 16;
 using action_vector = boost::container::small_vector<action_t, N_ACTIONS_SMALL>;
 using prob_vector = boost::container::small_vector<prob_t, N_ACTIONS_SMALL>;
+
+using boost::container::pmr::monotonic_buffer_resource;
+using boost::container::pmr::polymorphic_allocator;
 
 void oos_t::search_t::prepare_suffix_probs() {
   Expects(suffix_prob_.x > 0);
@@ -32,9 +37,10 @@ void oos_t::search_t::prepare_suffix_probs() {
 
 void oos_t::search_t::tree_step(action_prob_t ap) {
   const auto acting_player = history_.player();
+  infoset_t::allocator_t alloc(get_allocator());
 
   const auto infoset = (acting_player != CHANCE) ?
-                       history_.infoset() :
+                       history_.infoset(alloc) :
                        null_infoset();
 
   tree_step(ap, infoset);
@@ -114,7 +120,8 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
       tree_step(ap);
     }
     else {
-      const auto infoset = history_.infoset();
+      infoset_t::allocator_t alloc(get_allocator());
+      const auto infoset = history_.infoset(alloc);
       const auto r = sample_tree(tree, infoset, rng);
 
       if (r.out_of_tree) {
@@ -616,9 +623,14 @@ void oos_t::search_iter(history_t h, player_t player,
                         const prob_t gamma)
 {
   using state_t = search_t::state_t;
-  auto s = search_t(move(h), player,
-                    move(target), move(target_infoset),
-                    eps, delta, gamma);
+
+  monotonic_buffer_resource buf_rsrc;
+
+  search_t s(move(h), player,
+             move(target), move(target_infoset),
+             &buf_rsrc,
+             eps, delta, gamma);
+
   s.set_initial_weight(1.0/avg_targeting_ratio_);
 
   while (s.state() != state_t::FINISHED) {

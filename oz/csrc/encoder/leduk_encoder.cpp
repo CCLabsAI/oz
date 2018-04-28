@@ -44,7 +44,7 @@ void leduk_encoder_t::action_one_hot(action_t action, ta_t &x_a, int i) {
   }
 }
 
-void leduk_encoder_t::rounds_one_hot(const vector<action_t> &actions,
+void leduk_encoder_t::rounds_one_hot(const leduk_poker_t::action_vector_t &actions,
                                      ta_t &x_a, int i)
 {
   int round_n = 0, action_n = 0;

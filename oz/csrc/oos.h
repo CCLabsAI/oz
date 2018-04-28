@@ -1,14 +1,16 @@
 #ifndef OZ_OOS_H
 #define OZ_OOS_H
 
+#include "game.h"
+#include "target.h"
+
 #include <tuple>
 #include <random>
 #include <unordered_map>
 
-#include "boost/container/flat_map.hpp"
-
-#include "game.h"
-#include "target.h"
+#include <boost/container/pmr/memory_resource.hpp>
+#include <boost/container/pmr/vector.hpp>
+#include <boost/container/flat_map.hpp>
 
 namespace oz {
 
@@ -39,8 +41,12 @@ class history_t final {
   player_t player() const { return self_->player(); }
   bool is_terminal() const { return self_->is_terminal(); }
   value_t utility(player_t player) const { return self_->utility(player); }
+
   map<action_t, prob_t> chance_actions() const
     { return self_->chance_actions(); }
+
+  infoset_t infoset(infoset_t::allocator_t alloc) const
+    { return self_->infoset(alloc); }
 
   action_prob_t sample_chance(rng_t& rng) const;
   action_prob_t sample_uniform(rng_t& rng) const;
@@ -215,10 +221,6 @@ class oos_t final {
                        prob_t delta = 0.6,
                        prob_t gamma = 0.01);
 
-  void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
-                   target_t target, infoset_t target_infoset,
-                   prob_t eps, prob_t delta, prob_t gamma);
-
   prob_t avg_targeting_ratio() const { return avg_targeting_ratio_; }
 
   void retarget() {
@@ -227,6 +229,10 @@ class oos_t final {
   }
 
  private:
+  void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
+                 target_t target, infoset_t target_infoset,
+                 prob_t eps, prob_t delta, prob_t gamma);
+
   int avg_targeting_ratio_N_ = 1;
   prob_t avg_targeting_ratio_ = 1;
 
@@ -234,6 +240,8 @@ class oos_t final {
  public:
   class search_t final {
    public:
+    using allocator_type = boost::container::pmr::memory_resource*;
+
     search_t(history_t history, player_t search_player):
         state_(state_t::SELECT),
         history_(move(history)),
@@ -248,9 +256,11 @@ class oos_t final {
 
     search_t(history_t history, player_t search_player,
              target_t target, infoset_t target_infoset,
+             allocator_type allocator,
              prob_t eps = 0.4, prob_t delta = 0.2, prob_t gamma = 0.01):
         state_(state_t::SELECT),
         history_(move(history)),
+        path_(allocator),
         target_(move(target)),
         target_infoset_(move(target_infoset)),
         search_player_(search_player),
@@ -299,6 +309,10 @@ class oos_t final {
       prefix_prob_.s2 = w;
     }
 
+    allocator_type get_allocator() const {
+      return path_.get_allocator().resource();
+    }
+
    private:
     void tree_step(action_prob_t ap); // take one step in-tree and extend path
     void tree_step(action_prob_t ap, const infoset_t& infoset); // take one step in-tree and extend path
@@ -328,10 +342,12 @@ class oos_t final {
       prefix_prob_t prefix_prob;
     };
 
+    using path_t = boost::container::pmr::vector<path_item_t>;
+
     state_t state_;
 
     history_t history_;
-    vector<path_item_t> path_;
+    path_t path_;
     target_t target_;
     infoset_t target_infoset_;
 

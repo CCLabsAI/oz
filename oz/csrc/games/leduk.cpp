@@ -1,11 +1,11 @@
 #include "leduk.h"
 
+#include "hash.h"
+
 #include <cassert>
 #include <memory>
 #include <vector>
 #include <sstream>
-
-#include "hash.h"
 
 namespace oz {
 
@@ -165,6 +165,16 @@ auto leduk_poker_t::infoset() const -> oz::infoset_t {
   Expects(player() != CHANCE);
   return make_infoset<infoset_t>(player_, hand(player_), board_,
                                  history_, pot_, raises_);
+}
+
+auto leduk_poker_t::infoset(oz::infoset_t::allocator_t alloc) const
+  -> oz::infoset_t
+{
+  Expects(player() != CHANCE);
+  return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
+               (alloc,
+                player_, hand(player_), board_,
+                history_, pot_, raises_);
 }
 
 static inline int card_idx(leduk_poker_t::card_t a) {

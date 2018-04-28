@@ -1,13 +1,15 @@
 #ifndef OZ_GAME_H
 #define OZ_GAME_H
 
+#include "util.h"
+
 #include <memory>
 #include <functional>
 #include <string>
 #include <vector>
 #include <map>
 
-#include "util.h"
+#include <boost/container/pmr/polymorphic_allocator.hpp>
 
 namespace oz {
 
@@ -15,6 +17,8 @@ using std::move;
 using std::string;
 using std::vector;
 using std::map;
+
+using boost::container::pmr::polymorphic_allocator;
 
 using real_t = double;
 using prob_t = double;
@@ -53,6 +57,8 @@ action_t make_action(Action a) {
 
 class infoset_t final {
  public:
+  using allocator_t = polymorphic_allocator<infoset_t>;
+
   struct concept_t {
     virtual vector<action_t> actions() const = 0;
     virtual string str() const = 0;
@@ -75,8 +81,13 @@ class infoset_t final {
   using ptr_t = std::shared_ptr<const concept_t>;
 
   explicit infoset_t(ptr_t self) : self_(move(self)) { };
+
   template<class Infoset, typename... Args>
   friend infoset_t make_infoset(Args&& ... args);
+
+  template<class Infoset, class Alloc, typename... Args>
+  friend infoset_t allocate_infoset(const Alloc& alloc, Args&& ... args);
+
   friend infoset_t null_infoset();
 
   ptr_t self_;
@@ -85,6 +96,11 @@ class infoset_t final {
 template<class Infoset, typename... Args>
 auto make_infoset(Args&& ... args) -> infoset_t {
   return infoset_t(std::make_shared<Infoset>(std::forward<Args>(args)...));
+}
+
+template<class Infoset, class Alloc, typename... Args>
+auto allocate_infoset(const Alloc& alloc, Args&& ... args) -> infoset_t {
+  return infoset_t(std::allocate_shared<Infoset>(alloc, std::forward<Args>(args)...));
 }
 
 inline auto null_infoset() -> infoset_t {
@@ -102,6 +118,9 @@ class game_t {
 
   virtual std::unique_ptr<game_t> clone() const = 0;
   virtual ~game_t() = default;
+
+  virtual infoset_t infoset(infoset_t::allocator_t alloc) const
+    { return infoset(); }
 };
 
 

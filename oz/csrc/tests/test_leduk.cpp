@@ -128,6 +128,8 @@ TEST_CASE("leduk poker bet reward", "[leduk]") {
   CHECK(g.is_terminal());
   CHECK(g.utility(P1) == -13);
 
+  g = leduk_poker_t();
+
   g.act_(action_t::Q1);
   g.act_(action_t::Q2);
   g.act_(action_t::Raise);

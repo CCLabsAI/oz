@@ -72,7 +72,7 @@ void bind_oz(py::module &m) {
   auto py_Game =
       py::class_<game_t>(m, "Game")
           .def("act", &game_t::act)
-          .def("infoset", &game_t::infoset)
+          .def("infoset", (infoset_t (game_t::*)() const) &game_t::infoset)
           .def_property_readonly("player", &game_t::player)
           .def("is_terminal", &game_t::is_terminal)
           .def("utility", &game_t::utility)
@@ -96,7 +96,7 @@ void bind_oz(py::module &m) {
 
   py::class_<history_t>(m, "History")
       .def("act", &history_t::act)
-      .def("infoset", &history_t::infoset)
+      .def("infoset", (infoset_t (history_t::*)() const) &history_t::infoset)
       .def_property_readonly("player", &history_t::player)
       .def("is_terminal", &history_t::is_terminal)
       .def("utility", &history_t::utility)

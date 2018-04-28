@@ -1,10 +1,12 @@
 #ifndef OZ_LEDUK_H
 #define OZ_LEDUK_H
 
+#include "game.h"
+
 #include <cassert>
 #include <array>
 
-#include "game.h"
+#include <boost/container/static_vector.hpp>
 
 namespace oz {
 
@@ -12,6 +14,8 @@ using std::move;
 using std::string;
 using std::array;
 using std::vector;
+
+using boost::container::static_vector;
 
 class leduk_poker_t final : public game_t {
  public:
@@ -42,17 +46,19 @@ class leduk_poker_t final : public game_t {
   };
 
   static constexpr int N_PLAYERS = 2;
+  static constexpr int MAX_ACTIONS = 10;
+  using action_vector_t = static_vector<action_t, MAX_ACTIONS>;
 
   struct infoset_t : public oz::infoset_t::concept_t {
     const player_t player;
     const card_t hand;
     const card_t board;
-    const vector<action_t> history;
+    const action_vector_t history;
     const array<int, N_PLAYERS> pot;
     const int raises;
 
     infoset_t(player_t player, card_t hand, card_t board,
-              vector<action_t> history, array<int, N_PLAYERS> pot, int raises):
+              action_vector_t history, array<int, N_PLAYERS> pot, int raises):
         player(player), hand(hand), board(board),
         history(move(history)), pot(pot), raises(raises) { }
 
@@ -75,6 +81,8 @@ class leduk_poker_t final : public game_t {
     return std::make_unique<leduk_poker_t>(*this);
   }
 
+  oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;
+
   static constexpr int ANTE = 1;
   static constexpr int N_ROUNDS = 2;
   static constexpr int RAISE_PER_ROUND[N_ROUNDS] = { 2, 4 };
@@ -92,7 +100,7 @@ class leduk_poker_t final : public game_t {
   int round_ = 0;
   bool checked_ = false;
   int raises_ = 0;
-  vector<action_t> history_;
+  action_vector_t history_;
   array<bool, N_PLAYERS> folded_ {{ false, false }};
 
   player_t other_player() const {
@@ -124,7 +132,7 @@ class leduk_poker_t final : public game_t {
   bool folded(player_t p) const { return folded_[player_idx(p)]; }
   bool &folded(player_t p) { return folded_[player_idx(p)]; }
 
-  const vector<action_t> &history() const { return history_; }
+  const action_vector_t &history() const { return history_; }
 
   int round() const { return round_; }
   card_t board() const { return board_; }

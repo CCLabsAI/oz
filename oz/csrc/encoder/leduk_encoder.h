@@ -31,10 +31,10 @@ class leduk_encoder_t final : public encoder_t {
  private:
   using nn_real_t = float;
   using ta_t = at::TensorAccessor<nn_real_t, 1>;
-  
+
   static void card_one_hot(card_t card, ta_t &x_a, int i);
   static void action_one_hot(action_t action, ta_t &x_a, int i);
-  static void rounds_one_hot(const vector<action_t> &actions, ta_t &x_a, int i);
+  static void rounds_one_hot(const leduk_poker_t::action_vector_t &actions, ta_t &x_a, int i);
 
   static constexpr int N_ROUNDS = leduk_poker_t::N_ROUNDS;
 

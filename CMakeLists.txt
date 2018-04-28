@@ -19,10 +19,13 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 add_compile_options("$<$<CONFIG:Release>:-march=native>")
 add_compile_options("$<$<CONFIG:RelWithDebInfo>:-march=native>")
 
+find_package(Boost 1.63 REQUIRED COMPONENTS container)
+
 find_package(PythonInterp 3.4 REQUIRED)
 find_package(PyTorch 0.4.0 REQUIRED)
 
-include_directories(SYSTEM "lib/boost/include")
+# include_directories(SYSTEM "lib/boost/include")
+include_directories(${Boost_INCLUDE_DIRS})
 include_directories("oz/csrc")
 
 add_executable("tests"
@@ -94,3 +97,8 @@ if(result)
   set_property(TARGET solve_leduk PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
   set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
+
+target_link_libraries(tests PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(solve_leduk PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(solve_goofspiel2 PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(_ext PRIVATE ${Boost_LIBRARIES})
