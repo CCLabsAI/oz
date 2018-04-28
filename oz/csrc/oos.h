@@ -78,6 +78,8 @@ auto make_history(Args&& ... args) -> history_t {
 
 class sigma_t final {
  public:
+  using allocator_t = polymorphic_allocator<sigma_t>;
+
   struct concept_t {
     virtual prob_t pr(infoset_t infoset, action_t a) const = 0;
     virtual action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const;
@@ -94,17 +96,16 @@ class sigma_t final {
 
   action_prob_t sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const;
 
-  action_prob_t sample_targeted(infoset_t infoset,
-                                set<action_t> targets, bool targeted,
-                                prob_t eps, prob_t gamma,
-                                rng_t &rng) const;
-
  private:
   using ptr_t = std::shared_ptr<const concept_t>;
 
   explicit sigma_t(ptr_t self) : self_(move(self)) {};
+
   template<class Sigma, typename... Args>
   friend sigma_t make_sigma(Args&& ... args);
+
+  template<class Sigma, class Alloc, typename... Args>
+  friend sigma_t allocate_sigma(Alloc alloc, Args&& ... args);
 
   ptr_t self_;
 };
@@ -114,16 +115,36 @@ sigma_t make_sigma(Args&& ... args) {
   return sigma_t(std::make_shared<Sigma>(std::forward<Args>(args)...));
 }
 
-class sigma_regret_t;
+template<class Sigma, class Alloc, typename... Args>
+sigma_t allocate_sigma(Alloc alloc, Args&& ... args) {
+  return sigma_t(std::allocate_shared<Sigma>(alloc, std::forward<Args>(args)...));
+}
+
+using node_regret_map_t = flat_map<action_t, value_t>;
+
+class sigma_regret_t final : public sigma_t::concept_t {
+ public:
+  explicit sigma_regret_t(const node_regret_map_t &regrets):
+      regrets_(regrets) { };
+
+  prob_t pr(infoset_t infoset, action_t a) const override;
+  action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const override;
+
+ private:
+  const node_regret_map_t &regrets_;
+};
 
 class node_t final {
  public:
-  using regret_map_t = flat_map<action_t, value_t>;
+  using regret_map_t = node_regret_map_t;
   using avg_map_t = flat_map<action_t, prob_t>;
 
   explicit node_t(infoset_t::actions_list_t actions);
 
-  sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
+  sigma_regret_t sigma_regret_matching() const { return sigma_regret_t(regrets_); }
+  // sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
+  // sigma_t sigma_regret_matching(sigma_t::allocator_t alloc) const
+  //   { return allocate_sigma<sigma_regret_t>(alloc, regrets_); }
 
   const value_t &regret(action_t a) const { return regrets_.at(a); }
   value_t &regret(action_t a) { return regrets_.at(a); }
@@ -164,8 +185,9 @@ class tree_t final {
   node_t &lookup(const infoset_t &infoset) { return nodes_.at(infoset); }
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
 
-  sample_ret_t sample_sigma(infoset_t infoset,
-                            set<action_t> targets, bool targeted,
+  sample_ret_t sample_sigma(const infoset_t &infoset,
+                            const set<action_t> &targets,
+                            bool targeted,
                             prob_t eps, prob_t gamma,
                             rng_t &rng) const;
 
@@ -180,18 +202,6 @@ class tree_t final {
 
  private:
   map_t nodes_;
-};
-
-class sigma_regret_t final : public sigma_t::concept_t {
- public:
-  explicit sigma_regret_t(node_t::regret_map_t regrets):
-      regrets_(move(regrets)) { };
-
-  prob_t pr(infoset_t infoset, action_t a) const override;
-  action_prob_t sample_pr(infoset_t infoset, rng_t &rng) const override;
-
- private:
-  const node_t::regret_map_t regrets_;
 };
 
 class sigma_average_t final : public sigma_t::concept_t {

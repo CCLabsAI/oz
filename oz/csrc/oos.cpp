@@ -323,18 +323,14 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
 };
 
 // TODO break up this function
-auto sigma_t::sample_targeted(infoset_t infoset,
-                              set<action_t> targets, bool targeted,
-                              prob_t eps, prob_t gamma,
-                              rng_t &rng) const
+static auto sample_targeted(sigma_regret_t sigma,
+                            const infoset_t &infoset,
+                            const set<action_t> &targets, bool targeted,
+                            prob_t eps, prob_t gamma,
+                            rng_t &rng)
   -> action_prob_t
 {
   const auto actions = infoset.actions();
-
-  // FIXME testing and experimentation only
-  //  const auto targets = (actions.size() > 2) ?
-  //    set<action_t>(begin(actions), begin(actions) + 2) :
-  //    set<action_t>(begin(actions), end(actions));
 
   Expects(!actions.empty());
 
@@ -353,7 +349,7 @@ auto sigma_t::sample_targeted(infoset_t infoset,
   auto probs = prob_vector { };
   transform(begin(actions), end(actions), back_inserter(probs),
             [&](const action_t &a) -> prob_t {
-              return gamma*p_gamma + (1 - gamma)*this->pr(infoset, a);
+              return gamma*p_gamma + (1 - gamma)*sigma.pr(infoset, a);
             });
 
   // epsilon exploration probabilities
@@ -482,8 +478,9 @@ void tree_t::create_node(infoset_t infoset) {
   nodes_.emplace(infoset, node_t(infoset.actions()));
 }
 
-auto tree_t::sample_sigma(infoset_t infoset,
-                          set<action_t> targets, bool targeted,
+auto tree_t::sample_sigma(const infoset_t &infoset,
+                          const set<action_t> &targets,
+                          bool targeted,
                           prob_t eps, prob_t gamma,
                           rng_t &rng) const
   -> tree_t::sample_ret_t
@@ -498,10 +495,10 @@ auto tree_t::sample_sigma(infoset_t infoset,
     const auto sigma = node.sigma_regret_matching();
 
     // const auto ap = sigma.sample_eps(infoset, eps, rng);
-    const auto ap = sigma.sample_targeted(infoset,
-                                          targets, targeted,
-                                          eps, gamma,
-                                          rng);
+    const auto ap = sample_targeted(sigma, infoset,
+                                    targets, targeted,
+                                    eps, gamma,
+                                    rng);
 
     return { ap, false };
   }

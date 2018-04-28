@@ -184,7 +184,6 @@ void bind_oz(py::module &m) {
       .def_property_readonly("nodes", (tree_t::map_t &(tree_t::*)()) &tree_t::nodes);
 
   py::class_<node_t>(m, "Node")
-      .def("sigma_regret_matching", &node_t::sigma_regret_matching)
       .def("accumulate_regret", &node_t::accumulate_regret)
       .def("accumulate_average_strategy", &node_t::accumulate_average_strategy)
       .def_property_readonly("regret_n", (int (node_t::*)() const) &node_t::regret_n)
