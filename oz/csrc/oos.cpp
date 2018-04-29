@@ -40,7 +40,7 @@ void oos_t::search_t::prepare_suffix_probs() {
 
 void oos_t::search_t::tree_step(action_prob_t ap) {
   const auto acting_player = history_.player();
-  infoset_t::allocator_t alloc(get_allocator());
+  const auto alloc = get_allocator();
 
   const auto infoset = (acting_player != CHANCE) ?
                        history_.infoset(alloc) :
@@ -108,11 +108,11 @@ auto oos_t::search_t::sample_tree(const tree_t &tree,
 
 void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
   Expects(state_ == state_t::SELECT);
+  const auto alloc = get_allocator();
 
   auto d = uniform_real_distribution<>();
   const auto u = d(rng);
   targeted_ = (u < delta_);
-  infoset_t::allocator_t alloc(get_allocator());
 
   while (state_ == state_t::SELECT) {
     if (history_.is_terminal()) {
@@ -442,15 +442,13 @@ static auto sample_chance(const history_t &history, rng_t& rng,
   auto probs = prob_vector { };
 
   transform(begin(actions_pr), end(actions_pr), back_inserter(actions),
-            [](const auto &x) -> action_t {
-              const action_t a = x.first;
-              return a;
+            [](const pair<action_t, prob_t> &x) -> action_t {
+              return x.first;
             });
 
   transform(begin(actions_pr), end(actions_pr), back_inserter(probs),
-            [](const auto &x) -> prob_t {
-              const prob_t pr_a = x.second;
-              return pr_a;
+            [](const pair<action_t, prob_t> &x) -> prob_t {
+              return x.second;
             });
 
   auto a_dist = discrete_distribution<>(begin(probs), end(probs));
