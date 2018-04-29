@@ -3,17 +3,15 @@
 
 #include "game.h"
 
-#include <vector>
 #include <set>
 
 namespace oz {
 
-using std::vector;
 using std::set;
 
 class goofspiel2_t final : public game_t {
  public:
-  using card_t = int;
+  using card_t = uint8_t;
   using action_t = int;
 
   goofspiel2_t(int n_cards);

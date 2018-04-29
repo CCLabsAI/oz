@@ -10,7 +10,7 @@ using namespace oz;
 using namespace std;
 
 int main(int argc, char **argv) {
-  history_t h = make_history<goofspiel2_t>(6);
+  history_t h = make_history<goofspiel2_t>(13);
   oos_t s;
   tree_t tree;
   rng_t rng(1);
@@ -18,15 +18,15 @@ int main(int argc, char **argv) {
 
   cout << fixed << setprecision(3);
 
-  for(int j = 0; j < 30; j++) {
-    for(int i = 0; i < 1000; i++) {
+  // for(int j = 0; j < 30; j++) {
+    for(int i = 0; i < 100; i++) {
       s.search(h, 1000, tree, rng, 0.4, 0.2, 0.01);
       cout << '.' << flush;
     }
     cout << endl;
 
-    auto sigma = tree.sigma_average();
-    ex = exploitability(h, sigma);
-    cout << ex << endl;
-  }
+    // auto sigma = tree.sigma_average();
+    // ex = exploitability(h, sigma);
+    // cout << ex << endl;
+  // }
 }

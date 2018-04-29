@@ -327,8 +327,7 @@ static auto sample_targeted(sigma_regret_t sigma,
                             const infoset_t &infoset,
                             const set<action_t> &targets, bool targeted,
                             prob_t eps, prob_t gamma,
-                            rng_t &rng)
-  -> action_prob_t
+                            rng_t &rng) -> action_prob_t
 {
   const auto actions = infoset.actions();
 
