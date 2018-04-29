@@ -42,8 +42,15 @@ PYBIND11_MODULE(_ext, m) {
   bind_oz(m);
 }
 
+// Look at this handsome template instantiation right here...
+template <typename Key, typename Value, typename Compare, typename Alloc>
+struct pybind11::detail::type_caster<boost::container::flat_map<Key, Value, Compare, Alloc>>
+  : map_caster<boost::container::flat_map<Key, Value, Compare, Alloc>, Key, Value> { };
+
 void bind_oz(py::module &m) {
   using namespace oz;
+  using std::begin;
+  using std::end;
 
   auto py_Player =
       py::enum_<player_t>(m, "Player")
@@ -66,7 +73,10 @@ void bind_oz(py::module &m) {
   });
 
   py::class_<infoset_t>(m, "Infoset")
-      .def_property_readonly("actions", &infoset_t::actions)
+      .def_property_readonly("actions", [](const infoset_t &self) -> vector<action_t> {
+        const auto &actions = self.actions();
+        return vector<action_t>(begin(actions), end(actions));
+      })
       .def("__str__", &infoset_t::str);
 
   auto py_Game =
@@ -88,11 +98,25 @@ void bind_oz(py::module &m) {
   py::class_<leduk_poker_t>(m, "LedukPoker", py_Game);
 
   py::class_<goofspiel2_t>(m, "Goofspiel2", py_Game)
-//    .def("hand", (const set<goofspiel2_t::card_t> &(goofspiel2_t::*)(player_t p) const) &goofspiel2_t::hand)
-//    .def("bids", (const vector<goofspiel2_t::card_t> &(goofspiel2_t::*)(player_t p) const) &goofspiel2_t::bids)
     .def("score", (int (goofspiel2_t::*)(player_t p) const) &goofspiel2_t::score)
-    .def_property_readonly("wins", &goofspiel2_t::wins)
-    .def_property_readonly("turn", &goofspiel2_t::turn);
+    .def_property_readonly("turn", &goofspiel2_t::turn)
+    .def("hand", [](const goofspiel2_t &self, player_t p) -> set<goofspiel2_t::card_t> {
+      const auto &hand = self.hand(p);
+      set<goofspiel2_t::card_t> s;
+      for(goofspiel2_t::card_t card = 0; card < hand.size(); card++) {
+        s.insert(card);
+      }
+      return s;
+    })
+    // .def("bids", (const goofspiel2_t::bids_t &(goofspiel2_t::*)(player_t p) const) &goofspiel2_t::bids)
+    .def("bids", [](const goofspiel2_t &self, player_t p) -> vector<goofspiel2_t::card_t> {
+      auto v = self.bids(p);
+      return vector<goofspiel2_t::card_t>(begin(v), end(v));
+    })
+    .def_property_readonly("wins", [](const goofspiel2_t &self) -> vector<player_t> {
+      auto v = self.wins();
+      return vector<player_t>(begin(v), end(v));
+    });
 
   py::class_<history_t>(m, "History")
       .def("act", &history_t::act)

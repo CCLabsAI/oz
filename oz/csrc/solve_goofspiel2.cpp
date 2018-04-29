@@ -14,9 +14,9 @@ int main(int argc, char **argv) {
   oos_t s;
   tree_t tree;
   rng_t rng(1);
-  value_t ex;
+  // value_t ex;
 
-  cout << fixed << setprecision(3);
+  // cout << fixed << setprecision(3);
 
   // for(int j = 0; j < 30; j++) {
     for(int i = 0; i < 100; i++) {

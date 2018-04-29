@@ -57,8 +57,6 @@ static auto make_hand(set<goofspiel2_t::card_t> s) -> goofspiel2_t::hand_t {
 }
 
 TEST_CASE("goofspiel II hand and bids", "[goofspiel2]") {
-  using card_t = goofspiel2_t::card_t;
-  using hand_t = goofspiel2_t::hand_t;
   using bids_t = goofspiel2_t::bids_t;
   using wins_t = goofspiel2_t::wins_t;
 
