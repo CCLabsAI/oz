@@ -10,6 +10,9 @@ include(CheckIPOSupported)
 
 add_compile_options("-Wall")
 
+# NB hide all symbols, we only want to export the _PyInit entry point
+add_compile_options("-fvisibility=hidden")
+
 # NB fast changes results, due to floating point optimizations
 # set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG")
 
@@ -30,7 +33,7 @@ include_directories(SYSTEM "lib/boost/include")
 
 include_directories("oz/csrc")
 
-add_executable("tests"
+add_executable(tests
         "oz/csrc/tests/tests.cpp"
 
         "oz/csrc/tests/test_flipguess.cpp"
@@ -60,24 +63,26 @@ add_executable("tests"
 
 target_include_directories(tests SYSTEM PRIVATE "lib/catch/include")
 
-
-
+# NB alloc_lib.c includes other c files these should not be included twice
 file(GLOB boost_container_SRC
-    "lib/boost/libs/container/src/*.c"
-    "lib/boost/libs/container/src/*.cpp"
-)
-add_library("boost_container" STATIC ${boost_container_SRC})
-set_property(TARGET "boost_container" PROPERTY POSITION_INDEPENDENT_CODE ON)
+        "lib/boost/libs/container/src/alloc_lib.c"
+        "lib/boost/libs/container/src/*.cpp"
+        )
 
+add_library(boost_container STATIC ${boost_container_SRC})
+set_property(TARGET boost_container PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-add_executable("solve_leduk"
+# NB prevents the boost internal allocator DLMalloc from using sbrk
+target_compile_options(boost_container PRIVATE "-DHAVE_MORECORE=0")
+
+add_executable(solve_leduk
         "oz/csrc/solve_leduk.cpp"
         "oz/csrc/games/leduk.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
         )
 
-add_executable("solve_goofspiel2"
+add_executable(solve_goofspiel2
         "oz/csrc/solve_goofspiel2.cpp"
         "oz/csrc/games/goofspiel2.cpp"
         "oz/csrc/best_response.cpp"
