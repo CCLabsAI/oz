@@ -46,26 +46,39 @@ TEST_CASE("goofspiel II utility", "[goofspiel2]") {
   CHECK(game.utility(P2) == 1);
 }
 
+static auto make_hand(set<goofspiel2_t::card_t> s) -> goofspiel2_t::hand_t {
+  goofspiel2_t::hand_t hand;
+
+  for(auto card : s) {
+    hand.set(card);
+  }
+
+  return hand;
+}
+
 TEST_CASE("goofspiel II hand and bids", "[goofspiel2]") {
   using card_t = goofspiel2_t::card_t;
+  using hand_t = goofspiel2_t::hand_t;
+  using bids_t = goofspiel2_t::bids_t;
+  using wins_t = goofspiel2_t::wins_t;
 
   auto game = goofspiel2_t(3);
 
-  CHECK(game.hand(P1) == set<card_t> {0, 1, 2});
-  CHECK(game.hand(P2) == set<card_t> {0, 1, 2});
+  CHECK(game.hand(P1) == make_hand({0, 1, 2}));
+  CHECK(game.hand(P2) == make_hand({0, 1, 2}));
 
   game.act(make_action(1));
-  CHECK(game.hand(P1) == set<card_t> {0, 2});
+  CHECK(game.hand(P1) == make_hand({0, 2}));
   game.act(make_action(2));
 
   game.act(make_action(2));
   game.act(make_action(1));
-  CHECK(game.hand(P2) == set<card_t> {0});
+  CHECK(game.hand(P2) == make_hand({0}));
 
-  CHECK(game.bids(P1) == vector<card_t> {1, 2});
-  CHECK(game.bids(P2) == vector<card_t> {2, 1});
+  CHECK(game.bids(P1) == bids_t {1, 2});
+  CHECK(game.bids(P2) == bids_t {2, 1});
 
   game.act(make_action(0));
   game.act(make_action(0));
-  CHECK(game.wins() == vector<player_t> {P2, P1, CHANCE});
+  CHECK(game.wins() == wins_t {P2, P1, CHANCE});
 }

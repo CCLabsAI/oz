@@ -16,9 +16,11 @@ goofspiel2_t::goofspiel2_t(int n_cards) :
   score1_(0),
   score2_(0)
 {
-  for (int n = 0; n < n_cards; n++) {
-    hand(P1).insert(n);
-    hand(P2).insert(n);
+  Expects(n_cards < MAX_CARDS);
+
+  for (card_t n = 0; n < n_cards; n++) {
+    hand(P1).set(n);
+    hand(P2).set(n);
   }
 }
 
@@ -50,20 +52,22 @@ bool contains(const set<T> &s, T x) {
 }
 
 void goofspiel2_t::act_(goofspiel2_t::action_t a) {
-  card_t card = a;
-
   Expects(player() != CHANCE);
-  Expects(contains(hand(player_), card));
+  Expects(a < MAX_CARDS);
+
+  auto card = static_cast<card_t>(a);
+
+  Expects(hand(player_).test(card));
 
   if (player_ == P1) {
     P1_bid_ = card;
-    hand(P1).erase(P1_bid_);
+    hand(P1).set(P1_bid_, false);
 
     player_ = P2;
   }
   else { // player_ == P2
     card_t P2_bid = card;
-    hand(P2).erase(P2_bid);
+    hand(P2).set(P2_bid, false);
 
     if (P2_bid < P1_bid_) {
       score(P1) += turn_;
@@ -94,8 +98,11 @@ auto goofspiel2_t::chance_actions() const -> action_prob_map_t {
 auto goofspiel2_t::infoset_t::actions() const -> actions_list_t {
   actions_list_t actions;
 
-  transform(begin(hand_), end(hand_), back_inserter(actions),
-            [](card_t card) { return make_action(card); });
+  for(size_t card = 0; card < hand_.size(); card++) {
+    if(hand_.test(card)) {
+      actions.push_back(make_action(card));
+    }
+  }
 
   return actions;
 }

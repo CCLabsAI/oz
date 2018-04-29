@@ -5,16 +5,28 @@
 
 #include <set>
 #include <vector>
+#include <bitset>
+
+#include <boost/container/static_vector.hpp>
 
 namespace oz {
 
 using std::set;
 using std::vector;
+using std::bitset;
+
+using boost::container::static_vector;
 
 class goofspiel2_t final : public game_t {
  public:
   using card_t = uint8_t;
   using action_t = int;
+
+  static constexpr int MAX_CARDS = 16;
+
+  using hand_t = bitset<MAX_CARDS>;
+  using bids_t = static_vector<card_t, MAX_CARDS>;
+  using wins_t = static_vector<player_t, MAX_CARDS>;
 
   goofspiel2_t(int n_cards);
   goofspiel2_t(const goofspiel2_t &other) = default;
@@ -22,10 +34,13 @@ class goofspiel2_t final : public game_t {
   class infoset_t : public oz::infoset_t::concept_t {
    public:
     explicit infoset_t(player_t player,
-                       set<card_t> hand,
-                       vector<card_t> bids,
-                       vector<player_t> wins) :
-      player_(player), hand_(hand), bids_(bids), wins_(wins) { };
+                       hand_t hand,
+                       bids_t bids,
+                       wins_t wins) :
+      player_(player),
+      hand_(move(hand)),
+      bids_(move(bids)),
+      wins_(move(wins)) { };
 
     actions_list_t actions() const override;
     string str() const override;
@@ -33,14 +48,14 @@ class goofspiel2_t final : public game_t {
     size_t hash() const override;
 
     player_t player() const { return player_; }
-    const vector<card_t> &bids() const { return bids_; }
-    const vector<player_t> &wins() const { return wins_; }
+    const bids_t &bids() const { return bids_; }
+    const wins_t &wins() const { return wins_; }
 
    private:
     player_t player_;
-    set<card_t> hand_;
-    vector<card_t> bids_;
-    vector<player_t> wins_;
+    hand_t hand_;
+    bids_t bids_;
+    wins_t wins_;
   };
 
   void act_(action_t a);
@@ -56,7 +71,7 @@ class goofspiel2_t final : public game_t {
     return std::make_unique<goofspiel2_t>(*this);
   }
 
-  set<card_t> &hand(player_t p) {
+  hand_t &hand(player_t p) {
     switch (p) {
       case P1:
         return hand1_;
@@ -67,7 +82,7 @@ class goofspiel2_t final : public game_t {
     }
   }
 
-  vector<card_t> &bids(player_t p) {
+  bids_t &bids(player_t p) {
     switch (p) {
       case P1:
         return bids1_;
@@ -91,16 +106,16 @@ class goofspiel2_t final : public game_t {
 
   int n_cards() const { return n_cards_; }
 
-  const set<card_t> &hand(player_t p) const
+  const hand_t &hand(player_t p) const
     { return const_cast<goofspiel2_t*>(this)->hand(p); }
 
-  const vector<card_t> &bids(player_t p) const
+  const bids_t &bids(player_t p) const
     { return const_cast<goofspiel2_t*>(this)->bids(p); }
 
   int score(player_t p) const
     { return const_cast<goofspiel2_t*>(this)->score(p); }
 
-  const vector<player_t> &wins() const { return wins_; }
+  const wins_t &wins() const { return wins_; }
 
   int turn() const { return turn_; }
 
@@ -116,13 +131,13 @@ class goofspiel2_t final : public game_t {
 
   card_t P1_bid_;
 
-  set<card_t> hand1_;
-  set<card_t> hand2_;
+  hand_t hand1_;
+  hand_t hand2_;
 
-  vector<card_t> bids1_;
-  vector<card_t> bids2_;
+  bids_t bids1_;
+  bids_t bids2_;
 
-  vector<player_t> wins_;
+  wins_t wins_;
 };
 
 } // namespace oz

@@ -88,8 +88,8 @@ void bind_oz(py::module &m) {
   py::class_<leduk_poker_t>(m, "LedukPoker", py_Game);
 
   py::class_<goofspiel2_t>(m, "Goofspiel2", py_Game)
-    .def("hand", (const set<goofspiel2_t::card_t> &(goofspiel2_t::*)(player_t p) const) &goofspiel2_t::hand)
-    .def("bids", (const vector<goofspiel2_t::card_t> &(goofspiel2_t::*)(player_t p) const) &goofspiel2_t::bids)
+//    .def("hand", (const set<goofspiel2_t::card_t> &(goofspiel2_t::*)(player_t p) const) &goofspiel2_t::hand)
+//    .def("bids", (const vector<goofspiel2_t::card_t> &(goofspiel2_t::*)(player_t p) const) &goofspiel2_t::bids)
     .def("score", (int (goofspiel2_t::*)(player_t p) const) &goofspiel2_t::score)
     .def_property_readonly("wins", &goofspiel2_t::wins)
     .def_property_readonly("turn", &goofspiel2_t::turn);

@@ -24,15 +24,17 @@ static auto other_player(player_t p) -> player_t {
   return p == P1 ? P2 : P1;
 }
 
-static constexpr size_t MAX_CARDS = std::numeric_limits<unsigned int>::digits;
+static constexpr int MAX_CARDS = std::numeric_limits<unsigned int>::digits;
 using var_t = bitset<MAX_CARDS>;
 
+static_assert(goofspiel2_t::MAX_CARDS <= MAX_CARDS);
+
 static auto playable(const int turn,
-                     const set<card_t> &hand,
+                     const goofspiel2_t::hand_t &hand,
                      const int n_cards,
                      const player_t match_player,
-                     const vector<card_t> &bids,
-                     const vector<player_t> &wins) -> var_t
+                     const goofspiel2_t::bids_t &bids,
+                     const goofspiel2_t::wins_t &wins) -> var_t
 {
   Expects(bids.size() == wins.size());
   Expects(n_cards <= MAX_CARDS);
@@ -46,12 +48,8 @@ static auto playable(const int turn,
   // our constraints are essentially ranges.
 
   int n_vars = bids.size() - turn; // turns remaining
-  var_t hand_bits;
+  var_t hand_bits(hand.to_ulong());
   var_t var[MAX_CARDS];
-
-  for (const auto &hand_card : hand) {
-    hand_bits[hand_card] = true;
-  }
 
   // apply unit constraints
   for (int i = 0; i < n_vars; i++) {
