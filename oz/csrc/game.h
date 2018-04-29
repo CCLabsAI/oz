@@ -9,13 +9,13 @@
 #include <map>
 
 #include <boost/container/small_vector.hpp>
+#include <boost/container/pmr/flat_map.hpp>
 #include <boost/container/pmr/polymorphic_allocator.hpp>
 
 namespace oz {
 
 using std::move;
 using std::string;
-using std::vector;
 using std::map;
 
 using std::unique_ptr;
@@ -118,18 +118,26 @@ inline auto null_infoset() -> infoset_t {
 
 class game_t {
  public:
+  using action_prob_allocator_t =
+    polymorphic_allocator<std::pair<action_t, prob_t>>;
+  using action_prob_map_t =
+    boost::container::pmr::flat_map<action_t, prob_t>;
+
   virtual void act(action_t a) = 0;
   virtual infoset_t infoset() const = 0;
   virtual player_t player() const = 0;
   virtual bool is_terminal() const = 0;
   virtual value_t utility(player_t player) const = 0;
-  virtual map<action_t, prob_t> chance_actions() const = 0;
+  virtual action_prob_map_t chance_actions() const = 0;
 
   virtual unique_ptr<game_t> clone() const = 0;
   virtual ~game_t() = default;
 
   virtual infoset_t infoset(infoset_t::allocator_t alloc) const
     { return infoset(); }
+
+  virtual action_prob_map_t chance_actions(action_prob_allocator_t alloc) const
+    { return chance_actions(); }
 };
 
 

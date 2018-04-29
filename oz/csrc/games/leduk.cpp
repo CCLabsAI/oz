@@ -193,12 +193,13 @@ static inline int card_idx(leduk_poker_t::card_t a) {
 }
 
 static inline auto count_to_probs(vector<oz::action_t> actions,
-                                  vector<int> counts)
-  -> map<oz::action_t, prob_t>
+                                  vector<int> counts,
+                                  leduk_poker_t::action_prob_allocator_t alloc)
+  -> leduk_poker_t::action_prob_map_t
 {
   Expects(actions.size() == counts.size());
   const prob_t total = accumulate(begin(counts), end(counts), (prob_t) 0);
-  auto m = map<oz::action_t, prob_t>();
+  leduk_poker_t::action_prob_map_t m(alloc);
 
   Expects(total > 0);
 
@@ -218,7 +219,9 @@ static inline auto count_to_probs(vector<oz::action_t> actions,
   return m;
 }
 
-auto leduk_poker_t::chance_actions() const -> map<oz::action_t, prob_t> {
+auto leduk_poker_t::chance_actions(action_prob_allocator_t alloc) const
+  -> action_prob_map_t
+{
   Expects(player() == CHANCE);
 
   static const vector<oz::action_t> chance_actions_p1 {
@@ -242,20 +245,27 @@ auto leduk_poker_t::chance_actions() const -> map<oz::action_t, prob_t> {
   vector<int> counts = { 2, 2, 2 };
 
   if (hand(P1) == card_t::NA) {
-    return count_to_probs(chance_actions_p1, counts);
+    return count_to_probs(chance_actions_p1, counts, alloc);
   }
   else if(hand(P2) == card_t::NA) {
     --counts[card_idx(hand(P1))];
-    return count_to_probs(chance_actions_p2, counts);
+    return count_to_probs(chance_actions_p2, counts, alloc);
   }
   else if(board_ == card_t::NA) {
     --counts[card_idx(hand(P1))];
     --counts[card_idx(hand(P2))];
-    return count_to_probs(chance_actions_board, counts);
+    return count_to_probs(chance_actions_board, counts, alloc);
   }
 
   assert (false);
-  return map<oz::action_t, prob_t>();
+  return { };
+}
+
+auto leduk_poker_t::chance_actions() const
+  -> action_prob_map_t
+{
+  action_prob_allocator_t alloc;
+  return leduk_poker_t::chance_actions(alloc);
 }
 
 auto leduk_poker_t::infoset_t::actions() const -> actions_list_t {

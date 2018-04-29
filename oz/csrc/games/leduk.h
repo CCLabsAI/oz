@@ -75,13 +75,14 @@ class leduk_poker_t final : public game_t {
   player_t player() const override { return player_; }
   bool is_terminal() const override;
   value_t utility(player_t player) const override;
-  map<oz::action_t, prob_t> chance_actions() const override;
+  action_prob_map_t chance_actions() const override;
 
   std::unique_ptr<game_t> clone() const override {
     return std::make_unique<leduk_poker_t>(*this);
   }
 
   oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;
+  action_prob_map_t chance_actions(action_prob_allocator_t alloc) const override;
 
   static constexpr int ANTE = 1;
   static constexpr int N_ROUNDS = 2;

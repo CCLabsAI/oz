@@ -31,6 +31,8 @@ struct action_prob_t {
 
 class history_t final {
  public:
+  using action_prob_map_t = game_t::action_prob_map_t;
+
   history_t(const history_t& that) : self_(that.self_->clone()) {};
   history_t(history_t&& that) = default;
 
@@ -42,20 +44,22 @@ class history_t final {
   bool is_terminal() const { return self_->is_terminal(); }
   value_t utility(player_t player) const { return self_->utility(player); }
 
-  map<action_t, prob_t> chance_actions() const
+  action_prob_map_t chance_actions() const
     { return self_->chance_actions(); }
 
   infoset_t infoset(infoset_t::allocator_t alloc) const
     { return self_->infoset(alloc); }
 
-  action_prob_t sample_chance(rng_t& rng) const;
-  action_prob_t sample_uniform(rng_t& rng) const;
+  action_prob_map_t chance_actions(game_t::action_prob_allocator_t alloc) const
+    { return self_->chance_actions(alloc); }
 
   history_t operator >>(action_t a) const {
     auto g = self_->clone();
     g->act(a);
     return history_t(move(g));
   }
+
+  action_prob_t sample_chance(rng_t &rng) const;
 
   template <class T>
   const T &cast() const { return assert_cast<const T&>(*self_); }

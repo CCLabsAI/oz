@@ -92,10 +92,10 @@ size_t flipguess_t::infoset_t::hash() const {
   return std::hash<player_t>()(player_);
 }
 
-auto flipguess_t::chance_actions() const -> map<oz::action_t, prob_t> {
+auto flipguess_t::chance_actions() const -> action_prob_map_t {
   Expects(player() == CHANCE);
 
-  static const map<oz::action_t, prob_t> actions {
+  static const action_prob_map_t actions {
     { make_action(action_t::Heads), 0.5 },
     { make_action(action_t::Tails), 0.5 }
   };

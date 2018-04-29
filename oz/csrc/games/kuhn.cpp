@@ -128,11 +128,11 @@ auto kuhn_poker_t::utility(player_t player) const -> value_t {
   return relative_utility(player, u);
 }
 
-map<oz::action_t, prob_t> kuhn_poker_t::chance_actions() const {
+auto kuhn_poker_t::chance_actions() const -> action_prob_map_t {
   Expects(player() == CHANCE);
 
   static const prob_t p = (prob_t) 1/6;
-  static const map<oz::action_t, prob_t> chance_actions {
+  static const action_prob_map_t chance_actions {
       { make_action(action_t::JQ), p },
       { make_action(action_t::JK), p },
       { make_action(action_t::QJ), p },

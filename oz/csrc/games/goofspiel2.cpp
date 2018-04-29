@@ -86,7 +86,7 @@ void goofspiel2_t::act_(goofspiel2_t::action_t a) {
   }
 }
 
-auto goofspiel2_t::chance_actions() const -> map<oz::action_t, prob_t> {
+auto goofspiel2_t::chance_actions() const -> action_prob_map_t {
   Expects(false);
   return { };
 }

@@ -4,10 +4,12 @@
 #include "game.h"
 
 #include <set>
+#include <vector>
 
 namespace oz {
 
 using std::set;
+using std::vector;
 
 class goofspiel2_t final : public game_t {
  public:
@@ -48,7 +50,7 @@ class goofspiel2_t final : public game_t {
   player_t player() const override { return player_; }
   bool is_terminal() const override { return turn_ == n_cards_; }
   value_t utility(player_t player) const override;
-  map<oz::action_t, prob_t> chance_actions() const override;
+  action_prob_map_t chance_actions() const override;
 
   std::unique_ptr<game_t> clone() const override {
     return std::make_unique<goofspiel2_t>(*this);

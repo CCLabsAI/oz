@@ -1,18 +1,20 @@
 #ifndef OZ_KUHN_H
 #define OZ_KUHN_H
 
+#include "game.h"
+
 #include <cassert>
 #include <stdexcept>
 #include <vector>
 #include <string>
 #include <sstream>
-
-#include "game.h"
+#include <vector>
 
 namespace oz {
 
 using std::move;
 using std::string;
+using std::vector;
 
 class kuhn_poker_t final : public game_t {
  public:
@@ -57,7 +59,7 @@ class kuhn_poker_t final : public game_t {
   player_t player() const override { return player_; }
   bool is_terminal() const override;
   value_t utility(player_t player) const override;
-  map<oz::action_t, prob_t> chance_actions() const override;
+  action_prob_map_t chance_actions() const override;
 
   std::unique_ptr<game_t> clone() const override {
     return std::make_unique<kuhn_poker_t>(*this);

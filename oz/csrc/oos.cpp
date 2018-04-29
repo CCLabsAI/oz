@@ -23,6 +23,9 @@ using prob_vector = boost::container::small_vector<prob_t, N_ACTIONS_SMALL>;
 using boost::container::pmr::monotonic_buffer_resource;
 using boost::container::pmr::polymorphic_allocator;
 
+static action_prob_t sample_chance(const history_t &history, rng_t& rng,
+                                   game_t::action_prob_allocator_t alloc);
+
 void oos_t::search_t::prepare_suffix_probs() {
   Expects(suffix_prob_.x > 0);
 
@@ -109,6 +112,7 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
   auto d = uniform_real_distribution<>();
   const auto u = d(rng);
   targeted_ = (u < delta_);
+  infoset_t::allocator_t alloc(get_allocator());
 
   while (state_ == state_t::SELECT) {
     if (history_.is_terminal()) {
@@ -116,11 +120,10 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
       state_ = state_t::BACKPROP;
     }
     else if (history_.player() == CHANCE) {
-      const auto ap = history_.sample_chance(rng);
+      const auto ap = sample_chance(history_, rng, alloc);
       tree_step(ap);
     }
     else {
-      infoset_t::allocator_t alloc(get_allocator());
       const auto infoset = history_.infoset(alloc);
       const auto r = sample_tree(tree, infoset, rng);
 
@@ -428,8 +431,11 @@ node_t::node_t(infoset_t::actions_list_t actions) {
   Ensures(!average_strategy_.empty());
 }
 
-auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
-  const auto actions_pr = chance_actions();
+static auto sample_chance(const history_t &history, rng_t& rng,
+                          game_t::action_prob_allocator_t alloc)
+  -> action_prob_t
+{
+  const auto actions_pr = history.chance_actions(alloc);
   Expects(!actions_pr.empty());
 
   auto actions = action_vector { };
@@ -459,8 +465,19 @@ auto history_t::sample_chance(rng_t& rng) const -> action_prob_t {
   return { a, pr_a, rho1, rho2 };
 }
 
-auto history_t::sample_uniform(rng_t &rng) const -> action_prob_t {
-  auto actions = infoset().actions();
+static auto sample_chance(const history_t &history, rng_t& rng)
+  -> action_prob_t {
+  return sample_chance(history, rng, { });
+}
+
+auto history_t::sample_chance(oz::rng_t &rng) const -> action_prob_t {
+  return oz::sample_chance(*this, rng);
+}
+
+static auto sample_uniform(const history_t &history, rng_t &rng)
+  -> action_prob_t
+{
+  auto actions = history.infoset().actions();
   auto N = static_cast<int>(actions.size());
   Expects(N > 0);
 
@@ -603,10 +620,10 @@ static inline auto sample_action(const history_t &h, rng_t &rng)
   -> action_prob_t
 {
   if (h.player() == CHANCE) {
-    return h.sample_chance(rng);
+    return sample_chance(h, rng);
   }
   else {
-    return h.sample_uniform(rng);
+    return sample_uniform(h, rng);
   }
 }
 
@@ -654,7 +671,7 @@ void oos_t::search_iter(history_t h, player_t player,
       (s.targeting_ratio() - avg_targeting_ratio_) / avg_targeting_ratio_N_;
 }
 
-static constexpr int WORK_BUFFER_SIZE = 64 * (2 << 20);
+static constexpr int WORK_BUFFER_SIZE = (2 << 20);
 
 static unique_ptr<uint8_t[]> make_work_buffer(size_t size) {
   unique_ptr<uint8_t[]> ptr(new uint8_t[size]);
