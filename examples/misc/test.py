@@ -81,10 +81,11 @@ def play_match(h, player1, player2, rng):
                 print(a.index, end='-', flush=True)
             else:
                 print(a.index, end='/', flush=True)
-            # print(infoset)
 
             h.act(a)
 
+    print()
+    print(h)
     return h.utility(oz.P1)
 
 
@@ -94,7 +95,6 @@ def play_matches(n_matches, make_players, h, rng):
         player1, player2 = make_players()
         u = play_match(h, player1, player2, rng)
         utilities.append(u)
-        print()
         print(u)
     return utilities
 
@@ -109,7 +109,7 @@ def main():
     parser.add_argument("--iter2", type=int,
                         help="player 2 thinking iterations",
                         default=1000)
-    parser.add_argument("--matches",
+    parser.add_argument("--matches", type=int,
                         help="number of matches to play",
                         default=10)
     parser.add_argument("--goofcards", type=int,
@@ -133,7 +133,7 @@ def main():
     if args.game == 'leduk' or args.game == 'leduk_poker':
         history = oz.make_leduk_history()
         target = oz.make_leduk_target()
-    elif args.game == 'goofspiel' or args.game == 'goofcards':
+    elif args.game == 'goofspiel' or args.game == 'goofspiel2':
         history = oz.make_goofspiel2_history(args.goofcards)
         target = oz.make_goofspiel2_target()
     else:

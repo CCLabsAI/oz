@@ -138,6 +138,8 @@ class game_t {
 
   virtual action_prob_map_t chance_actions(action_prob_allocator_t alloc) const
     { return chance_actions(); }
+
+  virtual string str() const { throw std::logic_error("not implemented"); };
 };
 
 

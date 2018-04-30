@@ -86,6 +86,7 @@ void bind_oz(py::module &m) {
           .def_property_readonly("player", &game_t::player)
           .def("is_terminal", &game_t::is_terminal)
           .def("utility", &game_t::utility)
+          .def("__str__", &game_t::str)
           .def("__copy__", &game_t::clone);
 
   py_Game.attr("Player") = py_Player;
@@ -126,10 +127,11 @@ void bind_oz(py::module &m) {
       .def("utility", &history_t::utility)
       .def("sample_chance", &history_t::sample_chance)
       .def_property_readonly("game", // TODO figure out if there is a better way
-        [](const history_t &target) -> const game_t& {
-          return target.cast<game_t>();
+        [](const history_t &self) -> const game_t& {
+          return self.cast<game_t>();
         }, py::return_value_policy::reference_internal)
-      .def("__copy__", [](const history_t &h) { return history_t(h); });
+      .def("__str__", &history_t::str)
+      .def("__copy__", [](const history_t &self) { return history_t(self); });
 
   m.def("exploitability", &exploitability);
 

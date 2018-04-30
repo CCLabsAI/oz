@@ -1,9 +1,8 @@
 #include "goofspiel2.h"
 
-#include <iostream>
-#include <sstream>
-
 #include "hash.h"
+
+#include <sstream>
 
 namespace oz {
 
@@ -107,10 +106,51 @@ auto goofspiel2_t::infoset_t::actions() const -> actions_list_t {
   return actions;
 }
 
+static void print_win(std::ostream& os, player_t winner, player_t player)
+{
+  if (winner == CHANCE) {
+    os << '=';
+  }
+  else if (winner == player) {
+    os << ">";
+  }
+  else if (winner != player) {
+    os << "<";
+  }
+  else {
+    os << "?";
+  }
+}
+
 auto goofspiel2_t::infoset_t::str() const -> string {
+  Expects(bids_.size() == wins_.size());
   stringstream ss;
 
-  // TODO implement
+  ss << '/';
+
+  auto win_it = begin(wins_);
+  for(auto bid : bids_) {
+    ss << (int) bid;
+    print_win(ss, *win_it++, player_);
+    ss << '/';
+  }
+
+  return ss.str();
+}
+
+auto goofspiel2_t::str() const -> string {
+  stringstream ss;
+
+  ss << '/';
+
+  auto bids1_it = begin(bids1_);
+  auto bids2_it = begin(bids2_);
+  for(auto win : wins_) {
+    ss << (int) *bids1_it++;
+    print_win(ss, win, player_);
+    ss << (int) *bids2_it++;
+    ss << '/';
+  }
 
   return ss.str();
 }

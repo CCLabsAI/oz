@@ -53,6 +53,8 @@ class history_t final {
   action_prob_map_t chance_actions(game_t::action_prob_allocator_t alloc) const
     { return self_->chance_actions(alloc); }
 
+  string str() const { return self_->str(); }
+
   history_t operator >>(action_t a) const {
     auto g = self_->clone();
     g->act(a);

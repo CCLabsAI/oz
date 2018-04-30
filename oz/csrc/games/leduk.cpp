@@ -290,44 +290,83 @@ auto leduk_poker_t::infoset_t::actions() const -> actions_list_t {
   }
 }
 
+static std::ostream& print_card(std::ostream& os,
+                                leduk_poker_t::card_t card,
+                                const string &unk = "")
+{
+  using card_t = leduk_poker_t::card_t;
+
+  if (card == card_t::Jack) {
+    os << 'J';
+  }
+  else if (card == card_t::Queen) {
+    os << 'Q';
+  }
+  else if (card == card_t::King) {
+    os << 'K';
+  }
+  else {
+    os << unk;
+  }
+
+  return os;
+}
+
+static std::ostream& operator <<(std::ostream& os,
+                                 const leduk_poker_t::action_t &action)
+{
+  using action_t = leduk_poker_t::action_t;
+
+  if (action == action_t::Raise) {
+    os << 'r';
+  }
+  else if (action == action_t::Call) {
+    os << 'c';
+  }
+  else if (action == action_t::Fold) {
+    os << 'f';
+  }
+  else if (action == action_t::NextRound) {
+    os << '/';
+  }
+  else {
+    os << '?';
+  }
+
+  return os;
+}
+
+
 auto leduk_poker_t::infoset_t::str() const -> std::string {
   stringstream ss;
 
-  if (hand == card_t::Jack) {
-    ss << "J";
-  }
-  else if (hand == card_t::Queen) {
-    ss << "Q";
-  }
-  else if (hand == card_t::King) {
-    ss << "K";
-  }
-
-  if (board == card_t::Jack) {
-    ss << "J";
-  }
-  else if (board == card_t::Queen) {
-    ss << "Q";
-  }
-  else if (board == card_t::King) {
-    ss << "K";
-  }
+  print_card(ss, hand);
+  print_card(ss, board);
 
   if (!history.empty()) {
     ss << "/";
   }
 
   for (const auto& a : history) {
-    if (a == action_t::Raise) {
-      ss << "r";
-    }
-    else if (a == action_t::Call) {
-      ss << "c";
-    }
-    else if (a == action_t::NextRound) {
-      ss << "/";
-    }
-    else { assert (false); }
+    ss << a;
+  }
+
+  return ss.str();
+}
+
+auto leduk_poker_t::str() const -> std::string {
+  stringstream ss;
+
+  print_card(ss, hand(P1), "?");
+  print_card(ss, hand(P2), "?");
+  print_card(ss, board(), "?");
+
+  if (!history().empty()) {
+    ss << "/";
+  }
+
+  for (const auto& a : history()) {
+    ss << a;
   }
 
   return ss.str();
@@ -353,9 +392,7 @@ size_t leduk_poker_t::infoset_t::hash() const {
   size_t seed = 0;
   hash_combine(seed, player);
   hash_combine(seed, hand);
-  for (const auto &a : history) {
-    hash_combine(seed, a);
-  }
+  for (const auto &a : history) { hash_combine(seed, a); }
   hash_combine(seed, pot[0]);
   hash_combine(seed, pot[1]);
   hash_combine(seed, raises);

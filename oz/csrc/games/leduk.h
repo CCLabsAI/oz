@@ -84,6 +84,8 @@ class leduk_poker_t final : public game_t {
   oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;
   action_prob_map_t chance_actions(action_prob_allocator_t alloc) const override;
 
+  std::string str() const override;
+
   static constexpr int ANTE = 1;
   static constexpr int N_ROUNDS = 2;
   static constexpr int RAISE_PER_ROUND[N_ROUNDS] = { 2, 4 };
