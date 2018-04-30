@@ -192,8 +192,10 @@ static inline int card_idx(leduk_poker_t::card_t a) {
   }
 }
 
-static inline auto count_to_probs(vector<oz::action_t> actions,
-                                  vector<int> counts,
+using count_vector_t = array<int, 3>;
+
+static inline auto count_to_probs(const vector<oz::action_t> &actions,
+                                  count_vector_t counts,
                                   leduk_poker_t::action_prob_allocator_t alloc)
   -> leduk_poker_t::action_prob_map_t
 {
@@ -242,7 +244,7 @@ auto leduk_poker_t::chance_actions(action_prob_allocator_t alloc) const
       make_action(action_t::K)
   };
 
-  vector<int> counts = { 2, 2, 2 };
+  count_vector_t counts = { { 2, 2, 2 } };
 
   if (hand(P1) == card_t::NA) {
     return count_to_probs(chance_actions_p1, counts, alloc);
