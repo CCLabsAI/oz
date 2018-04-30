@@ -22,12 +22,12 @@ if(PYTHONINTERP_FOUND)
       set(PYTORCH_VERSION_PATCH ${CMAKE_MATCH_3})
       math(EXPR PYTORCH_VERSION_DECIMAL
         "(${PYTORCH_VERSION_MAJOR} * 10000) + (${PYTORCH_VERSION_MINOR} * 100) + ${PYTORCH_VERSION_PATCH}")
-  else()
-     unset(PYTORCH_VERSION)
-     unset(PYTORCH_INCLUDE_DIR)
-     message(STATUS "Requested PyTorch version and include path, but got instead:\n${__output}\n")
+    else()
+       unset(PYTORCH_VERSION)
+       unset(PYTORCH_INCLUDE_DIR)
+       message(STATUS "Requested PyTorch version and include path, but got instead:\n${__output}\n")
+    endif()
   endif()
-endif()
 
 
 else()
@@ -42,4 +42,4 @@ find_package_handle_standard_args(PyTorch
 
 unset(__result)
 unset(__output)
-unset(__output)
+unset(__ver_check)
