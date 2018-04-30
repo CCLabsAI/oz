@@ -79,7 +79,7 @@ for i in range(100):
         if len(batch) == 0:
             bs.step(torch.Tensor(), torch.Tensor(), rng)
         else:
-            batch_var = Variable(batch, volatile=True)
+            batch_var = Variable(batch)
             sigma_logits = net_sigma.forward(batch_var)
             regret_est = net_regret.forward(batch_var)
             sigma_probs = sigma_logits.exp()

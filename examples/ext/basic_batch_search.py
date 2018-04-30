@@ -17,15 +17,22 @@ class Net(nn.Module):
         x = F.log_softmax(x, dim=1)
         return x
 
+rng = oz.Random(1)
+
 h = oz.make_leduk_history()
 enc = oz.LedukEncoder()
 
 bs = oz.BatchSearch(h, enc, 12)
 batch = bs.generate_batch()
-bigX = Variable(batch)
+
+while len(batch) == 0:
+    bs.step(torch.zeros(0), torch.zeros(0), rng)
+    batch = bs.generate_batch()
+
+batch.requires_grad = False
 
 model = Net(enc.encoding_size())
 
-logits = model.forward(bigX)
+logits = model.forward(batch)
 probs = logits.exp()
 print(probs)

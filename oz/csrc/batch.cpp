@@ -1,6 +1,7 @@
+#include "batch.h"
+
 #include <algorithm>
 #include <iterator>
-#include "batch.h"
 
 namespace oz {
 
@@ -37,40 +38,36 @@ bool search_needs_eval(const search_t &search) {
   );
 }
 
-static auto size0(const Tensor &x) {
-  return x.dim() <= 0 ? 0 : x.size(0);
-}
-
 static auto count_needs_eval(const search_list_t &searches_) {
   return count_if(begin(searches_), end(searches_), search_needs_eval);
 }
 
 auto batch_search_t::generate_batch() -> Tensor {
-  const auto N = static_cast<int>(searches_.size());
+  const auto N = count_needs_eval(searches_);
   const auto D = encoder_->encoding_size();
-  Tensor d = CPU(kFloat).zeros({ N, D });
+  Tensor d = zeros(torch::CPU(kFloat), { N, D });
 
-  int search_eval_n = 0;
+  int i = 0;
   for (const auto &search : searches_) {
     if (search_needs_eval(search)) {
-      int i = search_eval_n++;
-      encoder_->encode(search.infoset(), d[i]);
+      encoder_->encode(search.infoset(), d[i++]);
     }
   }
 
-  if (search_eval_n == 0) {
-    return CPU(kFloat).zeros(0);
-  }
-  else {
-    return d.narrow(0, 0, search_eval_n);
-  }
+  Ensures(i == N);
+
+  return d;
 }
 
 void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
-  Expects(count_needs_eval(searches_) == size0(avg));
-  Expects(size0(avg) == size0(regret));
+  auto N = count_needs_eval(searches_);
+  auto avg_size = avg.size(0);
+  auto regret_size = regret.size(0);
 
-  int search_eval_n = 0;
+  Expects(N == avg_size);
+  Expects(N == regret_size);
+
+  int i = 0;
   for (auto &search : searches_) {
     const auto &history = search.history();
     switch (search.state()) {
@@ -81,10 +78,11 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
       case oos_t::search_t::state_t::CREATE:
         {
           Expects(search_needs_eval(search));
-          const int i = search_eval_n++;
+          const int n = i++;
           const auto infoset = search.infoset();
-          const auto regrets = encoder_->decode(infoset, regret[i]);
-          const auto average_strategy = encoder_->decode(infoset, avg[i]);
+
+          const auto regrets = encoder_->decode(infoset, regret[n]);
+          const auto average_strategy = encoder_->decode(infoset, avg[n]);
 
           const auto regrets_map = node_t::regret_map_t(begin(regrets),
                                                         end(regrets));
@@ -104,9 +102,9 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
         }
         else {
           Expects(search_needs_eval(search));
-          const int i = search_eval_n++;
+          const int n = i++;
           const auto infoset = search.infoset();
-          const auto ap = encoder_->decode_and_sample(infoset, avg[i], rng);
+          const auto ap = encoder_->decode_and_sample(infoset, avg[n], rng);
           search.playout_step(ap);
         }
         break;
@@ -118,14 +116,13 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
       case oos_t::search_t::state_t::FINISHED:
         // TODO is there a better way to do this?
         auto last_player = search.search_player();
-        auto next_player = last_player == P1 ? P2 : P1;
+        auto next_player = (last_player == P1 ? P2 : P1);
         search = oos_t::search_t(root_, next_player);
         break;
     }
   }
 
-  Expects(search_eval_n == size0(regret));
-  Expects(search_eval_n == size0(avg));
+  Ensures(i == N);
 }
 
 } // namespace oz

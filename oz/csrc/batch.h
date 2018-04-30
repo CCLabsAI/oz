@@ -1,13 +1,13 @@
 #ifndef OZ_BATCH_H
 #define OZ_BATCH_H
 
-#include <vector>
-
-#include <ATen/ATen.h>
-
 #include "encoder.h"
 #include "oos.h"
 #include "games/leduk.h"
+
+#include <torch/torch.h>
+
+#include <vector>
 
 namespace oz {
 
