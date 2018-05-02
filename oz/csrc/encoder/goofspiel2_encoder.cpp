@@ -65,7 +65,7 @@ void goofspiel2_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
     }
   }
 
-  Ensures(pos == encoding_size());
+  Ensures(pos <= encoding_size());
 }
 
 auto goofspiel2_encoder_t::decode(oz::infoset_t infoset, Tensor x)

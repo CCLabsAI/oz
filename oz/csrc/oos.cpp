@@ -92,8 +92,6 @@ auto oos_t::search_t::sample_tree(const tree_t &tree,
     gamma = gamma_;
   }
 
-  Expects(!target_ || target_infoset_);
-
   // TODO cleanup this check is a bit fat
   const auto targets = (target_ && targeted_ && target_infoset_) ?
                        target_.target_actions(target_infoset_, history_) :

@@ -30,11 +30,13 @@ class batch_search_t final {
                  prob_t eps, prob_t delta, prob_t gamma);
 
   Tensor generate_batch();
-  void step(Tensor avg, Tensor regret, rng_t &rng);
+  void step(Tensor probs, rng_t &rng);
+  void step(rng_t &rng);
 
-  void retarget(infoset_t target_infoset);
+  void target(infoset_t target_infoset);
 
   const tree_t &tree() const { return tree_; }
+  prob_t avg_targeting_ratio() const { return avg_targeting_ratio_; }
 
  private:
   oos_t::search_t make_search(player_t search_player);
@@ -51,6 +53,9 @@ class batch_search_t final {
   prob_t eps_;
   prob_t delta_;
   prob_t gamma_;
+
+  int avg_targeting_ratio_N_;
+  prob_t avg_targeting_ratio_;
 };
 
 };

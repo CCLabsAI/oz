@@ -19,6 +19,7 @@ using at::Tensor;
 
 class goofspiel2_encoder_t final : public encoder_t {
  public:
+  // TODO rework this so it can pull n_cards from the game being encoded
   goofspiel2_encoder_t(int n_cards): n_cards_(n_cards) { };
 
   int encoding_size() override;
