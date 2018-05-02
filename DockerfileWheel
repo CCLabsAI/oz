@@ -1,0 +1,20 @@
+FROM gcr.io/ornate-axiom-187403/pytorch:0.4.0.2
+
+RUN mkdir -p /app
+COPY ./oz /app/oz
+COPY ./cmake /app/cmake
+COPY ./lib /app/lib
+COPY ./tests /app/tests
+COPY ./tools /app/tools
+COPY ./Makefile /app/Makefile
+COPY ./setup.py /app/setup.py
+COPY ./CMakeLists.txt /app/CMakeLists.txt
+
+
+
+WORKDIR /app
+
+VOLUME /app/dist
+# CMD ["python", "setup.py", "build", "--debug", "develop"]
+# CMD ["python", "setup.py", "bdist"]
+CMD ["python", "setup.py", "bdist_wheel"]
