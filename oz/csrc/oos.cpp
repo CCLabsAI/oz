@@ -94,7 +94,8 @@ auto oos_t::search_t::sample_tree(const tree_t &tree,
 
   Expects(!target_ || target_infoset_);
 
-  const auto targets = (target_ && targeted_) ?
+  // TODO cleanup this check is a bit fat
+  const auto targets = (target_ && targeted_ && target_infoset_) ?
                        target_.target_actions(target_infoset_, history_) :
                        set<action_t> { };
 
@@ -140,46 +141,41 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
 }
 
 void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
-  Expects(state_ == state_t::CREATE);
   Expects(history_.player() != CHANCE);
   Expects(!history_.is_terminal());
 
   const auto infoset = history_.infoset();
-  tree.create_node(infoset);
+  auto node = node_t(infoset.actions());
 
-  const auto r = sample_tree(tree, infoset, rng);
-  Expects(!r.out_of_tree);
-
-  tree_step(r.ap, infoset);
-
-  if (history_.is_terminal()) {
-    prepare_suffix_probs();
-    state_ = state_t::BACKPROP;
-  }
-  else {
-    state_ = state_t::PLAYOUT;
-  }
-
-  Ensures(state_ == state_t::PLAYOUT || state_ == state_t::BACKPROP);
+  insert_node_step(tree, infoset, node, rng);
 }
 
-  // TODO remove all this duplication
-void oos_t::search_t::create_prior(tree_t& tree,
+void oos_t::search_t::create_prior(tree_t &tree,
                                    node_t::regret_map_t regrets,
                                    node_t::avg_map_t average_strategy,
                                    rng_t &rng)
 {
-  Expects(state_ == state_t::CREATE);
   Expects(history_.player() != CHANCE);
   Expects(!history_.is_terminal());
 
   const auto infoset = history_.infoset();
-  auto &nodes = tree.nodes();
 
   auto node = node_t(infoset.actions());
+
   node.regrets_ = move(regrets);
   node.average_strategy_ = move(average_strategy);
 
+  insert_node_step(tree, infoset, node, rng);
+}
+
+void oos_t::search_t::insert_node_step(tree_t &tree,
+                                       const infoset_t &infoset,
+                                       const node_t &node,
+                                       rng_t &rng)
+{
+  Expects(state_ == state_t::CREATE);
+
+  auto &nodes = tree.nodes();
   nodes.emplace(infoset, node);
 
   const auto r = sample_tree(tree, infoset, rng);

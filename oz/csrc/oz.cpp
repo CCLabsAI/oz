@@ -242,7 +242,9 @@ void bind_oz(py::module &m) {
       .def(py::init<int>());
 
   py::class_<batch_search_t>(m, "BatchSearch")
-      .def(py::init<history_t, std::shared_ptr<encoder_t>, int>())
+      .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
+      .def(py::init<int, history_t, std::shared_ptr<encoder_t>, target_t,
+                    prob_t, prob_t, prob_t>())
       .def("generate_batch", &batch_search_t::generate_batch)
       .def("step", &batch_search_t::step)
       .def_property_readonly("tree", &batch_search_t::tree);

@@ -339,6 +339,11 @@ class oos_t final {
                                      const infoset_t &infoset,
                                      rng_t &rng) const;
 
+    void insert_node_step(tree_t &tree,
+                          const infoset_t &infoset,
+                          const node_t &node,
+                          rng_t &rng);
+
     struct prefix_prob_t {
       prob_t pi_i = 1.0;  // reach probability for search player to current history
       prob_t pi_o = 1.0;  // reach probability for opponent player and chance

@@ -3,28 +3,61 @@
 #include <algorithm>
 #include <iterator>
 
+#include <boost/container/pmr/global_resource.hpp>
+
 namespace oz {
 
 using namespace std;
 using namespace at;
 
-using search_list_t = batch_search_t::search_list_t;
 using search_t = oos_t::search_t;
+using search_list_t = batch_search_t::search_list_t;
 
-batch_search_t::batch_search_t(history_t root,
+using boost::container::pmr::new_delete_resource;
+
+auto batch_search_t::make_search(player_t search_player) -> search_t {
+  return {
+    root_, search_player,
+    target_, target_infoset_,
+    new_delete_resource(),
+    eps_, delta_, gamma_
+  };
+}
+
+batch_search_t::batch_search_t(int batch_size,
+                               history_t root,
+                               encoder_ptr_t encoder) :
+  batch_search_t(batch_size,
+                 move(root), move(encoder),
+                 null_target(),
+                 0.4, 0.9, 0.01)
+{ }
+
+batch_search_t::batch_search_t(int batch_size,
+                               history_t root,
                                encoder_ptr_t encoder,
-                               int batch_size) :
+                               target_t target,
+                               prob_t eps, prob_t delta, prob_t gamma) :
+    batch_size_(batch_size),
     root_(move(root)),
     encoder_(move(encoder)),
-    batch_size_(batch_size)
+    target_(target),
+    target_infoset_(null_infoset()),
+    eps_(eps),
+    delta_(delta),
+    gamma_(gamma)
 {
   auto player = P1;
 
   generate_n(back_inserter(searches_), batch_size_, [&]() {
     const auto search_player = player;
     player = (player == P1 ? P2 : P1);
-    return search_t { root_, search_player };
+    return make_search(search_player);
   });
+}
+
+void batch_search_t::retarget(infoset_t target_infoset) {
+  target_infoset_ = move(target_infoset);
 }
 
 bool search_needs_eval(const search_t &search) {
@@ -60,6 +93,8 @@ auto batch_search_t::generate_batch() -> Tensor {
 }
 
 void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
+  using state_t = search_t::state_t;
+
   auto N = count_needs_eval(searches_);
   auto avg_size = avg.size(0);
   auto regret_size = regret.size(0);
@@ -71,11 +106,11 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
   for (auto &search : searches_) {
     const auto &history = search.history();
     switch (search.state()) {
-      case oos_t::search_t::state_t::SELECT:
+      case state_t::SELECT:
         search.select(tree_, rng);
         break;
 
-      case oos_t::search_t::state_t::CREATE:
+      case state_t::CREATE:
         {
           Expects(search_needs_eval(search));
           const int n = i++;
@@ -95,7 +130,7 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
         }
         break;
 
-      case oos_t::search_t::state_t::PLAYOUT:
+      case state_t::PLAYOUT:
         if (history.player() == CHANCE) {
           auto ap = history.sample_chance(rng);
           search.playout_step(ap);
@@ -109,15 +144,14 @@ void batch_search_t::step(Tensor avg, Tensor regret, rng_t &rng) {
         }
         break;
 
-      case oos_t::search_t::state_t::BACKPROP:
+      case state_t::BACKPROP:
         search.backprop(tree_);
         break;
 
-      case oos_t::search_t::state_t::FINISHED:
-        // TODO is there a better way to do this?
+      case state_t::FINISHED:
         auto last_player = search.search_player();
         auto next_player = (last_player == P1 ? P2 : P1);
-        search = oos_t::search_t(root_, next_player);
+        search = make_search(next_player);
         break;
     }
   }
