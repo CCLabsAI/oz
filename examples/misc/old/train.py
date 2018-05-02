@@ -42,7 +42,7 @@ enc = oz.LedukEncoder()
 rng = oz.Random(1)
 
 search_size = 50
-bs = oz.BatchSearch(root, enc, search_size)
+bs = oz.BatchSearch(search_size, root, enc)
 ex = 100
 batch = None
 
