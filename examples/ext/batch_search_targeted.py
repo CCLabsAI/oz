@@ -19,14 +19,14 @@ class Net(nn.Module):
 
 rng = oz.Random()
 
-# n_cards = 13
-# history = oz.make_goofspiel2_history(n_cards)
-# encoder = oz.make_goofspiel2_encoder(n_cards)
-# target  = oz.make_goofspiel2_target()
+n_cards = 6
+history = oz.make_goofspiel2_history(n_cards)
+encoder = oz.make_goofspiel2_encoder(n_cards)
+target  = oz.make_goofspiel2_target()
 
-history = oz.make_leduk_history()
-encoder = oz.make_leduk_encoder()
-target  = oz.make_leduk_target()
+# history = oz.make_leduk_history()
+# encoder = oz.make_leduk_encoder()
+# target  = oz.make_leduk_target()
 
 model = Net(input_size=encoder.encoding_size(),
             hidden_size=25,
@@ -46,14 +46,14 @@ while not history.is_terminal():
 
         for i in range(10000):
             batch = bs.generate_batch()
-            batch.requires_grad = False
 
             if len(batch) == 0:
                 bs.step(rng)
             else:
-                logits = model.forward(batch)
-                probs = logits.exp()
-                bs.step(probs, rng)
+                with torch.no_grad():
+                    logits = model.forward(batch)
+                    probs = logits.exp()
+                    bs.step(probs, rng)
 
         tree = bs.tree
         sigma = tree.sigma_average()
