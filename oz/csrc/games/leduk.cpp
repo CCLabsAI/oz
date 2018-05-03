@@ -263,11 +263,8 @@ auto leduk_poker_t::chance_actions(action_prob_allocator_t alloc) const
   return { };
 }
 
-auto leduk_poker_t::chance_actions() const
-  -> action_prob_map_t
-{
-  action_prob_allocator_t alloc;
-  return leduk_poker_t::chance_actions(alloc);
+auto leduk_poker_t::chance_actions() const -> action_prob_map_t {
+  return leduk_poker_t::chance_actions({ });
 }
 
 auto leduk_poker_t::infoset_t::actions() const -> actions_list_t {

@@ -1,7 +1,7 @@
 import torch
 import math
 
-class Resevoir:
+class Reservoir:
     def __init__(self, sample_size):
         self.n = 0
         self.data = torch.zeros(sample_size)
@@ -27,7 +27,7 @@ class Resevoir:
         return self.data[:self.n]
 
 # reference: http://www.aclweb.org/anthology/P14-2112
-class ExponentialResevoir(Resevoir):
+class ExponentialReservoir(Reservoir):
     def __init__(self, sample_size, beta_ratio):
         super().__init__(sample_size)
         k = sample_size[0]
@@ -43,12 +43,12 @@ class ExponentialResevoir(Resevoir):
 
 
 if __name__ == "__main__":
-    r = Resevoir([10, 3])
+    r = Reservoir([10, 3])
     for i in range(1000):
         r.add(torch.full([3], i))
     print(r.sample())
 
-    er = ExponentialResevoir([8, 2, 2], 10.0)
+    er = ExponentialReservoir([8, 2, 2], 10.0)
     for i in range(1000):
         er.add(torch.full([2, 2], i))
     print(er.sample())
