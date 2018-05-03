@@ -221,7 +221,6 @@ class sigma_average_t final : public sigma_t::concept_t {
   const tree_t &tree_;
 };
 
-static_assert(std::numeric_limits<prob_t>::has_signaling_NaN);
 static constexpr prob_t NaN = std::numeric_limits<prob_t>::signaling_NaN();
 
 class oos_t final {
