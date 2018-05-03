@@ -35,13 +35,15 @@ target  = oz.make_leduk_target()
 # target  = oz.make_goofspiel2_target()
 
 hidden_size = 25
-search_batch_size = 40
+search_batch_size = 50
 eps = 0.1
 delta = 0.9
 gamma = 0.01
 learning_rate = 1e-3
-n_simulation_iter = 1000
+n_simulation_iter = 10000
 beta_ratio = 2.0
+reservoir_size = 4096
+train_iter = 64
 
 model = Net(input_size=encoder.encoding_size(),
             hidden_size=hidden_size,
@@ -158,14 +160,12 @@ def pr_nn(infoset, action):
 sigma_nn = oz.make_py_sigma(pr_nn)
 
 def run_trainer_reservoir(trainer, n_iter):
-    reservoir_size = 4096
     encoding_size = trainer.encoder.encoding_size()
     max_actions = trainer.encoder.max_actions()
     size = [reservoir_size, encoding_size + max_actions]
     reservoir = oz.reservoir.ExponentialReservoir(
                     sample_size=size,
                     beta_ratio=beta_ratio)
-    train_iter = 64
 
     for i in range(n_iter):
         for j in range(train_iter):
