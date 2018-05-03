@@ -30,7 +30,7 @@ class OOSPlayer:
 
 class TargetedOOSPlayer(OOSPlayer):
     def __init__(self, history_root, target, **kwargs):
-        super(TargetedOOSPlayer, self).__init__(history_root, **kwargs)
+        super().__init__(history_root, **kwargs)
         self.target = target
 
     def think(self, infoset, rng):
