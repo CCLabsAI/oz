@@ -4,6 +4,8 @@ ARG wheel_filename
 
 RUN mkdir -p /app
 
+#RUN pip install package
+
 COPY ./dist/*.whl /app/
 COPY ./examples /app/examples
 
@@ -11,9 +13,7 @@ WORKDIR /app
 
 #CMD ["pip", "install", "oz-0.0.1-cp36-cp36m-linux_x86_64.whl"]
 #CMD ["python", "./examples/misc/test.py"]
-
-
 #RUN pip install oz-0.0.1-cp36-cp36m-linux_x86_64.whl
-RUN pip install ${wheel_filename}
 
+RUN pip install ${wheel_filename}
 CMD ["python", "./examples/misc/test.py", "--game", "goofspiel", "--goofcards=6", "--p1", "oos_targeted", "--p2", "random", "--iter1", "100", "--iter2", "0", "--eps", "0.4", "--delta", "0.9", "--gamma=0.01"]
