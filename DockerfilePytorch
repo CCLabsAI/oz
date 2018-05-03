@@ -16,4 +16,4 @@ WORKDIR /app
 #RUN pip install oz-0.0.1-cp36-cp36m-linux_x86_64.whl
 
 RUN pip install ${wheel_filename}
-CMD ["python", "./examples/misc/test_iters.py", "--game", "goofspiel", "--goofcards=6", "--p1", "oos_targeted", "--p2", "random", "--iter1", "100", "--eps", "0.4", "--delta", "0.9", "--gamma=0.01"]
+CMD ["python", "./examples/misc/test_iters.py", "--game", "goofspiel", "--goofcards=6", "--p1", "oos_targeted", "--p2", "random", "--iter1", "1000", "--eps", "0.4", "--delta", "0.9", "--gamma=0.01"]
