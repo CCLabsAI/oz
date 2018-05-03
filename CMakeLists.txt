@@ -15,8 +15,10 @@ add_compile_options("-fvisibility=hidden")
 
 # NB fast changes results, due to floating point optimizations
 # set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG")
+# TODO move critical correctness checks out of asserts?
+# set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 
 set(CMAKE_C_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
