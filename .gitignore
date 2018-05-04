@@ -1,3 +1,6 @@
 _ext*.so
 dist/
+.history/
+.vscode
 build/
+Release/

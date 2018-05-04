@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.5)
 project(oz LANGUAGES C CXX)
 
 add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
@@ -6,7 +6,7 @@ add_subdirectory("lib/pybind11" EXCLUDE_FROM_ALL)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include(CheckIPOSupported)
+#include(CheckIPOSupported)
 
 add_compile_options("-Wall")
 
@@ -109,12 +109,12 @@ pybind11_add_module(_ext
 
 target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
 
-check_ipo_supported(RESULT result)
-if(result)
-  set_property(TARGET boost_container PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-  set_property(TARGET solve_leduk PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-  set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif()
+#check_ipo_supported(RESULT result)
+#if(result)
+  #set_property(TARGET boost_container PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  #set_property(TARGET solve_leduk PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  #set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+#endif()
 
 target_link_libraries(tests PRIVATE boost_container)
 target_link_libraries(solve_leduk PRIVATE boost_container)
