@@ -49,7 +49,7 @@ void oos_t::search_t::tree_step(action_prob_t ap) {
   tree_step(ap, infoset);
 }
 
-static const bool is_znormal(prob_t x) {
+static const bool is_normal(prob_t x) {
     switch(std::fpclassify(x)) {
         case FP_INFINITE:  return false;
         case FP_NAN:       return false;
@@ -66,12 +66,12 @@ void oos_t::search_t::tree_step(action_prob_t ap, const infoset_t &infoset) {
 
   // TODO does a zero pr_a make sense here?
   Expects(0 <= ap.pr_a && ap.pr_a <= 1);
-  Expects(0 < ap.rho1 && ap.rho1 <= 1);
-  Expects(0 < ap.rho2 && ap.rho2 <= 1);
+  Expects(0 <  ap.rho1 && ap.rho1 <= 1);
+  Expects(0 <  ap.rho2 && ap.rho2 <= 1);
 
-  Expects(is_znormal(ap.pr_a));
-  Expects(is_znormal(ap.rho1));
-  Expects(is_znormal(ap.rho1));
+  Expects(is_normal(ap.pr_a));
+  Expects(is_normal(ap.rho1));
+  Expects(is_normal(ap.rho1));
 
   const auto acting_player = history_.player();
 
@@ -287,6 +287,25 @@ void oos_t::search_t::backprop(tree_t& tree) {
   state_ = state_t::FINISHED;
 }
 
+prob_t oos_t::search_t::targeting_ratio() const {
+  auto r = prefix_prob_.s2 / prefix_prob_.s1;
+  Ensures(r > 0);
+  Ensures(is_normal(r));
+  return r;
+};
+
+void oos_t::search_t::set_initial_weight(prob_t w) {
+  Expects(0 < w);
+  Expects(is_normal(w));
+
+  prefix_prob_.s1 = w;
+  prefix_prob_.s2 = w;
+}
+
+auto oos_t::search_t::get_allocator() const -> allocator_type {
+  return path_.get_allocator().resource();
+}
+
 auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const
   -> action_prob_t
 {
@@ -420,8 +439,8 @@ static auto sample_targeted(sigma_regret_t sigma,
 
   // TODO does it makes sense for pr_a to be zero?
   Ensures(0 <= pr_a && pr_a <= 1);
-  Ensures(0 < rho1 && rho1 <= 1);
-  Ensures(0 < rho2 && rho2 <= 1);
+  Ensures(0 <  rho1 && rho1 <= 1);
+  Ensures(0 <  rho2 && rho2 <= 1);
   Ensures(!targeted || rho2 - rho1 < 1e-6);
 
   return { a, pr_a, rho1, rho2 };
