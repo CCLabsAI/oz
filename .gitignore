@@ -2,3 +2,5 @@ _ext*.so
 dist/
 .history/
 .vscode
+cclabs.gcp.json
+tests/storage/__pycache__
