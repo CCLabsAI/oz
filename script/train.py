@@ -120,6 +120,9 @@ class Trainer:
         self.encoder.encode(infoset, infoset_encoding)
         self.encoder.encode_sigma(infoset, sigma, action_probs)
 
+        # avg_targeting_ratio = trainer.batch_search.avg_targeting_ratio
+        # print("avg target ratio: {:.5f}".format(avg_targeting_ratio))
+
         # print(trainer.history)
         # print(infoset_encoding, action_probs)
 
@@ -147,6 +150,7 @@ trainer = Trainer(history=history,
                   criterion=criterion,
                   rng=rng, n_simulation_iter=n_simulation_iter)
 
+
 # TODO make this more efficient
 def pr_nn(infoset, action):
     enc = trainer.encoder
@@ -157,7 +161,9 @@ def pr_nn(infoset, action):
     m = enc.decode(infoset, sigma_pr.data[0])
     return m[action]
 
+
 sigma_nn = oz.make_py_sigma(pr_nn)
+
 
 def run_trainer_reservoir(trainer, n_iter):
     encoding_size = trainer.encoder.encoding_size()

@@ -29,7 +29,7 @@ using var_t = bitset<MAX_CARDS>;
 
 static_assert(goofspiel2_t::MAX_CARDS <= MAX_CARDS, "MAX_CARDS not large enough");
 
-static inline int unset_lsb(int x) {
+static inline unsigned int unset_lsb(unsigned int x) {
   return x & (x-1);
 }
 
@@ -101,11 +101,11 @@ static auto playable(const int turn,
 
     // find and propagate hall sets
     // 1) loop through all ranges
-    uint32_t a, av = hand_bits.to_ulong();
+    int a; unsigned int av = hand_bits.to_ulong();
     while ((a = __builtin_ffs(av))) {
       av = unset_lsb(av);
 
-      uint32_t b, bv = av;
+      int b; unsigned int bv = av;
       while ((b = __builtin_ffs(bv))) {
         bv = unset_lsb(bv);
 
@@ -114,10 +114,10 @@ static auto playable(const int turn,
           if ((a-1) <= n && n <= (b-1)) range_bits[n] = hand_bits[n];
         }
 
-        int range_size = range_bits.count();
+        size_t range_size = range_bits.count();
 
         // 2) count the number of vars fully contained in this range
-        int count_in_range = 0;
+        size_t count_in_range = 0;
         for (int i = 0; i < n_vars; i++) {
           if ((var[i] & ~range_bits) == 0) count_in_range++;
         }
