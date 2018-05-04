@@ -3,3 +3,4 @@ dist/
 .history/
 .vscode
 build/
+Release/
