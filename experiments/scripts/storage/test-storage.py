@@ -1,0 +1,40 @@
+from google.cloud import storage
+from oauth2client.service_account import ServiceAccountCredentials
+import os
+import time
+import sys
+
+print(sys.argv)
+
+def save_string_bunket(configFile, resultFile):
+    timestr = time.strftime("%d-%m-%Y_%H-%M-%S")
+    Client = storage.Client()
+    client = Client.from_service_account_json(configFile)
+    bucket = client.get_bucket('oz-results')
+    blob = bucket.blob('test-result-{}.txt'.format(timestr))
+    with open(resultFile, 'rb') as my_file:
+        blob.upload_from_file(my_file)
+
+
+i = 0
+config_file=''
+send_file=''
+while i < len(sys.argv):
+    if sys.argv[i] == "-c":
+        try:
+            config_file=sys.argv[i + 1]
+        except IndexError:
+            pass
+    if sys.argv[i] == "-f":
+        try:
+            send_file=sys.argv[i + 1]
+        except IndexError:
+            pass
+    i += 1
+
+if config_file != '' and send_file != '':
+    print(config_file)
+    print(send_file)
+    save_string_bunket(config_file, send_file)
+else:
+    print ("-p or -f arguments were missed"  )

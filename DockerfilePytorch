@@ -1,19 +1,17 @@
 FROM gcr.io/ornate-axiom-187403/pytorch:0.4.0.2
 
 ARG wheel_filename
+ENV N_CORE=32
 
 RUN mkdir -p /app
-
-RUN pip install --upgrade pip
+RUN mkdir -p /app/output
 
 COPY ./dist/*.whl /app/
 COPY ./examples /app/examples
-
+COPY ./experiments /app/experiments
+RUN chmod -R 777 /app/experiments/*
 WORKDIR /app
 
-#CMD ["pip", "install", "oz-0.0.1-cp36-cp36m-linux_x86_64.whl"]
-#CMD ["python", "./examples/misc/test.py"]
-#RUN pip install oz-0.0.1-cp36-cp36m-linux_x86_64.whl
-
 RUN pip install ${wheel_filename}
-CMD ["python", "./examples/misc/test_iters.py", "--game", "goofspiel", "--goofcards=6", "--p1", "oos_targeted", "--p2", "random", "--iter1", "1000", "--eps", "0.4", "--delta", "0.9", "--gamma=0.01"]
+RUN pip install google-cloud-storage
+RUN pip install oauth2client

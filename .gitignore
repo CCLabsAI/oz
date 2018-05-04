@@ -1,6 +1,10 @@
 _ext*.so
 dist/
-.history/
-.vscode
 build/
-Release/
+release/
+
+.history/
+.vscode/
+
+cclabs.gcp.json
+__pycache__
