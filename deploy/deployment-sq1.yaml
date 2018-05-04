@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+# kind: Deployment
+kind: Pod
+metadata:
+  name: oz-test-pod
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        context: microservices
+        service: oz-test
+    spec:
+      containers:
+        - name: oz-test
+          image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.3
+          imagePullPolicy: Always
+          env:
+            - name: GIT_HASH
+              value: PROD
+            - name: SCRIPT_NAME
+              value: sq1
+          # ports:
+          #   - containerPort: 14000
+          resources:
+            requests:
+              cpu: 31
+          volumeMounts:
+            - mountPath: /oz-test-logs
+              name: logs
+      volumes:
+        - name: logs
+          emptyDir: {}
+        
