@@ -2,6 +2,7 @@ import sys
 import random
 from copy import copy
 import argparse
+import subprocess
 
 import oz
 
@@ -94,6 +95,7 @@ def play_matches(n_matches, make_players, h, rng):
     for i in range(n_matches):
         player1, player2 = make_players()
         u = play_match(h, player1, player2, rng)
+        print("Results:", int(u))
         utilities.append(u)
         print(u)
     return utilities
@@ -126,6 +128,8 @@ def main():
                         default=0.01)
 
     args = parser.parse_args()
+    #label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+    #print(label)
 
     history = None
     target = None
@@ -170,6 +174,15 @@ def main():
 
     rng = oz.Random()
     utilities = play_matches(args.matches, make_players, history, rng)
+    print("N ", args.matches)
+    print("Players", args.p1, args.p2)
+    print("epsilon:", args.eps)
+    print("delta:", args.delta)
+    print("gamma:", args.gamma)
+
+
+
+
 
     # print(utilities)
     # print(sum(utilities)/len(utilities))
