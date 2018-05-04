@@ -221,7 +221,6 @@ class sigma_average_t final : public sigma_t::concept_t {
   const tree_t &tree_;
 };
 
-static_assert(std::numeric_limits<prob_t>::has_signaling_NaN);
 static constexpr prob_t NaN = std::numeric_limits<prob_t>::signaling_NaN();
 
 class oos_t final {
@@ -338,6 +337,11 @@ class oos_t final {
     tree_t::sample_ret_t sample_tree(const tree_t &tree,
                                      const infoset_t &infoset,
                                      rng_t &rng) const;
+
+    void insert_node_step(tree_t &tree,
+                          const infoset_t &infoset,
+                          const node_t &node,
+                          rng_t &rng);
 
     struct prefix_prob_t {
       prob_t pi_i = 1.0;  // reach probability for search player to current history

@@ -27,7 +27,11 @@ static auto other_player(player_t p) -> player_t {
 static constexpr int MAX_CARDS = std::numeric_limits<unsigned int>::digits;
 using var_t = bitset<MAX_CARDS>;
 
-static_assert(goofspiel2_t::MAX_CARDS <= MAX_CARDS);
+static_assert(goofspiel2_t::MAX_CARDS <= MAX_CARDS, "MAX_CARDS not large enough");
+
+static inline int unset_lsb(int x) {
+  return x & (x-1);
+}
 
 static auto playable(const int turn,
                      const goofspiel2_t::hand_t &hand,
@@ -43,7 +47,7 @@ static auto playable(const int turn,
   // with the Leconte algorithm and the idea of hall sets
   // https://people.eng.unimelb.edu.au/pstuckey/papers/alldiff.pdf
   // https://en.wikipedia.org/wiki/AC-3_algorithm
-  // It's fairly specialised to this problem.
+  // It's fairly specialized to this problem.
   // NB. we only require "range consistency" because all
   // our constraints are essentially ranges.
 
@@ -97,14 +101,17 @@ static auto playable(const int turn,
 
     // find and propagate hall sets
     // 1) loop through all ranges
-    for (int a = 0; a < n_cards; a++) {
-      if (!hand_bits[a]) continue;
-      for (int b = a + 1; b < n_cards; b++) {
-        if (!hand_bits[b]) continue;
+    uint32_t a, av = hand_bits.to_ulong();
+    while ((a = __builtin_ffs(av))) {
+      av = unset_lsb(av);
+
+      uint32_t b, bv = av;
+      while ((b = __builtin_ffs(bv))) {
+        bv = unset_lsb(bv);
 
         var_t range_bits;
         for (int n = 0; n < n_cards; n++) {
-          if (a <= n && n <= b) range_bits[n] = hand_bits[n];
+          if ((a-1) <= n && n <= (b-1)) range_bits[n] = hand_bits[n];
         }
 
         int range_size = range_bits.count();

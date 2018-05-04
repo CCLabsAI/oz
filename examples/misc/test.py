@@ -7,7 +7,7 @@ import subprocess
 import oz
 
 class OOSPlayer:
-    def __init__(self, history_root, eps=0.4, delta=0.9, gamma=0.01, n_iter=10000):
+    def __init__(self, history_root, n_iter, eps, delta, gamma):
         self.history_root = copy(history_root)
         self.tree = oz.Tree()
         self.oos = oz.OOS()
@@ -31,7 +31,7 @@ class OOSPlayer:
 
 class TargetedOOSPlayer(OOSPlayer):
     def __init__(self, history_root, target, **kwargs):
-        super(TargetedOOSPlayer, self).__init__(history_root, **kwargs)
+        super().__init__(history_root, **kwargs)
         self.target = target
 
     def think(self, infoset, rng):
@@ -149,13 +149,15 @@ def main():
             return UniformRandomPlayer()
 
         elif algo == 'oos':
-            return OOSPlayer(history, n_iter=n_iter,
+            return OOSPlayer(history,
+                             n_iter=n_iter,
                              eps=args.eps,
                              delta=args.delta,
                              gamma=args.gamma)
 
         elif algo == 'oos_targeted':
-            return TargetedOOSPlayer(history, target, n_iter=n_iter,
+            return TargetedOOSPlayer(history, target,
+                                     n_iter=n_iter,
                                      eps=args.eps,
                                      delta=args.delta,
                                      gamma=args.gamma)

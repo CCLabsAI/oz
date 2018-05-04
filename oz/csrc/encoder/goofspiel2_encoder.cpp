@@ -43,7 +43,7 @@ void goofspiel2_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
   Expects(n_bids == n_wins);
 
   x.zero_();
-  auto x_a = x.accessor<float, 1>();
+  auto x_a = x.accessor<nn_real_t, 1>();
 
   for (int n = 0; n < n_bids; n++) {
     const int card_idx = bids[n];
@@ -65,8 +65,22 @@ void goofspiel2_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
     }
   }
 
-  Ensures(pos == encoding_size());
+  Ensures(pos <= encoding_size());
 }
+
+void goofspiel2_encoder_t::encode_sigma(infoset_t infoset,
+                                        sigma_t sigma, Tensor x)
+{
+  const auto actions = infoset.actions();
+  auto x_a = x.accessor<nn_real_t, 1>();
+
+  x.zero_();
+  for (const auto &action : actions) {
+    const int a_goof = action.cast<goofspiel2_t::action_t>();
+    x_a[a_goof] = sigma.pr(infoset, action);
+  }
+}
+
 
 auto goofspiel2_encoder_t::decode(oz::infoset_t infoset, Tensor x)
   -> map<oz::action_t, prob_t>
@@ -74,7 +88,7 @@ auto goofspiel2_encoder_t::decode(oz::infoset_t infoset, Tensor x)
   // TODO remove duplication
   const auto actions = infoset.actions();
   auto m = map<oz::action_t, prob_t>();
-  auto x_a = x.accessor<float, 1>();
+  auto x_a = x.accessor<nn_real_t, 1>();
 
   for (const auto &action : actions) {
     const int a_goof = action.cast<goofspiel2_t::action_t>();
@@ -95,7 +109,7 @@ auto goofspiel2_encoder_t::decode_and_sample(oz::infoset_t infoset,
   const auto actions = infoset.actions();
   auto weights = vector<prob_t>(actions.size());
 
-  auto x_a = x.accessor<float, 1>();
+  auto x_a = x.accessor<nn_real_t, 1>();
 
   transform(begin(actions), end(actions), begin(weights),
             [&](const oz::action_t &action) -> prob_t {
@@ -114,7 +128,8 @@ auto goofspiel2_encoder_t::decode_and_sample(oz::infoset_t infoset,
   auto pr_a = weights[i]/total;
   auto rho1 = pr_a, rho2 = pr_a;
 
-  Ensures(total >= 0);
+  // TODO what if all the weights are 0?
+  Ensures(total > 0);
   Ensures(pr_a >= 0 && pr_a <= 1);
 
   return { a, pr_a, rho1, rho2 };

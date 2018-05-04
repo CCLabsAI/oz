@@ -230,22 +230,34 @@ void bind_oz(py::module &m) {
           .def("encoding_size", &encoder_t::encoding_size)
           .def("max_actions", &encoder_t::max_actions)
           .def("encode", &encoder_t::encode)
+          .def("encode_sigma", &encoder_t::encode_sigma)
           .def("decode", &encoder_t::decode)
           .def("decode_and_sample", &encoder_t::decode_and_sample);
 
   py::class_<leduk_encoder_t,
-             std::shared_ptr<leduk_encoder_t>>(m, "LedukEncoder", py_Encoder)
-      .def(py::init<>());
+             std::shared_ptr<leduk_encoder_t>>(m, "LedukEncoder", py_Encoder);
 
   py::class_<goofspiel2_encoder_t,
-             std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder)
-      .def(py::init<int>());
+             std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder);
 
   py::class_<batch_search_t>(m, "BatchSearch")
-      .def(py::init<history_t, std::shared_ptr<encoder_t>, int>())
+      .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
+      .def(py::init<int, history_t, std::shared_ptr<encoder_t>, target_t,
+                    prob_t, prob_t, prob_t>(),
+           py::arg("batch_size"),
+           py::arg("history"),
+           py::arg("encoder"),
+           py::arg("target"),
+           py::arg("eps"),
+           py::arg("delta"),
+           py::arg("gamma"))
       .def("generate_batch", &batch_search_t::generate_batch)
-      .def("step", &batch_search_t::step)
-      .def_property_readonly("tree", &batch_search_t::tree);
+      .def("step", (void (batch_search_t::*)(at::Tensor probs, rng_t &rng)) &batch_search_t::step)
+      .def("step", (void (batch_search_t::*)(rng_t &rng)) &batch_search_t::step)
+      .def("target", &batch_search_t::target)
+      .def_property_readonly("tree", &batch_search_t::tree)
+      .def_property_readonly("avg_targeting_ratio",
+                             &batch_search_t::avg_targeting_ratio);
 
   m.def("make_flipguess", []() {
     return flipguess_t();
@@ -271,6 +283,10 @@ void bind_oz(py::module &m) {
     return make_history<leduk_poker_t>();
   });
 
+  m.def("make_leduk_encoder", []() {
+    return std::make_shared<leduk_encoder_t>();
+  });
+
   m.def("make_leduk_target", []() {
     return make_target<leduk_target_t>();
   });
@@ -285,6 +301,10 @@ void bind_oz(py::module &m) {
 
   m.def("make_goofspiel2_target", []() {
     return make_target<goofspiel2_target_t>();
+  });
+
+  m.def("make_goofspiel2_encoder", [](int n) {
+    return std::make_shared<goofspiel2_encoder_t>(n);
   });
 
 }

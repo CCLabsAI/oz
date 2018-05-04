@@ -22,7 +22,7 @@ rng = oz.Random(1)
 h = oz.make_leduk_history()
 enc = oz.LedukEncoder()
 
-bs = oz.BatchSearch(h, enc, 12)
+bs = oz.BatchSearch(12, h, enc)
 batch = bs.generate_batch()
 
 while len(batch) == 0:

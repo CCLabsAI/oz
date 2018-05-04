@@ -28,6 +28,14 @@ auto goofspiel2_t::infoset() const -> oz::infoset_t {
   return make_infoset<infoset_t>(player_, hand(player_), bids(player_), wins_);
 }
 
+auto goofspiel2_t::infoset(oz::infoset_t::allocator_t alloc) const
+  -> oz::infoset_t
+{
+  Expects(player() != CHANCE);
+  return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
+               (alloc, player_, hand(player_), bids(player_), wins_);
+};
+
 auto goofspiel2_t::utility(player_t p) const -> value_t {
   Expects(is_terminal());
   value_t u;

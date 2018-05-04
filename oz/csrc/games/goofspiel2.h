@@ -71,6 +71,8 @@ class goofspiel2_t final : public game_t {
     return std::make_unique<goofspiel2_t>(*this);
   }
 
+  oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;
+
   string str() const override;
 
   hand_t &hand(player_t p) {
