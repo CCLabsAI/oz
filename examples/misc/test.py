@@ -113,7 +113,7 @@ def main():
                         default=1000)
     parser.add_argument("--matches", type=int,
                         help="number of matches to play",
-                        default=10)
+                        default=80)
     parser.add_argument("--goofcards", type=int,
                         help="number of cards for II Goofspiel",
                         default=6)
