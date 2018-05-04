@@ -25,22 +25,22 @@ class Net(nn.Module):
 
 rng = oz.Random(1)
 
-history = oz.make_leduk_history()
-encoder = oz.make_leduk_encoder()
-target  = oz.make_leduk_target()
+# history = oz.make_leduk_history()
+# encoder = oz.make_leduk_encoder()
+# target  = oz.make_leduk_target()
 
-# n_cards = 6
-# history = oz.make_goofspiel2_history(n_cards)
-# encoder = oz.make_goofspiel2_encoder(n_cards)
-# target  = oz.make_goofspiel2_target()
+n_cards = 13
+history = oz.make_goofspiel2_history(n_cards)
+encoder = oz.make_goofspiel2_encoder(n_cards)
+target  = oz.make_goofspiel2_target()
 
 hidden_size = 25
-search_batch_size = 50
+search_batch_size = 20
 eps = 0.1
 delta = 0.9
 gamma = 0.01
 learning_rate = 1e-3
-n_simulation_iter = 10000
+n_simulation_iter = 1000
 beta_ratio = 2.0
 reservoir_size = 4096
 train_iter = 64
@@ -58,13 +58,6 @@ batch_search = oz.BatchSearch(batch_size=search_batch_size,
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 criterion = nn.KLDivLoss()
 
-# FIXME make this more efficient and correct
-def _encode_actions(sigma, infoset, max_actions):
-    t = torch.zeros(max_actions)
-    actions = infoset.actions
-    for n in range(len(actions)):
-        t[n] = sigma.pr(infoset, actions[n])
-    return t
 
 class Trainer:
     def __init__(self, history, batch_search, encoder,
@@ -117,14 +110,21 @@ class Trainer:
         tree = search.tree
         sigma = tree.sigma_average()
         ap = sigma.sample_pr(infoset, rng)
-        history.act(ap.a)
 
-        # FIXME make this more efficient
         encoding_size = encoder.encoding_size()
         max_actions = encoder.max_actions()
+
         infoset_encoding = torch.zeros(encoding_size)
+        action_probs = torch.zeros(max_actions)
+
         self.encoder.encode(infoset, infoset_encoding)
-        action_probs = _encode_actions(sigma, infoset, max_actions)
+        self.encoder.encode_sigma(infoset, sigma, action_probs)
+
+        # print(trainer.history)
+        # print(infoset_encoding, action_probs)
+
+        history.act(ap.a)
+
         return infoset_encoding, action_probs
 
     def _restart_and_sample_chance(self):
@@ -176,15 +176,16 @@ def run_trainer_reservoir(trainer, n_iter):
         print()
 
         losses = torch.zeros(train_iter)
+        d = reservoir.sample()
+        data = d[:,:encoding_size]
+        targets = d[:,encoding_size:]
+
         for k in range(train_iter):
-            d = reservoir.sample()
-            data = d[:,:encoding_size]
-            targets = d[:,encoding_size:]
             loss = trainer.train(data, targets)
             losses[k] = loss
 
-        ex = oz.exploitability(history, sigma_nn)
-        print("ex: {:.5f}".format(ex))
+        # ex = oz.exploitability(history, sigma_nn)
+        # print("ex: {:.5f}".format(ex))
 
         mean_loss = losses.mean()
         print("mean loss: {:.5f}".format(mean_loss.item()))

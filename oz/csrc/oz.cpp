@@ -230,6 +230,7 @@ void bind_oz(py::module &m) {
           .def("encoding_size", &encoder_t::encoding_size)
           .def("max_actions", &encoder_t::max_actions)
           .def("encode", &encoder_t::encode)
+          .def("encode_sigma", &encoder_t::encode_sigma)
           .def("decode", &encoder_t::decode)
           .def("decode_and_sample", &encoder_t::decode_and_sample);
 
