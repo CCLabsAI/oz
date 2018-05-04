@@ -25,10 +25,12 @@ class goofspiel2_encoder_t final : public encoder_t {
   int encoding_size() override;
   int max_actions() override;
   void encode(oz::infoset_t infoset, Tensor x) override;
+  void encode_sigma(infoset_t infoset, sigma_t sigma, Tensor x) override;
   map<oz::action_t, prob_t> decode(oz::infoset_t infoset, Tensor x) override;
   action_prob_t decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &rng) override;
 
  private:
+  using nn_real_t = float;
   int n_cards_;
 };
 

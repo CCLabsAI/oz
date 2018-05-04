@@ -91,6 +91,39 @@ void leduk_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
   rounds_one_hot(game_infoset.history, x_a, pos);
 }
 
+static int action_to_idx(leduk_poker_t::action_t action) {
+  using action_t = leduk_encoder_t::action_t;
+
+  switch (action) {
+    case action_t::Raise:
+      return 0;
+      break;
+    case action_t::Call:
+      return 1;
+      break;
+    case action_t::Fold:
+      return 2;
+      break;
+    default:
+      Ensures(false);
+      return 0;
+  }
+}
+
+void leduk_encoder_t::encode_sigma(infoset_t infoset, sigma_t sigma, Tensor x) {
+  const auto actions = infoset.actions();
+  auto x_a = x.accessor<nn_real_t, 1>();
+
+  x.zero_();
+
+  for (const auto &action : actions) {
+    const auto a_leduk = action.cast<leduk_poker_t::action_t>();
+    int i = action_to_idx(a_leduk);
+    x_a[i] = sigma.pr(infoset, action);
+  }
+}
+
+
 auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x)
   -> map<oz::action_t, real_t>
 {
@@ -99,24 +132,9 @@ auto leduk_encoder_t::decode(oz::infoset_t infoset, Tensor x)
   auto x_a = x.accessor<nn_real_t, 1>();
 
   for (const auto &action : actions) {
-    prob_t p;
     const auto a_leduk = action.cast<leduk_poker_t::action_t>();
-    switch (a_leduk) {
-      case action_t::Raise:
-        p = x_a[0];
-        break;
-      case action_t::Call:
-        p = x_a[1];
-        break;
-      case action_t::Fold:
-        p = x_a[2];
-        break;
-      default:
-        assert (false);
-        p = 0;
-    }
-
-    m[action] = p;
+    int i = action_to_idx(a_leduk);
+    m[action] = x_a[i];
   }
 
   return m;
