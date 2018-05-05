@@ -23,27 +23,28 @@ class Net(nn.Module):
         return x
 
 
-rng = oz.Random(1)
+rng = oz.Random()
 
-# history = oz.make_leduk_history()
-# encoder = oz.make_leduk_encoder()
-# target  = oz.make_leduk_target()
+history = oz.make_leduk_history()
+encoder = oz.make_leduk_encoder()
+target  = oz.make_leduk_target()
 
-n_cards = 13
-history = oz.make_goofspiel2_history(n_cards)
-encoder = oz.make_goofspiel2_encoder(n_cards)
-target  = oz.make_goofspiel2_target()
+# n_cards = 13
+# history = oz.make_goofspiel2_history(n_cards)
+# encoder = oz.make_goofspiel2_encoder(n_cards)
+# target  = oz.make_goofspiel2_target()
 
 hidden_size = 25
 search_batch_size = 20
-eps = 0.1
+eps = 0.4
 delta = 0.9
 gamma = 0.01
-learning_rate = 1e-3
+learning_rate = 0.1
 n_simulation_iter = 1000
 beta_ratio = 2.0
-reservoir_size = 4096
-train_iter = 64
+reservoir_size = 20000
+n_game_steps = 128
+n_train_iter = 256
 
 model = Net(input_size=encoder.encoding_size(),
             hidden_size=hidden_size,
@@ -55,7 +56,8 @@ batch_search = oz.BatchSearch(batch_size=search_batch_size,
                               target=target,
                               eps=eps, delta=delta, gamma=gamma)
 
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+# optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 criterion = nn.KLDivLoss()
 
 
@@ -174,24 +176,27 @@ def run_trainer_reservoir(trainer, n_iter):
                     beta_ratio=beta_ratio)
 
     for i in range(n_iter):
-        for j in range(train_iter):
+        for j in range(n_game_steps):
             infoset_encoding, action_probs = trainer.simulate()
             d = torch.cat((infoset_encoding, action_probs))
             reservoir.add(d)
             print(".", end="", flush=True)
         print()
 
-        losses = torch.zeros(train_iter)
+        losses = torch.zeros(n_train_iter)
         d = reservoir.sample()
         data = d[:,:encoding_size]
         targets = d[:,encoding_size:]
 
-        for k in range(train_iter):
+        for k in range(n_train_iter):
             loss = trainer.train(data, targets)
             losses[k] = loss
 
-        # ex = oz.exploitability(history, sigma_nn)
-        # print("ex: {:.5f}".format(ex))
+        ex = oz.exploitability(history, sigma_nn)
+        print("ex: {:.5f}".format(ex))
+
+        ex = oz.exploitability(history, batch_search.tree.sigma_average())
+        print("avg ex: {:.5f}".format(ex))
 
         mean_loss = losses.mean()
         print("mean loss: {:.5f}".format(mean_loss.item()))
