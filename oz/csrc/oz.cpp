@@ -207,6 +207,7 @@ void bind_oz(py::module &m) {
         py::return_value_policy::move,
         py::keep_alive<0, 1>())
       .def("size", &tree_t::size)
+      .def("clear", &tree_t::clear)
       .def("create_node", &tree_t::create_node)
       .def("lookup", (node_t &(tree_t::*)(const infoset_t &)) &tree_t::lookup)
       .def_property_readonly("nodes", (tree_t::map_t &(tree_t::*)()) &tree_t::nodes);

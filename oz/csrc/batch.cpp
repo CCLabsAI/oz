@@ -161,6 +161,7 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
         auto next_player = (last_player == P1 ? P2 : P1);
         search = make_search(next_player);
 
+        // TODO make this optional?
         search.set_initial_weight(1.0/avg_targeting_ratio_);
         break;
     }

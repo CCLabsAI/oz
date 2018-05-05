@@ -3,6 +3,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import torch.utils.data
 
 import oz
 import oz.reservoir
@@ -34,40 +35,45 @@ target  = oz.make_leduk_target()
 # encoder = oz.make_goofspiel2_encoder(n_cards)
 # target  = oz.make_goofspiel2_target()
 
-hidden_size = 25
+hidden_size = 64
 search_batch_size = 20
+play_eps = 0.25
 eps = 0.4
 delta = 0.9
 gamma = 0.01
 learning_rate = 0.1
-n_simulation_iter = 1000
+n_simulation_iter = 10000
+
 beta_ratio = 2.0
-reservoir_size = 20000
-n_game_steps = 128
+reservoir_size = 2**17
+n_game_steps = 256
+train_batch_size = 256
 n_train_iter = 256
 
 model = Net(input_size=encoder.encoding_size(),
             hidden_size=hidden_size,
             output_size=encoder.max_actions())
 
-batch_search = oz.BatchSearch(batch_size=search_batch_size,
-                              history=history,
-                              encoder=encoder,
-                              target=target,
-                              eps=eps, delta=delta, gamma=gamma)
+def make_batch_search():
+    return oz.BatchSearch(batch_size=search_batch_size,
+                          history=history,
+                          encoder=encoder,
+                          target=target,
+                          eps=eps, delta=delta, gamma=gamma)
 
 # optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-criterion = nn.KLDivLoss()
+criterion = nn.KLDivLoss(size_average=False)
 
 
 class Trainer:
-    def __init__(self, history, batch_search, encoder,
+    def __init__(self, history, make_batch_search, encoder,
                  model, optimizer, criterion,
                  n_simulation_iter, rng):
         self.root_history = copy(history)
         self.history = copy(history)
-        self.batch_search = batch_search
+        self.make_batch_search = make_batch_search
+        self.batch_search = make_batch_search()
         self.encoder = encoder
         self.model = model
         self.optimizer = optimizer
@@ -79,12 +85,17 @@ class Trainer:
         model = self.model
         optimizer = self.optimizer
         criterion = self.criterion
+        batch_size = data.shape[0]
 
         optimizer.zero_grad()
         output = model(data);
-        loss = criterion(output, targets)
+        loss = criterion(output, targets) / batch_size
         loss.backward()
         optimizer.step()
+
+        # print(targets)
+        # print(output.exp(), targets)
+
         return loss
 
     def simulate(self):
@@ -111,7 +122,6 @@ class Trainer:
 
         tree = search.tree
         sigma = tree.sigma_average()
-        ap = sigma.sample_pr(infoset, rng)
 
         encoding_size = encoder.encoding_size()
         max_actions = encoder.max_actions()
@@ -122,13 +132,18 @@ class Trainer:
         self.encoder.encode(infoset, infoset_encoding)
         self.encoder.encode_sigma(infoset, sigma, action_probs)
 
+        # print(infoset, infoset_encoding, action_probs)
+
         # avg_targeting_ratio = trainer.batch_search.avg_targeting_ratio
         # print("avg target ratio: {:.5f}".format(avg_targeting_ratio))
 
-        # print(trainer.history)
-        # print(infoset_encoding, action_probs)
-
-        history.act(ap.a)
+        if torch.rand(1).item() > play_eps:
+            ap = sigma.sample_pr(infoset, rng)
+            history.act(ap.a)
+        else:
+            actions = infoset.actions
+            a_index = torch.randint(0, len(actions), (1,), dtype=torch.int).item()
+            history.act(actions[a_index])
 
         return infoset_encoding, action_probs
 
@@ -137,6 +152,7 @@ class Trainer:
             history = self.history
             if history.is_terminal():
                 self.history = copy(self.root_history)
+                self.batch_search = self.make_batch_search()
             elif history.player == oz.Chance:
                 ap = history.sample_chance(rng)
                 history.act(ap.a)
@@ -146,7 +162,7 @@ class Trainer:
 
 trainer = Trainer(history=history,
                   model=model,
-                  batch_search=batch_search,
+                  make_batch_search=make_batch_search,
                   encoder=encoder,
                   optimizer=optimizer,
                   criterion=criterion,
@@ -183,19 +199,36 @@ def run_trainer_reservoir(trainer, n_iter):
             print(".", end="", flush=True)
         print()
 
-        losses = torch.zeros(n_train_iter)
-        d = reservoir.sample()
-        data = d[:,:encoding_size]
-        targets = d[:,encoding_size:]
+        losses  = torch.zeros(n_train_iter)
+        sample  = reservoir.sample()
+        data    = sample[:,:encoding_size]
+        targets = sample[:,encoding_size:]
 
+        data_batched = data.view(-1, train_batch_size, encoding_size)
+        targets_batched = targets.view(-1, train_batch_size, max_actions)
+        n_batches = data_batched.size(0)
+        perm = torch.randperm(n_batches)
+
+        # TODO make minibatches
         for k in range(n_train_iter):
-            loss = trainer.train(data, targets)
+            x = data_batched[perm[k % n_batches]]
+            y = targets_batched[perm[k % n_batches]]
+            loss = trainer.train(x, y)
             losses[k] = loss
+
+        # print(data)
+        # print(targets)
+
+        # out = trainer.model.forward(data).exp()
+        # res = torch.abs(targets - out)
+        # print(res.mean())
+        # print(res.std())
+        # print(res.max())
 
         ex = oz.exploitability(history, sigma_nn)
         print("ex: {:.5f}".format(ex))
 
-        ex = oz.exploitability(history, batch_search.tree.sigma_average())
+        ex = oz.exploitability(history, trainer.batch_search.tree.sigma_average())
         print("avg ex: {:.5f}".format(ex))
 
         mean_loss = losses.mean()
@@ -220,4 +253,5 @@ def run_trainer_distributed(trainer):
     pass
 
 if __name__ == "__main__":
+    # run_trainer_local(trainer, 25000)
     run_trainer_reservoir(trainer, 25000)
