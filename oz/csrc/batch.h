@@ -27,7 +27,8 @@ class batch_search_t final {
                  history_t root,
                  encoder_ptr_t encoder,
                  target_t target,
-                 prob_t eps, prob_t delta, prob_t gamma);
+                 prob_t eps, prob_t delta, prob_t gamma,
+                 prob_t eta);
 
   Tensor generate_batch();
   void step(Tensor probs, rng_t &rng);
@@ -53,6 +54,7 @@ class batch_search_t final {
   prob_t eps_;
   prob_t delta_;
   prob_t gamma_;
+  prob_t eta_;
 
   int avg_targeting_ratio_N_;
   prob_t avg_targeting_ratio_;

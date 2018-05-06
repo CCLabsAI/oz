@@ -41,6 +41,7 @@ play_eps = 0.25
 eps = 0.4
 delta = 0.9
 gamma = 0.01
+eta = 0.5
 learning_rate = 0.1
 n_simulation_iter = 10000
 
@@ -59,7 +60,8 @@ def make_batch_search():
                           history=history,
                           encoder=encoder,
                           target=target,
-                          eps=eps, delta=delta, gamma=gamma)
+                          eps=eps, delta=delta, gamma=gamma,
+                          eta=eta)
 
 # optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 optimizer = optim.SGD(model.parameters(), lr=learning_rate)
@@ -190,6 +192,8 @@ def run_trainer_reservoir(trainer, n_iter):
     reservoir = oz.reservoir.ExponentialReservoir(
                     sample_size=size,
                     beta_ratio=beta_ratio)
+
+    print(reservoir.p_k)
 
     for i in range(n_iter):
         for j in range(n_game_steps):

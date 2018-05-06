@@ -158,6 +158,9 @@ class node_t final {
   const prob_t &average_strategy(action_t a) const { return average_strategy_.at(a); }
   prob_t &average_strategy(action_t a) { return average_strategy_.at(a); }
 
+  const prob_t &prior(action_t a) const { return prior_.at(a); }
+  prob_t &prior(action_t a) { return prior_.at(a); }
+
   int regret_n() const { return regret_n_; }
   int &regret_n() { return regret_n_; }
 
@@ -166,6 +169,7 @@ class node_t final {
 
   regret_map_t regrets_;
   avg_map_t average_strategy_;
+  avg_map_t prior_;
 
   int regret_n_ = 0;
 
@@ -194,7 +198,7 @@ class tree_t final {
   sample_ret_t sample_sigma(const infoset_t &infoset,
                             const set<action_t> &targets,
                             bool targeted,
-                            prob_t eps, prob_t gamma,
+                            prob_t eps, prob_t gamma, prob_t eta,
                             rng_t &rng) const;
 
   sigma_t sigma_average() const;
@@ -267,13 +271,15 @@ class oos_t final {
         targeted_(false),
         eps_(0.4),
         delta_(0.2),
-        gamma_(0.01)
+        gamma_(0.01),
+        eta_(0.1)
     { }
 
     search_t(history_t history, player_t search_player,
              target_t target, infoset_t target_infoset,
              allocator_type allocator,
-             prob_t eps = 0.4, prob_t delta = 0.2, prob_t gamma = 0.01):
+             prob_t eps = 0.4, prob_t delta = 0.2, prob_t gamma = 0.01,
+             prob_t eta = 0.1):
         state_(state_t::SELECT),
         history_(move(history)),
         path_(allocator),
@@ -283,7 +289,8 @@ class oos_t final {
         targeted_(false),
         eps_(eps),
         delta_(delta),
-        gamma_(gamma)
+        gamma_(gamma),
+        eta_(eta)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
@@ -293,7 +300,6 @@ class oos_t final {
 
     // add node to tree with prior values
     void create_prior(tree_t& tree,
-                      node_t::regret_map_t regrets,
                       node_t::avg_map_t average_strategy,
                       rng_t &rng);
 
@@ -372,6 +378,7 @@ class oos_t final {
     prob_t eps_;
     prob_t delta_;
     prob_t gamma_;
+    prob_t eta_;
   }; // class search_t
 }; // class oos_t
 
