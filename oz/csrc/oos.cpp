@@ -179,6 +179,7 @@ void oos_t::search_t::create_prior(tree_t &tree,
 
   auto node = node_t(infoset.actions());
 
+  node.average_strategy_ = average_strategy;
   node.prior_ = move(average_strategy);
 
   insert_node_step(tree, infoset, node, rng);
@@ -387,7 +388,7 @@ static auto sample_targeted(sigma_regret_t sigma,
               auto p_prior = node.prior(a);
 
               auto p0 = gamma*p_gamma + (1 - gamma)*p_sigma;
-              auto p1 = eta*p_prior + (1 - eta)*p0;
+              auto p1 = eta*p0 + (1 - eta)*p_prior;
 
               return p1;
             });

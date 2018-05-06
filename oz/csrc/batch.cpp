@@ -16,7 +16,7 @@ using search_list_t = batch_search_t::search_list_t;
 using boost::container::pmr::new_delete_resource;
 
 auto batch_search_t::make_search(player_t search_player) -> search_t {
-  return {
+  return search_t {
     root_, search_player,
     target_, target_infoset_,
     new_delete_resource(),
@@ -30,7 +30,7 @@ batch_search_t::batch_search_t(int batch_size,
   batch_search_t(batch_size,
                  move(root), move(encoder),
                  null_target(),
-                 0.4, 0.9, 0.01, 0.1)
+                 0.4, 0.9, 0.01, 1.0)
 { }
 
 batch_search_t::batch_search_t(int batch_size,
