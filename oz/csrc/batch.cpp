@@ -59,8 +59,8 @@ batch_search_t::batch_search_t(int batch_size,
 }
 
 void batch_search_t::target(infoset_t target_infoset) {
-  avg_targeting_ratio_ = 1;
   avg_targeting_ratio_N_ = 1;
+  avg_targeting_ratio_ = 1.0;
   target_infoset_ = move(target_infoset);
 }
 
@@ -150,9 +150,12 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
         break;
 
       case state_t::FINISHED:
-        avg_targeting_ratio_ +=
-          (search.targeting_ratio() - avg_targeting_ratio_) /
-            avg_targeting_ratio_N_++;
+        // TODO find a more float precision friendly way to compute this
+        // TODO maybe this should just be an exponential moving average? This setup could cause high variance...
+        avg_targeting_ratio_ += (search.targeting_ratio() - avg_targeting_ratio_) /
+                                    ++avg_targeting_ratio_N_;
+
+        Ensures(avg_targeting_ratio_ != 0);
 
         auto last_player = search.search_player();
         auto next_player = (last_player == P1 ? P2 : P1);

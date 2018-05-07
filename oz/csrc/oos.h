@@ -313,21 +313,12 @@ class oos_t final {
     // invariant: CREATE, PLAYOUT => history is not terminal
     // invariant: BACKPROP, FINISHED => history is terminal
 
+    prob_t targeting_ratio() const;
+    void set_initial_weight(prob_t w);
+    allocator_type get_allocator() const;
+
     state_t state() const { return state_; };
     player_t search_player() const { return search_player_; }
-
-    prob_t targeting_ratio() const {
-      return prefix_prob_.s2 / prefix_prob_.s1;
-    };
-
-    void set_initial_weight(prob_t w) {
-      prefix_prob_.s1 = w;
-      prefix_prob_.s2 = w;
-    }
-
-    allocator_type get_allocator() const {
-      return path_.get_allocator().resource();
-    }
 
    private:
     void tree_step(action_prob_t ap); // take one step in-tree and extend path
