@@ -41,15 +41,15 @@ play_eps = 0.25
 eps = 0.4
 delta = 0.5
 gamma = 0.01
-eta = 0.25
+eta = 0.5
 beta = 0.99
 learning_rate = 0.1
-n_simulation_iter = 1000
+n_simulation_iter = 10000
 
 beta_ratio = 2.0
-reservoir_size = 2**17
-n_game_steps = 256
-train_batch_size = 256
+reservoir_size = 2**14
+n_game_steps = 32
+train_batch_size = 32
 n_train_iter = 256
 
 model = Net(input_size=encoder.encoding_size(),
@@ -198,7 +198,7 @@ def run_trainer_reservoir(trainer, n_iter):
                     sample_size=size,
                     beta_ratio=beta_ratio)
 
-    print(reservoir.p_k)
+    print("reservoir p_k:", reservoir.p_k)
 
     for i in range(n_iter):
         for j in range(n_game_steps):
@@ -236,9 +236,6 @@ def run_trainer_reservoir(trainer, n_iter):
 
         ex = oz.exploitability(history, sigma_nn)
         print("ex: {:.5f}".format(ex))
-
-        ex = oz.exploitability(history, trainer.batch_search.tree.sigma_average())
-        print("avg ex: {:.5f}".format(ex))
 
         mean_loss = losses.mean()
         print("mean loss: {:.5f}".format(mean_loss.item()))

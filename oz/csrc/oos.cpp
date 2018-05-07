@@ -117,10 +117,7 @@ auto oos_t::search_t::sample_tree(const tree_t &tree,
                        target_.target_actions(target_infoset_, history_) :
                        set<action_t> { };
 
-  const auto r = tree.sample_sigma(infoset,
-                                   targets, targeted_,
-                                   eps, gamma, eta_,
-                                   rng);
+  const auto r = tree.sample_sigma(infoset, targets, targeted_, average_response_, eps, gamma, rng);
 
   return r;
 }
@@ -130,8 +127,13 @@ void oos_t::search_t::select(const tree_t& tree, rng_t &rng) {
   const auto alloc = get_allocator();
 
   auto d = uniform_real_distribution<>();
-  const auto u = d(rng);
-  targeted_ = (u < delta_);
+  const auto u_delta = d(rng);
+  targeted_ = (u_delta < delta_);
+
+  if(history().player() != search_player_) {
+    const auto u_eta = d(rng);
+    average_response_ = (u_eta < eta_);
+  }
 
   while (state_ == state_t::SELECT) {
     if (history_.is_terminal()) {
@@ -181,6 +183,9 @@ void oos_t::search_t::create_prior(tree_t &tree,
 
   node.average_strategy_ = average_strategy;
   node.prior_ = move(average_strategy);
+
+  for_each(begin(node.average_strategy_), end(node.average_strategy_),
+           [](auto &x) { x.second *= 1000; });
 
   insert_node_step(tree, infoset, node, rng);
 }
@@ -361,8 +366,10 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
 static auto sample_targeted(sigma_regret_t sigma,
                             const infoset_t &infoset,
                             const node_t &node,
-                            const set<action_t> &targets, bool targeted,
-                            prob_t eps, prob_t gamma, prob_t eta,
+                            const set <action_t> &targets,
+                            bool targeted,
+                            prob_t eps,
+                            prob_t gamma,
                             rng_t &rng) -> action_prob_t
 {
   const auto actions = infoset.actions();
@@ -384,13 +391,7 @@ static auto sample_targeted(sigma_regret_t sigma,
   auto probs = prob_vector { };
   transform(begin(actions), end(actions), back_inserter(probs),
             [&](const action_t &a) -> prob_t {
-              auto p_sigma = sigma.pr(infoset, a);
-              auto p_prior = node.prior(a);
-
-              auto p0 = gamma*p_gamma + (1 - gamma)*p_sigma;
-              auto p1 = eta*p0 + (1 - eta)*p_prior;
-
-              return p1;
+              return gamma*p_gamma + (1 - gamma)*sigma.pr(infoset, a);
             });
 
   // epsilon exploration probabilities
@@ -541,10 +542,12 @@ void tree_t::create_node(infoset_t infoset) {
 }
 
 auto tree_t::sample_sigma(const infoset_t &infoset,
-                          const set<action_t> &targets,
-                          bool targeted,
-                          prob_t eps, prob_t gamma, prob_t eta,
-                          rng_t &rng) const
+                                  const set <action_t> &targets,
+                                  bool targeted,
+                                  bool average_response,
+                                  prob_t eps,
+                                  prob_t gamma,
+                                  rng_t &rng) const
   -> tree_t::sample_ret_t
 {
   const auto it = nodes_.find(infoset);
@@ -557,9 +560,13 @@ auto tree_t::sample_sigma(const infoset_t &infoset,
     const auto sigma = node.sigma_regret_matching();
 
     // const auto ap = sigma.sample_eps(infoset, eps, rng);
-    const auto ap = sample_targeted(sigma, infoset, node,
-                                    targets, targeted,
-                                    eps, gamma, eta,
+    const auto ap = sample_targeted(sigma,
+                                    infoset,
+                                    node,
+                                    targets,
+                                    targeted,
+                                    eps,
+                                    gamma,
                                     rng);
 
     return { ap, false };

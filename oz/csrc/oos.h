@@ -196,9 +196,11 @@ class tree_t final {
   const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
 
   sample_ret_t sample_sigma(const infoset_t &infoset,
-                            const set<action_t> &targets,
+                            const set <action_t> &targets,
                             bool targeted,
-                            prob_t eps, prob_t gamma, prob_t eta,
+                            bool average_response,
+                            prob_t eps,
+                            prob_t gamma,
                             rng_t &rng) const;
 
   sigma_t sigma_average() const;
@@ -272,14 +274,14 @@ class oos_t final {
         eps_(0.4),
         delta_(0.2),
         gamma_(0.01),
-        eta_(1.0)
+        eta_(0.0)
     { }
 
     search_t(history_t history, player_t search_player,
              target_t target, infoset_t target_infoset,
              allocator_type allocator,
              prob_t eps = 0.4, prob_t delta = 0.2, prob_t gamma = 0.01,
-             prob_t eta = 1.0):
+             prob_t eta = 0.0):
         state_(state_t::SELECT),
         history_(move(history)),
         path_(allocator),
@@ -374,6 +376,7 @@ class oos_t final {
     suffix_prob_t suffix_prob_;
 
     bool targeted_; // is this iteration targeted?
+    bool average_response_; // is this an average response iteration?
 
     prob_t eps_;
     prob_t delta_;
