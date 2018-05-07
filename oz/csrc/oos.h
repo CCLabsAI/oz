@@ -228,29 +228,29 @@ class oos_t final {
   void search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
               prob_t eps = 0.4,
               prob_t delta = 0.6,
-              prob_t gamma = 0.0);
+              prob_t gamma = 0.0,
+              prob_t beta = 1.0);
 
   void search_targeted(history_t h, int n_iter, tree_t &tree, rng_t &rng,
                        target_t target, infoset_t target_infoset,
                        prob_t eps = 0.2,
                        prob_t delta = 0.6,
-                       prob_t gamma = 0.01);
+                       prob_t gamma = 0.01,
+                       prob_t beta = 0.99);
 
   prob_t avg_targeting_ratio() const { return avg_targeting_ratio_; }
 
-  void retarget() {
-    avg_targeting_ratio_ = 1;
-    avg_targeting_ratio_N_ = 1;
+  void reset_target_ratio() {
+    avg_targeting_ratio_ = 1.0;
   }
 
  private:
   void search_iter(history_t h, player_t player, tree_t &tree, rng_t &rng,
                    target_t target, infoset_t target_infoset,
                    void *buffer, size_t buffer_size,
-                   prob_t eps, prob_t delta, prob_t gamma);
+                   prob_t eps, prob_t delta, prob_t gamma, prob_t beta);
 
-  int avg_targeting_ratio_N_ = 1;
-  prob_t avg_targeting_ratio_ = 1;
+  prob_t avg_targeting_ratio_ = 1.0;
 
   // state machine representing a search
  public:

@@ -7,7 +7,7 @@ import subprocess
 import oz
 
 class OOSPlayer:
-    def __init__(self, history_root, n_iter, eps, delta, gamma):
+    def __init__(self, history_root, n_iter, eps, delta, gamma, beta):
         self.history_root = copy(history_root)
         self.tree = oz.Tree()
         self.oos = oz.OOS()
@@ -15,6 +15,7 @@ class OOSPlayer:
         self.eps = eps
         self.delta = delta
         self.gamma = gamma
+        self.beta = beta
 
     def sample_action(self, infoset, rng):
         sigma = self.tree.sigma_average()
@@ -26,7 +27,7 @@ class OOSPlayer:
         self.oos.search(
             self.history_root,
             self.n_iter, self.tree, rng,
-            eps=self.eps, delta=self.eps, gamma=self.gamma)
+            eps=self.eps, delta=self.eps, gamma=self.gamma, beta=self.beta)
 
 
 class TargetedOOSPlayer(OOSPlayer):
@@ -35,13 +36,11 @@ class TargetedOOSPlayer(OOSPlayer):
         self.target = target
 
     def think(self, infoset, rng):
-        self.oos.retarget()
         self.oos.search_targeted(
             self.history_root,
             self.n_iter, self.tree, rng,
             self.target, infoset,
             eps=self.eps, delta=self.eps, gamma=self.gamma)
-
 
 class UniformRandomPlayer:
     def sample_action(self, infoset, rng):
@@ -126,6 +125,9 @@ def main():
     parser.add_argument("--gamma", type=float,
                         help="opponent error factor",
                         default=0.01)
+    parser.add_argument("--beta", type=float,
+                        help="opponent error factor",
+                        default=0.99)
 
     args = parser.parse_args()
     #label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
@@ -153,14 +155,16 @@ def main():
                              n_iter=n_iter,
                              eps=args.eps,
                              delta=args.delta,
-                             gamma=args.gamma)
+                             gamma=args.gamma,
+                             beta=args.beta)
 
         elif algo == 'oos_targeted':
             return TargetedOOSPlayer(history, target,
                                      n_iter=n_iter,
                                      eps=args.eps,
                                      delta=args.delta,
-                                     gamma=args.gamma)
+                                     gamma=args.gamma,
+                                     beta=args.beta)
 
         else:
             print('error: unknown search algorithm: {}'.format(algo),

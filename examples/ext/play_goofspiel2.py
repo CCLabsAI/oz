@@ -62,10 +62,9 @@ while not h.is_terminal():
 
     infoset2 = h.infoset()
 
-    oos.retarget()
     oos.search_targeted(root, 5000, tree, rng,
                         target, infoset2,
-                        eps=0.4, delta=0.9, gamma=0.01)
+                        eps=0.4, delta=0.9, gamma=0.01, beta=.999)
 
     node = tree.lookup(infoset2)
     sigma = tree.sigma_average()

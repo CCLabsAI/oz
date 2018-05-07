@@ -147,7 +147,7 @@ void bind_oz(py::module &m) {
 
   py::class_<oos_t>(m, "OOS")
       .def(py::init<>())
-      .def("retarget", &oos_t::retarget)
+      .def("reset_target_ratio", &oos_t::reset_target_ratio)
       .def_property_readonly("avg_targeting_ratio", &oos_t::avg_targeting_ratio)
       .def("search", &oos_t::search,
            py::arg("history"),
@@ -156,7 +156,8 @@ void bind_oz(py::module &m) {
            py::arg("rng"),
            py::arg("eps") = 0.4,
            py::arg("delta") = 0.9,
-           py::arg("gamma") = 0.01)
+           py::arg("gamma") = 0.00,
+           py::arg("beta") = 1.0)
       .def("search_targeted", &oos_t::search_targeted,
            py::arg("history"),
            py::arg("n_iter"),
@@ -166,7 +167,8 @@ void bind_oz(py::module &m) {
            py::arg("target_infoset"),
            py::arg("eps") = 0.4,
            py::arg("delta") = 0.9,
-           py::arg("gamma") = 0.01);
+           py::arg("gamma") = 0.01,
+           py::arg("beta") = 0.99);
 
   py::class_<sigma_t>(m, "Sigma")
       .def("pr", &sigma_t::pr)

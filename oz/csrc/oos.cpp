@@ -646,7 +646,8 @@ void oos_t::search_iter(history_t h, player_t player,
                         void *buffer, size_t buffer_size,
                         const prob_t eps,
                         const prob_t delta,
-                        const prob_t gamma)
+                        const prob_t gamma,
+                        const prob_t beta)
 {
   using state_t = search_t::state_t;
 
@@ -678,9 +679,7 @@ void oos_t::search_iter(history_t h, player_t player,
     }
   }
 
-  avg_targeting_ratio_N_ += 1;
-  avg_targeting_ratio_ +=
-      (s.targeting_ratio() - avg_targeting_ratio_) / avg_targeting_ratio_N_;
+  avg_targeting_ratio_ = beta*avg_targeting_ratio_ + (1-beta)*s.targeting_ratio();
 }
 
 static constexpr int WORK_BUFFER_SIZE = (2 << 20);
@@ -694,7 +693,8 @@ void oos_t::search_targeted(history_t h, int n_iter, tree_t &tree, rng_t &rng,
                    target_t target, infoset_t target_infoset,
                    const prob_t eps,
                    const prob_t delta,
-                   const prob_t gamma)
+                   const prob_t gamma,
+                   const prob_t beta)
 {
   Expects(n_iter >= 0);
 
@@ -704,23 +704,24 @@ void oos_t::search_targeted(history_t h, int n_iter, tree_t &tree, rng_t &rng,
     search_iter(h, P1, tree, rng,
                 target, target_infoset,
                 ptr.get(), WORK_BUFFER_SIZE,
-                eps, delta, gamma);
+                eps, delta, gamma, beta);
 
     search_iter(h, P2, tree, rng,
                 target, target_infoset,
                 ptr.get(), WORK_BUFFER_SIZE,
-                eps, delta, gamma);
+                eps, delta, gamma, beta);
   }
 }
 
 void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
                    const prob_t eps,
                    const prob_t delta,
-                   const prob_t gamma)
+                   const prob_t gamma,
+                   const prob_t beta)
 {
   search_targeted(move(h), n_iter, tree, rng,
                   null_target(), null_infoset(),
-                  eps, delta, gamma);
+                  eps, delta, gamma, beta);
 }
 
 }
