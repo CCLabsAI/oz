@@ -188,12 +188,12 @@ def main():
     print("N ", args.matches)
     print("Cards number : ", args.goofcards)
     print("Players", args.p1, args.p2)
-    print("Iters ", args.iter1, args.iter2)
+    print("Iters", args.iter1, args.iter2)
     print("beta:", args.beta)
     print("delta:", args.delta)
     print("epsilon:", args.eps)
     print("gamma:", args.gamma)
-    print("Execution time : ", t1-t0)
+    print("Execution time", t1-t0)
 
 
 
