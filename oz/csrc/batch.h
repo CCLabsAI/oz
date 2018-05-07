@@ -28,7 +28,7 @@ class batch_search_t final {
                  encoder_ptr_t encoder,
                  target_t target,
                  prob_t eps, prob_t delta, prob_t gamma,
-                 prob_t eta);
+                 prob_t beta, prob_t eta);
 
   Tensor generate_batch();
   void step(Tensor probs, rng_t &rng);
@@ -38,6 +38,8 @@ class batch_search_t final {
 
   const tree_t &tree() const { return tree_; }
   prob_t avg_targeting_ratio() const { return avg_targeting_ratio_; }
+
+  void reset_targeting_ratio() { avg_targeting_ratio_ = 1.0; }
 
  private:
   oos_t::search_t make_search(player_t search_player);
@@ -54,9 +56,9 @@ class batch_search_t final {
   prob_t eps_;
   prob_t delta_;
   prob_t gamma_;
+  prob_t beta_;
   prob_t eta_;
 
-  int avg_targeting_ratio_N_;
   prob_t avg_targeting_ratio_;
 };
 

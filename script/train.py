@@ -42,6 +42,7 @@ eps = 0.4
 delta = 0.5
 gamma = 0.01
 eta = 0.25
+beta = 0.99
 learning_rate = 0.1
 n_simulation_iter = 1000
 
@@ -61,7 +62,7 @@ def make_batch_search():
                           encoder=encoder,
                           target=target,
                           eps=eps, delta=delta, gamma=gamma,
-                          eta=eta)
+                          beta=beta, eta=eta)
 
 # optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 optimizer = optim.SGD(model.parameters(), lr=learning_rate)

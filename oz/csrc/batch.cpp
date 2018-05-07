@@ -30,7 +30,7 @@ batch_search_t::batch_search_t(int batch_size,
   batch_search_t(batch_size,
                  move(root), move(encoder),
                  null_target(),
-                 0.4, 0.9, 0.01, 1.0)
+                 0.4, 0.9, 0.01, 0.99, 1.0)
 { }
 
 batch_search_t::batch_search_t(int batch_size,
@@ -38,7 +38,7 @@ batch_search_t::batch_search_t(int batch_size,
                                encoder_ptr_t encoder,
                                target_t target,
                                prob_t eps, prob_t delta, prob_t gamma,
-                               prob_t eta) :
+                               prob_t beta, prob_t eta) :
     batch_size_(batch_size),
     root_(move(root)),
     encoder_(move(encoder)),
@@ -47,8 +47,8 @@ batch_search_t::batch_search_t(int batch_size,
     eps_(eps),
     delta_(delta),
     gamma_(gamma),
+    beta_(beta),
     eta_(eta),
-    avg_targeting_ratio_N_(1),
     avg_targeting_ratio_(1.0)
 {
   auto player = P1;
@@ -61,8 +61,6 @@ batch_search_t::batch_search_t(int batch_size,
 }
 
 void batch_search_t::target(infoset_t target_infoset) {
-  avg_targeting_ratio_N_ = 1;
-  avg_targeting_ratio_ = 1.0;
   target_infoset_ = move(target_infoset);
 }
 
@@ -150,8 +148,7 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
       case state_t::FINISHED:
         // TODO find a more float precision friendly way to compute this
         // TODO maybe this should just be an exponential moving average? This setup could cause high variance...
-        avg_targeting_ratio_ += (search.targeting_ratio() - avg_targeting_ratio_) /
-                                    ++avg_targeting_ratio_N_;
+        avg_targeting_ratio_ = beta_*avg_targeting_ratio_ + (1-beta_)*search.targeting_ratio();
 
         Ensures(avg_targeting_ratio_ != 0);
 

@@ -246,7 +246,7 @@ void bind_oz(py::module &m) {
   py::class_<batch_search_t>(m, "BatchSearch")
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>, target_t,
-                    prob_t, prob_t, prob_t, prob_t>(),
+                    prob_t, prob_t, prob_t, prob_t, prob_t>(),
            py::arg("batch_size"),
            py::arg("history"),
            py::arg("encoder"),
@@ -254,6 +254,7 @@ void bind_oz(py::module &m) {
            py::arg("eps"),
            py::arg("delta"),
            py::arg("gamma"),
+           py::arg("beta"),
            py::arg("eta"))
       .def("generate_batch", &batch_search_t::generate_batch)
       .def("step", (void (batch_search_t::*)(at::Tensor probs, rng_t &rng)) &batch_search_t::step)
