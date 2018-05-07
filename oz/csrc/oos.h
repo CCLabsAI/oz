@@ -143,17 +143,19 @@ class sigma_regret_t final : public sigma_t::concept_t {
 
 class sigma_regret_prior_t final : public sigma_t::concept_t {
  public:
-  explicit sigma_regret_prior_t(const node_value_map_t &regrets, const node_value_map_t &prior, prob_t prior_strength):
+  explicit sigma_regret_prior_t(const node_value_map_t &regrets,
+                                const node_value_map_t &prior,
+                                prob_t prior_alpha):
       regrets_(regrets),
       prior_(prior),
-      prior_strength_(prior_strength) { };
+      prior_alpha_(prior_alpha) { };
 
   prob_t pr(infoset_t infoset, action_t a) const override;
 
  private:
   const node_value_map_t &regrets_;
   const node_value_map_t &prior_;
-  const prob_t prior_strength_;
+  const prob_t prior_alpha_;
 };
 
 class node_t final {

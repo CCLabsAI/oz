@@ -181,12 +181,17 @@ void oos_t::search_t::create_prior(tree_t &tree,
 
   auto node = node_t(infoset.actions());
 
-  node.average_strategy_ = average_strategy;
+  auto sum = accumulate(begin(average_strategy),
+                        end(average_strategy), (prob_t) 0.0,
+                        [](const auto &r, const auto &x) {
+                          return r + x.second;
+                        });
+  Expects(0 < sum);
+
   node.prior_ = move(average_strategy);
 
-  // FIXME
-  for_each(begin(node.average_strategy_), end(node.average_strategy_),
-           [](auto &x) { x.second *= 1000; });
+  for_each(begin(node.prior_), end(node.prior_),
+           [&](auto &x) { x.second /= sum; });
 
   insert_node_step(tree, infoset, node, rng);
 }
@@ -427,7 +432,7 @@ static auto sample_targeted(sigma_regret_prior_t sigma,
   // NB if the targeted weights total is zero, we have tried to target a
   // subgame that has zero probability. In this case we bail out
   // and proceed by sampling in an untargeted way.
-  // We also need to twiddle the rho1 probability in the case :/
+  // We also need to twiddle the rho1 probability in this case :/
   const auto &sample_probs = (total_weight > 0) ?
                              weights_targeted :
                              probs_untargeted;
@@ -482,7 +487,10 @@ node_t::node_t(infoset_t::actions_list_t actions) {
 }
 
 sigma_regret_prior_t node_t::sigma_regret_matching() const {
-  return sigma_regret_prior_t(regrets_, average_strategy_, (prob_t) 1.0 / (regret_n() + 1));
+  auto alpha = (prob_t) 1.0 / (regret_n() + 1);
+  return sigma_regret_prior_t(regrets_,
+                              prior_,
+                              alpha);
 }
 
 static auto sample_chance(const history_t &history, rng_t& rng,
@@ -547,12 +555,12 @@ void tree_t::create_node(infoset_t infoset) {
 }
 
 auto tree_t::sample_sigma(const infoset_t &infoset,
-                                  const set <action_t> &targets,
-                                  bool targeted,
-                                  bool average_response,
-                                  prob_t eps,
-                                  prob_t gamma,
-                                  rng_t &rng) const
+                          const set <action_t> &targets,
+                          bool targeted,
+                          bool average_response,
+                          prob_t eps,
+                          prob_t gamma,
+                          rng_t &rng) const
   -> tree_t::sample_ret_t
 {
   const auto it = nodes_.find(infoset);
@@ -565,13 +573,9 @@ auto tree_t::sample_sigma(const infoset_t &infoset,
     const auto sigma = node.sigma_regret_matching();
 
     // const auto ap = sigma.sample_eps(infoset, eps, rng);
-    const auto ap = sample_targeted(sigma,
-                                    infoset,
-                                    node,
-                                    targets,
-                                    targeted,
-                                    eps,
-                                    gamma,
+    const auto ap = sample_targeted(sigma, infoset, node,
+                                    targets, targeted,
+                                    eps, gamma,
                                     rng);
 
     return { ap, false };
@@ -678,17 +682,20 @@ prob_t sigma_regret_prior_t::pr(infoset_t infoset, action_t a) const {
   auto sum_positive = accumulate(
       begin(regrets_), end(regrets_), (value_t) 0,
       [&](const auto &r, const auto &x) {
-        return r + max<value_t>(0, x.second + prior_strength_ * prior_.at(x.first));
+        return r + max<value_t>(0, x.second);
       });
 
   prob_t p;
   if (sum_positive > 0) {
-    auto r = regrets_.at(a) + prior_strength_ * prior_.at(a);
+    auto r = regrets_.at(a);
     p = r > 0 ? r/sum_positive : 0;
   }
   else {
     p = (prob_t) 1/infoset.actions().size();
   }
+
+  auto alpha = prior_alpha_;
+  p = alpha*prior_.at(a) + (1 - alpha)*p;
 
   Ensures(0 <= p && p <= 1);
   return p;
@@ -745,7 +752,8 @@ void oos_t::search_iter(history_t h, player_t player,
     }
   }
 
-  avg_targeting_ratio_ = beta*avg_targeting_ratio_ + (1-beta)*s.targeting_ratio();
+  avg_targeting_ratio_ =
+      beta*avg_targeting_ratio_ + (1-beta)*s.targeting_ratio();
 }
 
 static constexpr int WORK_BUFFER_SIZE = (2 << 20);
