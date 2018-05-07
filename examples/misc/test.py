@@ -186,6 +186,7 @@ def main():
     t1 = int(round(time.time() * 1000))
 
     print("N ", args.matches)
+    print("Cards number : ", args.goofcards)
     print("Players", args.p1, args.p2)
     print("Iters ", args.iter1, args.iter2)
     print("beta:", args.beta)
@@ -193,6 +194,7 @@ def main():
     print("epsilon:", args.eps)
     print("gamma:", args.gamma)
     print("Execution time : ", t1-t0)
+
 
 
 
