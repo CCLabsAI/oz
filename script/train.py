@@ -41,15 +41,15 @@ play_eps = 0.25
 eps = 0.4
 delta = 0.5
 gamma = 0.01
-eta = 0.5
+eta = 0.0
 beta = 0.99
 learning_rate = 0.1
-n_simulation_iter = 10000
+n_simulation_iter = 5000
 
 beta_ratio = 2.0
 reservoir_size = 2**14
-n_game_steps = 32
-train_batch_size = 32
+n_game_steps = 128
+train_batch_size = 128
 n_train_iter = 256
 
 model = Net(input_size=encoder.encoding_size(),

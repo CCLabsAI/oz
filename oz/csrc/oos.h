@@ -126,6 +126,7 @@ sigma_t allocate_sigma(Alloc alloc, Args&& ... args) {
   return sigma_t(std::allocate_shared<Sigma>(alloc, std::forward<Args>(args)...));
 }
 
+using node_value_map_t = flat_map<action_t, value_t>;
 using node_regret_map_t = flat_map<action_t, value_t>;
 
 class sigma_regret_t final : public sigma_t::concept_t {
@@ -140,6 +141,21 @@ class sigma_regret_t final : public sigma_t::concept_t {
   const node_regret_map_t &regrets_;
 };
 
+class sigma_regret_prior_t final : public sigma_t::concept_t {
+ public:
+  explicit sigma_regret_prior_t(const node_value_map_t &regrets, const node_value_map_t &prior, prob_t prior_strength):
+      regrets_(regrets),
+      prior_(prior),
+      prior_strength_(prior_strength) { };
+
+  prob_t pr(infoset_t infoset, action_t a) const override;
+
+ private:
+  const node_value_map_t &regrets_;
+  const node_value_map_t &prior_;
+  const prob_t prior_strength_;
+};
+
 class node_t final {
  public:
   using regret_map_t = node_regret_map_t;
@@ -147,7 +163,7 @@ class node_t final {
 
   explicit node_t(infoset_t::actions_list_t actions);
 
-  sigma_regret_t sigma_regret_matching() const { return sigma_regret_t(regrets_); }
+  sigma_regret_prior_t sigma_regret_matching() const;
   // sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
   // sigma_t sigma_regret_matching(sigma_t::allocator_t alloc) const
   //   { return allocate_sigma<sigma_regret_t>(alloc, regrets_); }
@@ -274,14 +290,15 @@ class oos_t final {
         eps_(0.4),
         delta_(0.2),
         gamma_(0.01),
-        eta_(0.0)
+        eta_(0.0),
+        zeta_(0.0)
     { }
 
     search_t(history_t history, player_t search_player,
              target_t target, infoset_t target_infoset,
              allocator_type allocator,
              prob_t eps = 0.4, prob_t delta = 0.2, prob_t gamma = 0.01,
-             prob_t eta = 0.0):
+             prob_t eta = 0.0, prob_t zeta = 0.0):
         state_(state_t::SELECT),
         history_(move(history)),
         path_(allocator),
@@ -292,7 +309,8 @@ class oos_t final {
         eps_(eps),
         delta_(delta),
         gamma_(gamma),
-        eta_(eta)
+        eta_(eta),
+        zeta_(zeta)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
@@ -382,6 +400,7 @@ class oos_t final {
     prob_t delta_;
     prob_t gamma_;
     prob_t eta_;
+    prob_t zeta_;
   }; // class search_t
 }; // class oos_t
 

@@ -184,6 +184,7 @@ void oos_t::search_t::create_prior(tree_t &tree,
   node.average_strategy_ = average_strategy;
   node.prior_ = move(average_strategy);
 
+  // FIXME
   for_each(begin(node.average_strategy_), end(node.average_strategy_),
            [](auto &x) { x.second *= 1000; });
 
@@ -363,7 +364,7 @@ auto sigma_t::sample_eps(infoset_t infoset, prob_t eps, rng_t &rng) const
 };
 
 // TODO break up this function
-static auto sample_targeted(sigma_regret_t sigma,
+static auto sample_targeted(sigma_regret_prior_t sigma,
                             const infoset_t &infoset,
                             const node_t &node,
                             const set <action_t> &targets,
@@ -478,6 +479,10 @@ node_t::node_t(infoset_t::actions_list_t actions) {
   Ensures(!regrets_.empty());
   Ensures(!average_strategy_.empty());
   Ensures(!prior_.empty());
+}
+
+sigma_regret_prior_t node_t::sigma_regret_matching() const {
+  return sigma_regret_prior_t(regrets_, average_strategy_, (prob_t) 1.0 / (regret_n() + 1));
 }
 
 static auto sample_chance(const history_t &history, rng_t& rng,
@@ -669,6 +674,26 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
   return p;
 };
 
+prob_t sigma_regret_prior_t::pr(infoset_t infoset, action_t a) const {
+  auto sum_positive = accumulate(
+      begin(regrets_), end(regrets_), (value_t) 0,
+      [&](const auto &r, const auto &x) {
+        return r + max<value_t>(0, x.second + prior_strength_ * prior_.at(x.first));
+      });
+
+  prob_t p;
+  if (sum_positive > 0) {
+    auto r = regrets_.at(a) + prior_strength_ * prior_.at(a);
+    p = r > 0 ? r/sum_positive : 0;
+  }
+  else {
+    p = (prob_t) 1/infoset.actions().size();
+  }
+
+  Ensures(0 <= p && p <= 1);
+  return p;
+}
+
 static inline auto sample_action(const history_t &h, rng_t &rng)
   -> action_prob_t
 {
@@ -765,4 +790,4 @@ void oos_t::search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
                   eps, delta, gamma, beta);
 }
 
-}
+} // namespace oz
