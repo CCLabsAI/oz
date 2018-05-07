@@ -39,11 +39,11 @@ hidden_size = 64
 search_batch_size = 20
 play_eps = 0.25
 eps = 0.4
-delta = 0.9
+delta = 0.5
 gamma = 0.01
-eta = 0.5
+eta = 0.25
 learning_rate = 0.1
-n_simulation_iter = 10000
+n_simulation_iter = 1000
 
 beta_ratio = 2.0
 reservoir_size = 2**17
@@ -153,6 +153,10 @@ class Trainer:
         while True:
             history = self.history
             if history.is_terminal():
+                sigma = self.batch_search.tree.sigma_average()
+                ex = oz.exploitability(self.root_history, sigma)
+                print("game ex: {:.5f}".format(ex))
+
                 self.history = copy(self.root_history)
                 self.batch_search = self.make_batch_search()
             elif history.player == oz.Chance:
