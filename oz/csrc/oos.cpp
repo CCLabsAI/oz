@@ -49,13 +49,13 @@ void oos_t::search_t::tree_step(action_prob_t ap) {
   tree_step(ap, infoset);
 }
 
-static const bool is_normal(prob_t x) {
+static const bool is_znormal(prob_t x) {
     switch(std::fpclassify(x)) {
         case FP_INFINITE:  return false;
         case FP_NAN:       return false;
         case FP_NORMAL:    return true;
         case FP_SUBNORMAL: return false;
-        case FP_ZERO:      return false;
+        case FP_ZERO:      return true;
         default:           return false;
     }
 }
@@ -64,13 +64,14 @@ void oos_t::search_t::tree_step(action_prob_t ap, const infoset_t &infoset) {
   Expects(state_ == state_t::SELECT || state_ == state_t::CREATE);
   Expects(!history_.is_terminal());
 
-  Expects(0 < ap.pr_a && ap.pr_a <= 1);
+  // TODO does a zero pr_a make sense here?
+  Expects(0 <= ap.pr_a && ap.pr_a <= 1);
   Expects(0 < ap.rho1 && ap.rho1 <= 1);
   Expects(0 < ap.rho2 && ap.rho2 <= 1);
 
-  Expects(is_normal(ap.pr_a));
-  Expects(is_normal(ap.rho1));
-  Expects(is_normal(ap.rho1));
+  Expects(is_znormal(ap.pr_a));
+  Expects(is_znormal(ap.rho1));
+  Expects(is_znormal(ap.rho1));
 
   const auto acting_player = history_.player();
 
@@ -417,7 +418,8 @@ static auto sample_targeted(sigma_regret_t sigma,
   const auto rho1 = (total_weight > 0) ? pr_targeted : pr_untargeted;
   const auto rho2 = pr_untargeted;
 
-  Ensures(0 < pr_a && pr_a <= 1);
+  // TODO does it makes sense for pr_a to be zero?
+  Ensures(0 <= pr_a && pr_a <= 1);
   Ensures(0 < rho1 && rho1 <= 1);
   Ensures(0 < rho2 && rho2 <= 1);
   Ensures(!targeted || rho2 - rho1 < 1e-6);
