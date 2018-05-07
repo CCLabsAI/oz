@@ -1,5 +1,6 @@
 import sys
 import random
+import time
 from copy import copy
 import argparse
 import subprocess
@@ -96,10 +97,12 @@ def play_matches(n_matches, make_players, h, rng):
         u = play_match(h, player1, player2, rng)
         print("Results:", int(u))
         utilities.append(u)
-        print(u)
+        print()
     return utilities
 
 def main():
+  
+    t0 = int(round(time.time() * 1000))
     parser = argparse.ArgumentParser(description="run head-to-head play tests")
     parser.add_argument("--game", help="game to play", required=True)
     parser.add_argument("--p1", help="player 1 search algorithm", required=True)
@@ -180,11 +183,18 @@ def main():
 
     rng = oz.Random()
     utilities = play_matches(args.matches, make_players, history, rng)
+    t1 = int(round(time.time() * 1000))
+
     print("N ", args.matches)
     print("Players", args.p1, args.p2)
-    print("epsilon:", args.eps)
+    print("Iters ", args.iter1, args.iter2)
+    print("beta:", args.beta)
     print("delta:", args.delta)
+    print("epsilon:", args.eps)
     print("gamma:", args.gamma)
+    print("Execution time : ", t1-t0)
+
+
 
 
 
