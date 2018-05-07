@@ -1,6 +1,12 @@
 TODO
 ====
 
+   * Investigate reweighting
+   * Investigate average targeting ratios not falling below delta
+   * convert targeting to use an exponential moving average to remove
+     boundary effects at round changes
+
+
    * (andyk) investigate exploding loss
 
 ex: 4.32167
