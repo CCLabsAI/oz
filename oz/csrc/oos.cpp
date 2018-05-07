@@ -400,8 +400,7 @@ static auto sample_targeted(sigma_regret_t sigma,
   // subgame that has zero probability. In this case we bail out
   // and proceed by sampling in an untargeted way.
   // We also need to twiddle the rho1 probability in the case :/
-
-  const auto &sample_probs = (targeted && total_weight > 0) ?
+  const auto &sample_probs = (total_weight > 0) ?
                              weights_targeted :
                              probs_untargeted;
 
