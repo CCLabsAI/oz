@@ -2,6 +2,7 @@
 #include "hash.h"
 
 #include "oos.h"
+#include "tree.h"
 
 #include <cassert>
 #include <algorithm>
@@ -82,7 +83,7 @@ void oos_t::search_t::tree_step(action_prob_t ap, const infoset_t &infoset) {
 auto oos_t::search_t::sample_tree(const tree_t &tree,
                                   const infoset_t &infoset,
                                   rng_t &rng) const
-  -> tree_t::sample_ret_t
+  -> sample_ret_t
 {
   const auto acting_player = history_.player();
 
@@ -156,7 +157,7 @@ void oos_t::search_t::create(tree_t& tree, rng_t &rng) {
 }
 
 void oos_t::search_t::create_prior(tree_t &tree,
-                                   node_t::avg_map_t average_strategy,
+                                   action_prob_map_t average_strategy,
                                    rng_t &rng)
 {
   Expects(history_.player() != CHANCE);

@@ -118,7 +118,7 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
 
           const auto average_strategy = encoder_->decode(infoset, probs[n]);
 
-          const auto avg_map = node_t::avg_map_t(begin(average_strategy),
+          const auto avg_map = action_prob_map_t(begin(average_strategy),
                                                  end(average_strategy));
 
           // FIXME

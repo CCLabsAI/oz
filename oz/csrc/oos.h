@@ -1,18 +1,18 @@
-#ifndef OZ_OOS_H
-#define OZ_OOS_H
+#ifndef OZ_OOS_SEARCH_H
+#define OZ_OOS_SEARCH_H
 
 #include "oos_base.h"
 
-#include "sigma.h"
 #include "history.h"
-#include "node.h"
-#include "tree.h"
 #include "target.h"
 
 #include <boost/container/pmr/memory_resource.hpp>
 #include <boost/container/pmr/vector.hpp>
 
 namespace oz {
+
+class tree_t;
+class node_t;
 
 using std::move;
 
@@ -93,7 +93,7 @@ class oos_t final {
 
     // add node to tree with prior values
     void create_prior(tree_t& tree,
-                      node_t::avg_map_t average_strategy,
+                      action_prob_map_t average_strategy,
                       rng_t &rng);
 
     const history_t &history() const { return history_; }
@@ -124,9 +124,9 @@ class oos_t final {
     void tree_step(action_prob_t ap, const infoset_t& infoset); // take one step in-tree and extend path
     void prepare_suffix_probs();
 
-    tree_t::sample_ret_t sample_tree(const tree_t &tree,
-                                     const infoset_t &infoset,
-                                     rng_t &rng) const;
+    sample_ret_t sample_tree(const tree_t &tree,
+                             const infoset_t &infoset,
+                             rng_t &rng) const;
 
     void insert_node_step(tree_t &tree,
                           const infoset_t &infoset,
@@ -179,4 +179,4 @@ class oos_t final {
 
 } // namespace oz
 
-#endif // OZ_OOS_H
+#endif // OZ_OOS_SEARCH_H

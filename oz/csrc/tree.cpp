@@ -25,7 +25,7 @@ auto tree_t::sample_sigma(const infoset_t &infoset,
                           prob_t eps,
                           prob_t gamma,
                           rng_t &rng) const
-  -> tree_t::sample_ret_t
+  -> sample_ret_t
 {
   const auto it = nodes_.find(infoset);
 

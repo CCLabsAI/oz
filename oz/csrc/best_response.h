@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "oos.h"
+#include "sigma.h"
 
 namespace oz {
 

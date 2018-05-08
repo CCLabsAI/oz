@@ -4,6 +4,7 @@
 #include "game.h"
 
 #include <boost/container/small_vector.hpp>
+#include <boost/container/flat_map.hpp>
 
 namespace oz {
 
@@ -17,6 +18,18 @@ namespace oz {
   static constexpr int N_ACTIONS_SMALL = 16;
   using action_vector = boost::container::small_vector<action_t, N_ACTIONS_SMALL>;
   using prob_vector = boost::container::small_vector<prob_t, N_ACTIONS_SMALL>;
+
+  using boost::container::flat_map;
+
+  struct sample_ret_t {
+    action_prob_t ap;
+    bool out_of_tree = false;
+  };
+
+  using action_value_map_t = flat_map<action_t, value_t>;
+  using action_prob_map_t  = flat_map<action_t, value_t>;
+
+  using regret_map_t = action_value_map_t;
 
 } // namespace oz
 

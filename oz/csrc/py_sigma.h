@@ -3,7 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "oos.h"
+#include "sigma.h"
 
 namespace oz {
 

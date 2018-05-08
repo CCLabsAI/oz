@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "oos.h"
+#include "tree.h"
 #include "best_response.h"
 
 #include "games/flipguess.h"

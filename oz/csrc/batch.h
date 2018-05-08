@@ -3,6 +3,7 @@
 
 #include "encoder.h"
 #include "oos.h"
+#include "tree.h"
 #include "games/leduk.h"
 
 #include <torch/torch.h>

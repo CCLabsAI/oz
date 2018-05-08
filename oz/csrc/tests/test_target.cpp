@@ -1,10 +1,12 @@
 #include <catch.hpp>
 
+#include "games/leduk.h"
+#include "tree.h"
+#include "oos.h"
+
 #include "target.h"
 #include "target/leduk_target.h"
 #include "target/goofspiel2_target.h"
-
-#include "oos.h"
 
 using namespace std;
 using namespace oz;

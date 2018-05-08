@@ -1,4 +1,5 @@
 #include "oos.h"
+#include "tree.h"
 #include "best_response.h"
 #include "games/leduk.h"
 

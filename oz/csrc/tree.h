@@ -15,15 +15,13 @@ class tree_t final {
  public:
   using map_t = unordered_map<infoset_t, node_t>;
 
-  struct sample_ret_t {
-    action_prob_t ap;
-    bool out_of_tree = false;
-  };
-
   void create_node(infoset_t infoset);
 
-  node_t &lookup(const infoset_t &infoset) { return nodes_.at(infoset); }
-  const node_t &lookup(const infoset_t &infoset) const { return nodes_.at(infoset); }
+  node_t &lookup(const infoset_t &infoset)
+    { return nodes_.at(infoset); }
+
+  const node_t &lookup(const infoset_t &infoset) const
+    { return nodes_.at(infoset); }
 
   sample_ret_t sample_sigma(const infoset_t &infoset,
                             const set<action_t> &targets,
