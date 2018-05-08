@@ -1,6 +1,5 @@
 apiVersion: extensions/v1beta1
-# kind: Deployment
-kind: Pod
+kind: Deployment
 metadata:
   name: oz-test-pod
 spec:
@@ -13,11 +12,11 @@ spec:
     spec:
       containers:
         - name: oz-test
-          image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.3
+          image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.5
           imagePullPolicy: Always
           env:
             - name: GIT_HASH
-              value: PROD
+              value: d28f65f1ce702fb60d3dc06a17dac3d7405565b2
             - name: SCRIPT_NAME
               value: sq1
           # ports:

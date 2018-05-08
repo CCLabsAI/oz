@@ -4,6 +4,7 @@ import time
 from copy import copy
 import argparse
 import subprocess
+import os
 
 import oz
 
@@ -134,7 +135,8 @@ def main():
 
     args = parser.parse_args()
     #label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
-    #print(label)
+    label = os.environ['GIT_HASH']
+    print(label)
 
     history = None
     target = None
