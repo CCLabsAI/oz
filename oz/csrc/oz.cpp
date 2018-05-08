@@ -260,6 +260,7 @@ void bind_oz(py::module &m) {
       .def("step", (void (batch_search_t::*)(at::Tensor probs, rng_t &rng)) &batch_search_t::step)
       .def("step", (void (batch_search_t::*)(rng_t &rng)) &batch_search_t::step)
       .def("target", &batch_search_t::target)
+      .def("reset_targeting_ratio", &batch_search_t::reset_targeting_ratio)
       .def_property_readonly("tree", &batch_search_t::tree)
       .def_property_readonly("avg_targeting_ratio",
                              &batch_search_t::avg_targeting_ratio);

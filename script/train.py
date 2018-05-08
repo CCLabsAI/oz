@@ -39,7 +39,7 @@ hidden_size = 64
 search_batch_size = 20
 play_eps = 0.25
 eps = 0.4
-delta = 0.5
+delta = 0.9
 gamma = 0.01
 eta = 0.0
 beta = 0.99
@@ -159,7 +159,8 @@ class Trainer:
                 print("game ex: {:.5f}".format(ex))
 
                 self.history = copy(self.root_history)
-                self.batch_search = self.make_batch_search()
+                self.batch_search.reset_targeting_ratio()
+                # self.batch_search = self.make_batch_search()
             elif history.player == oz.Chance:
                 ap = history.sample_chance(rng)
                 history.act(ap.a)
