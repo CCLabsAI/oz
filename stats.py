@@ -37,10 +37,12 @@ def main():
 
 
     path = args.path
+    first_line = True
 
     all_results = []
+    count_files = 0
 
-
+    print(path)
     for root, dirs, files in walk(path):
         for f in sorted(files):
             if splitext(f)[1].lower() == ".txt":
@@ -52,6 +54,7 @@ def main():
 
 
                 with open(filename,"r") as file:
+                    count_files += 1
                     for line in file:
 
                         if line.startswith("R"):
@@ -67,12 +70,21 @@ def main():
                                     all_results.append(0.5)
                                 else :
                                     all_results.append(0.0)
-                        elif line.startswith("b"):
-                            hash_value = line[2:-4]
+                        elif (first_line == True):
+                            hash_value = line
+                            first_line = False
+                        elif line.startswith("Iter"):
+                            name, iter1, iter2 = line.rstrip().split(' ')
+                        elif line.startswith("Execution "):
+                            name1, name2, exec_time = line.rstrip().split(' ')
+                            exec_time = int(exec_time)
                         elif line.startswith("N"):
                             n_matches = int(line[1:])
                         elif line.startswith("Players"):
                             p0, p1, p2 = line.rstrip().split(' ')
+                        elif line.startswith("Cards"):
+                            name,cards_number = line.rstrip().split(':')
+                            cards_number = int(cards_number)
                         elif line.startswith("Iters"):
                                 name, iters_1, iters_2 = line.rstrip().split(' ')
                         elif line.startswith("epsilon"):
@@ -127,12 +139,21 @@ def main():
 
 
 
-        print("Players :    P1 :", p1, "    P2 :", p2)
-        if(p1 == "oos_targeted"):
-          print("Iterations for P1 ")
-
-        print()
         print("               Final result ")
+        print()
+        print()
+        print("Git hash            : ", hash_value)
+        print("Game                : ", args.game)
+        print("Number of cards     : ", cards_number)
+        print("Players             :  P1 :", p1, "    P2 :", p2)
+        if(p1 == "oos_targeted"):
+          print("Iterations for P1   :", iter1)
+        if(p2 == "oos_targeted"):
+            print("Iterations for P2   :", iter2)
+        print()
+        print("Execution time for each task (80 match) : ", (exec_time / (1000 * 60)), "minutes")
+        print("Number of tasks executed : ", count_files)
+
         print()
 
         tot_mean = np.mean(all_results)
