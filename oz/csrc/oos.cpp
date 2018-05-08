@@ -113,7 +113,7 @@ auto oos_t::search_t::sample_tree(const tree_t &tree,
   }
 
   // TODO cleanup this check is a bit fat
-  const auto targets = (target_ && targeted_ && target_infoset_) ?
+  const auto targets = (target_ && target_infoset_) ?
                        target_.target_actions(target_infoset_, history_) :
                        set<action_t> { };
 
