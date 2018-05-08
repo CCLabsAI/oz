@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <functional>
+#include <random>
 #include <string>
 #include <map>
 
@@ -27,6 +28,8 @@ using boost::container::small_vector;
 using real_t = double;
 using prob_t = double;
 using value_t = double;
+
+using rng_t = std::mt19937;
 
 enum class player_t {
   Chance = 0,
