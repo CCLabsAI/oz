@@ -31,11 +31,12 @@ node_t::node_t(infoset_t::actions_list_t actions) {
   Ensures(!prior_.empty());
 }
 
-sigma_regret_prior_t node_t::sigma_regret_matching() const {
-  auto alpha = (prob_t) 1.0 / (regret_n() + 1);
-  return sigma_regret_prior_t(regrets_,
-                              prior_,
-                              alpha);
+auto node_t::sigma_regret_matching() const -> node_sigma_t {
+//  auto alpha = (prob_t) 1.0 / (regret_n() + 1);
+//  return sigma_regret_prior_t(regrets_,
+//                              prior_,
+//                              alpha);
+  return sigma_regret_t(regrets_);
 }
 
 auto sigma_regret_t::pr(infoset_t infoset, action_t a) const -> prob_t {

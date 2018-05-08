@@ -45,10 +45,11 @@ class node_t final {
  public:
   using regret_map_t = node_regret_map_t;
   using avg_map_t = flat_map<action_t, prob_t>;
+  using node_sigma_t = sigma_regret_t;
 
   explicit node_t(infoset_t::actions_list_t actions);
 
-  sigma_regret_prior_t sigma_regret_matching() const;
+  node_sigma_t sigma_regret_matching() const;
   // sigma_t sigma_regret_matching() const { return make_sigma<sigma_regret_t>(regrets_); }
   // sigma_t sigma_regret_matching(sigma_t::allocator_t alloc) const
   //   { return allocate_sigma<sigma_regret_t>(alloc, regrets_); }

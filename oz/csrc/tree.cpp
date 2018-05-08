@@ -5,7 +5,7 @@ namespace oz {
 
 using namespace std;
 
-static auto sample_targeted(sigma_regret_prior_t sigma,
+static auto sample_targeted(const node_t::node_sigma_t &sigma,
                             const infoset_t &infoset,
                             const node_t &node,
                             const std::set<action_t> &targets,
@@ -84,7 +84,7 @@ auto sigma_average_t::pr(infoset_t infoset, action_t a) const -> prob_t {
 };
 
 // TODO break up this function
-static auto sample_targeted(sigma_regret_prior_t sigma,
+static auto sample_targeted(const node_t::node_sigma_t &sigma,
                             const infoset_t &infoset,
                             const node_t &node,
                             const set<action_t> &targets,

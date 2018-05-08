@@ -141,6 +141,7 @@ TEST_CASE("targeting oos search", "[target]") {
                     0.1, 0.6, 0.01);
   const auto tr_targeted = s.avg_targeting_ratio();
 
+  s.reset_target_ratio();
   s.search(h, 2000, tree_untargeted, rng_untargeted);
   const auto tr_untargeted = s.avg_targeting_ratio();
 
