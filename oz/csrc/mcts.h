@@ -14,11 +14,18 @@ namespace oz { namespace mcts {
 struct q_val_t {
   value_t w;
   int n;
+
+  value_t v_uct(int N, prob_t c) const;
 };
 
 struct node_t {
   flat_map<action_t, q_val_t> q;
   int n;
+};
+
+struct params_t {
+  value_t c;
+  prob_t nu;
 };
 
 struct tree_t {
@@ -37,8 +44,8 @@ class sigma_visits_t : public sigma_t::concept_t {
 
 class search_t final {
  public:
-  search_t(history_t history, prob_t c):
-      history_(move(history)), c_(c) { };
+  search_t(history_t history, params_t params):
+      history_(move(history)), params_(params) { };
 
   void select(const tree_t &tree, rng_t &rng); // walk from tip to leaf and updating path
   void create(tree_t &tree, rng_t &rng);       // add node to tree with zero values
@@ -72,13 +79,13 @@ class search_t final {
   history_t history_;
   path_t path_;
 
-  prob_t c_;
-//  player_t search_player_;
+  params_t params_;
+  //  player_t search_player_;
 
 }; // class search_t
 
-void search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
-            const prob_t c);
+void search(history_t h, int n_iter, tree_t &tree,
+            params_t params, rng_t &rng);
 
 }} // namespace oz::mcts
 

@@ -17,8 +17,13 @@ struct sample_ret_t {
 static
 sample_ret_t sample_tree(const tree_t &tree,
                          const infoset_t &infoset,
-                         const prob_t c,
+                         params_t params,
                          rng_t &rng);
+
+static
+action_t sample_node(const node_t &node,
+                     params_t params,
+                     rng_t &rng);
 
 static
 action_t sample_chance(const history_t &history,
@@ -27,11 +32,6 @@ action_t sample_chance(const history_t &history,
 static
 action_t sample_action(const history_t &history,
                        rng_t &rng);
-
-static
-action_t sample_node(const node_t &node,
-                     const prob_t c,
-                     rng_t &rng);
 
 void search_t::tree_step(action_t a) {
   Expects(history_.player() == CHANCE);
@@ -61,7 +61,7 @@ void search_t::select(const tree_t &tree, rng_t &rng) {
     }
     else {
       const auto infoset = history_.infoset();
-      const auto r = sample_tree(tree, infoset, c_, rng);
+      const auto r = sample_tree(tree, infoset, params_, rng);
 
       if (r.out_of_tree) {
         state_ = state_t::CREATE;
@@ -91,7 +91,7 @@ void search_t::create(tree_t &tree, rng_t &rng) {
     node.q[a]; // create empty entry
   }
 
-  tree_step(sample_node(node, c_, rng), &node);
+  tree_step(sample_node(node, params_, rng), &node);
 
   if (history_.is_terminal()) {
     state_ = state_t::BACKPROP;
@@ -144,17 +144,28 @@ void search_t::backprop(tree_t &tree) {
   state_ = state_t::FINISHED;
 }
 
+value_t q_val_t::v_uct(int N, prob_t c) const {
+  if (n == 0) {
+    return std::numeric_limits<value_t>::infinity();
+  }
+  else {
+    value_t v_avg = ((value_t) w / n);
+    value_t v_exp = c * sqrt(log((value_t) N) / (value_t) n);
+    return v_avg + v_exp;
+  }
+}
+
 static
 sample_ret_t sample_tree(const tree_t &tree,
                          const infoset_t &infoset,
-                         const prob_t c,
+                         const params_t params,
                          rng_t &rng)
 {
   const auto it = tree.nodes.find(infoset);
 
   if (it != end(tree.nodes)) {
     auto &node = it->second;
-    const auto a = sample_node(node, c, rng);
+    const auto a = sample_node(node, params, rng);
 
     // save a node pointer, used to modify the tree during backprop
     auto *node_ptr = const_cast<node_t*>(&it->second);
@@ -163,6 +174,24 @@ sample_ret_t sample_tree(const tree_t &tree,
   else {
     return { true };
   }
+}
+
+static
+action_t sample_node(const node_t &node,
+                     const params_t params,
+                     rng_t &rng)
+{
+  const auto uct_value =
+      [&](const decltype(node.q)::value_type &p) -> value_t {
+        const q_val_t &q = p.second;
+        return q.v_uct(node.n, params.c);
+      };
+
+  auto it = max_element_by(begin(node.q), end(node.q), uct_value);
+  Expects(it != end(node.q));
+
+  const auto a_best = it->first;
+  return a_best;
 }
 
 static
@@ -181,48 +210,31 @@ action_t sample_action(const history_t &history,
   return ap.a;
 }
 
-static
-action_t sample_node(const node_t &node,
-                     const prob_t c,
-                     rng_t &rng)
-{
-  static const auto uct_value =
-      [&](const decltype(node.q)::value_type &p) -> value_t {
-        const q_val_t &q = p.second;
-
-        if (q.n == 0) {
-          return std::numeric_limits<value_t>::infinity();
-        }
-        else {
-          return (q.w / q.n) + c*sqrt(log(node.n) / q.n);
-        }
-      };
-
-  auto it = max_element_by(begin(node.q), end(node.q), uct_value);
-  Expects(it != end(node.q));
-
-  const auto a_best = it->first;
-  return a_best;
-}
-
 sigma_t tree_t::sigma_average() const {
   return make_sigma<sigma_visits_t>(*this);
 }
 
 prob_t sigma_visits_t::pr(infoset_t infoset, action_t a) const {
-  const node_t &node = tree_.nodes.at(infoset);
-  return (prob_t) node.q.at(a).n / node.n;
+  const auto it = tree_.nodes.find(infoset);
+  if (it != end(tree_.nodes)) {
+    const node_t &node = tree_.nodes.at(infoset);
+    return (prob_t) node.q.at(a).n / node.n;
+  }
+  else {
+    const auto n = infoset.actions().size();
+    return (prob_t) 1.0 / n;
+  }
 }
 
 static
 void search_iter(history_t h,
                  tree_t &tree,
-                 rng_t &rng,
-                 const prob_t c)
+                 params_t params,
+                 rng_t &rng)
 {
   using state_t = search_t::state_t;
 
-  search_t s(move(h), c);
+  search_t s(move(h), params);
 
   while (s.state() != state_t::FINISHED) {
     switch (s.state()) {
@@ -244,13 +256,13 @@ void search_iter(history_t h,
   }
 }
 
-void search(history_t h, int n_iter, tree_t &tree, rng_t &rng,
-            const prob_t c)
+void search(history_t h, int n_iter, tree_t &tree,
+            params_t params, rng_t &rng)
 {
   Expects(n_iter >= 0);
 
   for(int i = 0; i < n_iter; i++) {
-    search_iter(h, tree, rng, c);
+    search_iter(h, tree, params, rng);
   }
 }
 

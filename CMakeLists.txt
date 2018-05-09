@@ -95,6 +95,15 @@ add_executable(solve_leduk
         "oz/csrc/tree.cpp"
         )
 
+add_executable(solve_leduk_mcts
+        "oz/csrc/solve_leduk_mcts.cpp"
+        "oz/csrc/games/leduk.cpp"
+        "oz/csrc/best_response.cpp"
+        "oz/csrc/mcts.cpp"
+        "oz/csrc/history.cpp"
+        "oz/csrc/sigma.cpp"
+        )
+
 add_executable(solve_goofspiel2
         "oz/csrc/solve_goofspiel2.cpp"
         "oz/csrc/games/goofspiel2.cpp"
@@ -139,5 +148,6 @@ target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
 
 target_link_libraries(tests PRIVATE boost_container)
 target_link_libraries(solve_leduk PRIVATE boost_container)
+target_link_libraries(solve_leduk_mcts PRIVATE boost_container)
 target_link_libraries(solve_goofspiel2 PRIVATE boost_container)
 target_link_libraries(_ext PRIVATE boost_container)
