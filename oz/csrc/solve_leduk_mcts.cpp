@@ -19,17 +19,24 @@ int main(int argc, char **argv) {
       .c = 18,
       .nu = 0.9,
       .gamma = .1,
-      .d = 0.002
+      .d = 0.002,
+      .smooth = false,
+      .search_player = P1
   };
 
   cout << fixed << setprecision(3);
 
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < 100; i++) {
     mcts::search(h, 10000, tree, params, rng);
     auto sigma = tree.sigma_average();
-    ex = exploitability(h, sigma);
+    auto b1 = gebr(h, P1, sigma);
+    auto b2 = gebr(h, P2, sigma);
+    ex = b1 + b2;
 
-    cout << '\r' << ex << flush;
+    cout << '\r' << ex
+         << ", " << b1
+         << ", " << b2
+         << flush;
   }
 
   cout << endl;

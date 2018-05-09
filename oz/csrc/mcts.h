@@ -13,6 +13,7 @@ namespace oz { namespace mcts {
 
 struct q_val_t {
   value_t w;
+  prob_t p;
   int n;
 
   value_t v_uct(int N, prob_t c) const;
@@ -28,6 +29,8 @@ struct params_t {
   prob_t gamma = 0.1;
   prob_t nu = 0.9;
   prob_t d = 0.005;
+  player_t search_player = CHANCE;
+  bool smooth = true;
 };
 
 struct tree_t {

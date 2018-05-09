@@ -29,12 +29,14 @@ struct sample_ret_t {
 static
 sample_ret_t sample_tree(const tree_t &tree,
                          const infoset_t &infoset,
-                         params_t params,
+                         const params_t &params,
+                         player_t player,
                          rng_t &rng);
 
 static
 action_t sample_node(const node_t &node,
-                     params_t params,
+                     const params_t &params,
+                     player_t player,
                      rng_t &rng);
 
 static
@@ -72,8 +74,9 @@ void search_t::select(const tree_t &tree, rng_t &rng) {
       tree_step(a);
     }
     else {
+      const auto player = history_.player();
       const auto infoset = history_.infoset();
-      const auto r = sample_tree(tree, infoset, params_, rng);
+      const auto r = sample_tree(tree, infoset, params_, player, rng);
 
       if (r.out_of_tree) {
         state_ = state_t::CREATE;
@@ -92,18 +95,21 @@ void search_t::create(tree_t &tree, rng_t &rng) {
   Expects(history_.player() != CHANCE);
   Expects(!history_.is_terminal());
 
+  const auto player = history_.player();
   const auto infoset = history_.infoset();
   const auto actions = infoset.actions();
+  const auto n_actions = actions.size();
+  const prob_t p_prior = (prob_t) 1.0 / n_actions;
 
   auto p = tree.nodes.emplace(infoset, node_t { });
   node_t &node = p.first->second;
 
   node.q.reserve(actions.size());
   for (const action_t a : infoset.actions()) {
-    node.q[a]; // create empty entry
+    node.q[a] = q_val_t { .w = 0, .p = p_prior, .n = 0 }; // create empty entry
   }
 
-  tree_step(sample_node(node, params_, rng), &node);
+  tree_step(sample_node(node, params_, player, rng), &node);
 
   if (history_.is_terminal()) {
     state_ = state_t::BACKPROP;
@@ -170,14 +176,15 @@ value_t q_val_t::v_uct(int N, prob_t c) const {
 static
 sample_ret_t sample_tree(const tree_t &tree,
                          const infoset_t &infoset,
-                         const params_t params,
+                         const params_t &params,
+                         player_t player,
                          rng_t &rng)
 {
   const auto it = tree.nodes.find(infoset);
 
   if (it != end(tree.nodes)) {
     auto &node = it->second;
-    const auto a = sample_node(node, params, rng);
+    const auto a = sample_node(node, params, player, rng);
 
     // save a node pointer, used to modify the tree during backprop
     auto *node_ptr = const_cast<node_t*>(&it->second);
@@ -189,9 +196,64 @@ sample_ret_t sample_tree(const tree_t &tree,
 }
 
 static
-action_t sample_node(const node_t &node,
-                     const params_t params,
-                     rng_t &rng)
+action_t sample_node_uct(const node_t &node,
+                         const params_t &params,
+                         rng_t &rng)
+{
+  const auto uct_value =
+      [&](const decltype(node.q)::value_type &p) -> value_t {
+        const q_val_t &q = p.second;
+        return q.v_uct(node.n, params.c);
+      };
+
+  auto it = max_element_by(begin(node.q), end(node.q), uct_value);
+  Expects(it != end(node.q));
+
+  const auto a_best = it->first;
+  return a_best;
+}
+
+static
+action_t sample_node_average(const node_t &node,
+                             const params_t &params,
+                             rng_t &rng)
+{
+  action_vector actions(node.q.size());
+  transform(begin(node.q), end(node.q), begin(actions),
+            [](const auto &p) { return p.first; });
+
+  prob_vector weights(node.q.size());
+  transform(begin(node.q), end(node.q), begin(weights),
+            [](const auto &p) { return p.second.n; });
+
+  auto d = discrete_distribution<>(begin(weights), end(weights));
+  int i = d(rng);
+  return actions[i];
+}
+
+// TODO remove duplication
+static
+action_t sample_node_prior(const node_t &node,
+                           const params_t &params,
+                           rng_t &rng)
+{
+  action_vector actions(node.q.size());
+  transform(begin(node.q), end(node.q), begin(actions),
+            [](const auto &p) { return p.first; });
+
+  prob_vector weights(node.q.size());
+  transform(begin(node.q), end(node.q), begin(weights),
+            [](const auto &p) { return p.second.p; });
+
+  auto d = discrete_distribution<>(begin(weights), end(weights));
+  int i = d(rng);
+  return actions[i];
+}
+
+static
+action_t sample_node_smooth(const node_t &node,
+                            const params_t &params,
+                            rng_t &rng)
 {
   auto d_z = uniform_real_distribution<>();
   prob_t z = d_z(rng);
@@ -199,30 +261,26 @@ action_t sample_node(const node_t &node,
   prob_t nu_k = max(params.gamma, params.nu / (1 + params.d*sqrt(node.n)));
 
   if (z < nu_k) {
-    const auto uct_value =
-        [&](const decltype(node.q)::value_type &p) -> value_t {
-          const q_val_t &q = p.second;
-          return q.v_uct(node.n, params.c);
-        };
-
-    auto it = max_element_by(begin(node.q), end(node.q), uct_value);
-    Expects(it != end(node.q));
-
-    const auto a_best = it->first;
-    return a_best;
+    return sample_node_uct(node, params, rng);
   }
   else {
-    action_vector actions(node.q.size());
-    transform(begin(node.q), end(node.q), begin(actions),
-              [](const auto &p) { return p.first; });
+    return sample_node_average(node, params, rng);
+  }
+}
 
-    prob_vector weights(node.q.size());
-    transform(begin(node.q), end(node.q), begin(weights),
-              [](const auto &p) { return p.second.n; });
-
-    auto d = discrete_distribution<>(begin(weights), end(weights));
-    int i = d(rng);
-    return actions[i];
+static
+action_t sample_node(const node_t &node,
+                     const params_t &params,
+                     player_t player,
+                     rng_t &rng)
+{
+  if (params.search_player == player || params.search_player == CHANCE) {
+    return params.smooth ?
+           sample_node_smooth(node, params, rng) :
+           sample_node_uct(node, params, rng);
+  }
+  else {
+    return sample_node_prior(node, params, rng);
   }
 }
 
