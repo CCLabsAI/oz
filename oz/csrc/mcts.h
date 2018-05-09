@@ -24,8 +24,10 @@ struct node_t {
 };
 
 struct params_t {
-  value_t c;
-  prob_t nu;
+  value_t c = sqrt(2);
+  prob_t gamma = 0.1;
+  prob_t nu = 0.9;
+  prob_t d = 0.005;
 };
 
 struct tree_t {
@@ -80,7 +82,6 @@ class search_t final {
   path_t path_;
 
   params_t params_;
-  //  player_t search_player_;
 
 }; // class search_t
 

@@ -14,7 +14,13 @@ int main(int argc, char **argv) {
   mcts::tree_t tree;
   rng_t rng(1);
   value_t ex;
-  mcts::params_t params = { .c = 20 };
+
+  mcts::params_t params = {
+      .c = 18,
+      .nu = 0.9,
+      .gamma = .1,
+      .d = 0.002
+  };
 
   cout << fixed << setprecision(3);
 
@@ -28,7 +34,7 @@ int main(int argc, char **argv) {
 
   cout << endl;
 
-  for (const auto p : tree.nodes) {
+  for (const auto &p : tree.nodes) {
     const infoset_t &infoset = p.first;
     const mcts::node_t &node = p.second;
     cout << infoset.str()
@@ -46,5 +52,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  cout << endl;
+  cout << "exploitability: " << ex
+       << endl;
 }

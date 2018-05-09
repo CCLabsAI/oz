@@ -1,12 +1,24 @@
 #include "mcts.h"
 
-#include <utility>
+#include <random>
 
 #include <boost/container/pmr/global_resource.hpp>
+#include <boost/container/small_vector.hpp>
 
 namespace oz { namespace mcts {
 
 using boost::container::pmr::new_delete_resource;
+
+static constexpr int N_ACTIONS_SMALL = 16;
+using action_vector = boost::container::small_vector<action_t, N_ACTIONS_SMALL>;
+using prob_vector = boost::container::small_vector<prob_t, N_ACTIONS_SMALL>;
+
+using std::transform;
+using std::begin;
+using std::end;
+using std::uniform_real_distribution;
+using std::discrete_distribution;
+using std::max;
 
 struct sample_ret_t {
   bool out_of_tree;
@@ -181,17 +193,37 @@ action_t sample_node(const node_t &node,
                      const params_t params,
                      rng_t &rng)
 {
-  const auto uct_value =
-      [&](const decltype(node.q)::value_type &p) -> value_t {
-        const q_val_t &q = p.second;
-        return q.v_uct(node.n, params.c);
-      };
+  auto d_z = uniform_real_distribution<>();
+  prob_t z = d_z(rng);
 
-  auto it = max_element_by(begin(node.q), end(node.q), uct_value);
-  Expects(it != end(node.q));
+  prob_t nu_k = max(params.gamma, params.nu / (1 + params.d*sqrt(node.n)));
 
-  const auto a_best = it->first;
-  return a_best;
+  if (z < nu_k) {
+    const auto uct_value =
+        [&](const decltype(node.q)::value_type &p) -> value_t {
+          const q_val_t &q = p.second;
+          return q.v_uct(node.n, params.c);
+        };
+
+    auto it = max_element_by(begin(node.q), end(node.q), uct_value);
+    Expects(it != end(node.q));
+
+    const auto a_best = it->first;
+    return a_best;
+  }
+  else {
+    action_vector actions(node.q.size());
+    transform(begin(node.q), end(node.q), begin(actions),
+              [](const auto &p) { return p.first; });
+
+    prob_vector weights(node.q.size());
+    transform(begin(node.q), end(node.q), begin(weights),
+              [](const auto &p) { return p.second.n; });
+
+    auto d = discrete_distribution<>(begin(weights), end(weights));
+    int i = d(rng);
+    return actions[i];
+  }
 }
 
 static
