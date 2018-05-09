@@ -47,10 +47,11 @@ add_executable(tests
         "oz/csrc/best_response.cpp"
 
         "oz/csrc/tests/test_oos.cpp"
+        "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
         "oz/csrc/sigma.cpp"
         "oz/csrc/node.cpp"
         "oz/csrc/tree.cpp"
-        "oz/csrc/oos.cpp"
 
         "oz/csrc/tests/test_leduk.cpp"
         "oz/csrc/games/leduk.cpp"
@@ -61,6 +62,9 @@ add_executable(tests
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduk_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
+
+        "oz/csrc/tests/test_mcts.cpp"
+        "oz/csrc/mcts.cpp"
 
         "oz/csrc/oos_rec.cpp"
         )
@@ -85,6 +89,7 @@ add_executable(solve_leduk
         "oz/csrc/games/leduk.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
         "oz/csrc/sigma.cpp"
         "oz/csrc/node.cpp"
         "oz/csrc/tree.cpp"
@@ -95,6 +100,7 @@ add_executable(solve_goofspiel2
         "oz/csrc/games/goofspiel2.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
         "oz/csrc/sigma.cpp"
         "oz/csrc/node.cpp"
         "oz/csrc/tree.cpp"
@@ -104,6 +110,7 @@ pybind11_add_module(_ext
         "oz/csrc/oz.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
         "oz/csrc/sigma.cpp"
         "oz/csrc/node.cpp"
         "oz/csrc/tree.cpp"

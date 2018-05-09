@@ -58,6 +58,11 @@ auto make_history(Args&& ... args) -> history_t {
   return history_t(std::make_unique<Game>(std::forward<Args>(args)...));
 }
 
+action_prob_t sample_chance(const history_t &history, rng_t& rng,
+                            game_t::action_prob_allocator_t alloc);
+
+action_prob_t sample_action(const history_t &h, rng_t &rng);
+
 } // namespace oz
 
 #endif // OZ_HISTORY_H
