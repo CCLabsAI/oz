@@ -41,6 +41,7 @@ def main():
 
     all_results = []
     count_files = 0
+    tot_matches = 0
 
     print(path)
     for root, dirs, files in walk(path):
@@ -80,6 +81,7 @@ def main():
                             exec_time = int(exec_time)
                         elif line.startswith("N"):
                             n_matches = int(line[1:])
+                            tot_matches += n_matches
                         elif line.startswith("Players"):
                             p0, p1, p2 = line.rstrip().split(' ')
                         elif line.startswith("Cards"):
@@ -89,6 +91,8 @@ def main():
                                 name, iters_1, iters_2 = line.rstrip().split(' ')
                         elif line.startswith("epsilon"):
                             name, epsilon = line.rstrip().split(':')
+                        elif line.startswith("beta"):
+                            name, beta = line.rstrip().split(':')
                         elif line.startswith("delta"):
                              name, delta = line.rstrip().split(':')
                         elif line.startswith("gamma"):
@@ -142,17 +146,26 @@ def main():
         print("               Final result ")
         print()
         print()
-        print("Git hash            : ", hash_value)
-        print("Game                : ", args.game)
-        print("Number of cards     : ", cards_number)
-        print("Players             :  P1 :", p1, "    P2 :", p2)
+        print("Git hash                  : ", hash_value)
+        print("Game                      : ", args.game)
+        print("Number of matches played  : ", tot_matches)
+        print("Number of cards           : ", cards_number)
+        print("Players                   :  P1 :", p1, "    P2 :", p2)
         if(p1 == "oos_targeted"):
-          print("Iterations for P1   :", iter1)
+          print("Iterations for P1         :", iter1)
         if(p2 == "oos_targeted"):
-            print("Iterations for P2   :", iter2)
+            print("Iterations for P2         :", iter2)
         print()
         print("Execution time for each task (80 match) : ", (exec_time / (1000 * 60)), "minutes")
         print("Number of tasks executed : ", count_files)
+        print()
+        print()
+        print("        Parameters :")
+        print()
+        print("beta    :", beta)
+        print("delta   :", delta)
+        print("epsilon :", epsilon)
+        print("gamma   :", gamma)
 
         print()
 
