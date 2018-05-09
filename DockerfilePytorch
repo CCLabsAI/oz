@@ -1,7 +1,7 @@
 FROM gcr.io/ornate-axiom-187403/pytorch:0.4.0.2
 
 ARG wheel_filename
-ENV N_CORE=32
+ENV N_CORE=31
 
 RUN mkdir -p /app
 RUN mkdir -p /app/output

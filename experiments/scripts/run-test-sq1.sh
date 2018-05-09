@@ -1,9 +1,9 @@
 #!/bin/bash
 
-echo "---------------start-------------- "
+echo "---------------start-------------- $N_CORE"
 
 for n in `seq $N_CORE`; do
-  python /app/examples/misc/test.py --game goofspiel --goofcards=6 --p1 oos_targeted --p2 random --iter1 100 --iter2 0 --eps 0.4 --delta 0.9 --gamma=0.01 > output/out$n.txt &
+  python /app/examples/misc/test.py --game goofspiel --goofcards=13 --p1 oos_targeted --p2 oos_targeted --iter1 250000 --iter2 250000 --eps 0.4 --delta 0.9 --gamma=0.01 --beta=0.99 > output/out$n.txt &
 done
 
 wait
