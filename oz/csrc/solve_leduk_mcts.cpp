@@ -15,14 +15,13 @@ int main(int argc, char **argv) {
   rng_t rng(1);
   value_t ex;
 
-  mcts::params_t params = {
-      .c = 18,
-      .eta = 0.9,
-      .gamma = .1,
-      .d = 0.002,
-//      .smooth = false,
-//      .search_player = P1
-  };
+  mcts::params_t params;
+  params.c = 18;
+  params.eta = 0.9;
+  params.gamma = 0.1;
+  params.d = 0.002;
+  // params.smooth = false;
+  // params.search_player = P1;
 
   cout << fixed << setprecision(3);
 
