@@ -20,23 +20,26 @@ struct q_val_t {
 };
 
 struct node_t {
-  flat_map<action_t, q_val_t> q;
+  using map_t = flat_map<action_t, q_val_t>;
+
+  map_t q;
   int n;
 };
 
 struct params_t {
   value_t c = sqrt(2);
   prob_t gamma = 0.1;
-  prob_t nu = 0.9;
+  prob_t eta = 0.9;
   prob_t d = 0.005;
   player_t search_player = CHANCE;
   bool smooth = true;
 };
 
 struct tree_t {
+  using map_t = std::unordered_map<infoset_t, node_t>;
   sigma_t sigma_average() const;
 
-  std::unordered_map<infoset_t, node_t> nodes;
+  map_t nodes;
 };
 
 class sigma_visits_t : public sigma_t::concept_t {
@@ -67,6 +70,7 @@ class search_t final {
 
   state_t state() const { return state_; }
   const history_t &history() const { return history_; }
+  infoset_t infoset() const { return history_.infoset(); }
 
  private:
   void tree_step(action_t a); // take one step in-tree and extend path

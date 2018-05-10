@@ -64,7 +64,7 @@ void batch_search_t::target(infoset_t target_infoset) {
   target_infoset_ = move(target_infoset);
 }
 
-bool search_needs_eval(const search_t &search) {
+static bool search_needs_eval(const search_t &search) {
   using state_t = search_t::state_t;
 
   return (

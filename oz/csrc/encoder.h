@@ -4,7 +4,6 @@
 #include <ATen/ATen.h>
 
 #include "game.h"
-#include "oos.h"
 #include "sigma.h"
 
 #include "games/leduk.h"

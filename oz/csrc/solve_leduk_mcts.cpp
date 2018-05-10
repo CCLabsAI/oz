@@ -17,16 +17,16 @@ int main(int argc, char **argv) {
 
   mcts::params_t params = {
       .c = 18,
-      .nu = 0.9,
+      .eta = 0.9,
       .gamma = .1,
       .d = 0.002,
-      .smooth = false,
-      .search_player = P1
+//      .smooth = false,
+//      .search_player = P1
   };
 
   cout << fixed << setprecision(3);
 
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 10000; i++) {
     mcts::search(h, 10000, tree, params, rng);
     auto sigma = tree.sigma_average();
     auto b1 = gebr(h, P1, sigma);

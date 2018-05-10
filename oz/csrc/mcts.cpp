@@ -258,7 +258,7 @@ action_t sample_node_smooth(const node_t &node,
   auto d_z = uniform_real_distribution<>();
   prob_t z = d_z(rng);
 
-  prob_t nu_k = max(params.gamma, params.nu / (1 + params.d*sqrt(node.n)));
+  prob_t nu_k = max(params.gamma, params.eta / (1 + params.d*sqrt(node.n)));
 
   if (z < nu_k) {
     return sample_node_uct(node, params, rng);
