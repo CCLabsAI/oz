@@ -147,7 +147,7 @@ void bind_oz(py::module &m) {
 
   py::class_<oos_t>(m, "OOS")
       .def(py::init<>())
-      .def("reset_target_ratio", &oos_t::reset_target_ratio)
+      .def("reset_targeting_ratio", &oos_t::reset_targeting_ratio)
       .def_property_readonly("avg_targeting_ratio", &oos_t::avg_targeting_ratio)
       .def("search", &oos_t::search,
            py::arg("history"),

@@ -85,7 +85,7 @@ TEST_CASE("targeting goofspiel2 regression 1", "[target]") {
 
   h_target.act(make_action(3)); // P1
   h_target.act(make_action(0)); // P2
-  
+
   h_target.act(make_action(2)); // P1
   h_target.act(make_action(3)); // P2
 
@@ -136,12 +136,14 @@ TEST_CASE("targeting oos search", "[target]") {
 
   const auto &target_infoset = h_target.infoset();
 
-  s.search_targeted(h, 2000, tree_targeted, rng_targeted,
+  s.reset_targeting_ratio();
+  s.search_targeted(h, 5000, tree_targeted, rng_targeted,
                     target, target_infoset,
-                    0.1, 0.6, 0.01);
+                    0.1, 0.6, 0.01, .99);
   const auto tr_targeted = s.avg_targeting_ratio();
 
-  s.search(h, 2000, tree_untargeted, rng_untargeted);
+  s.reset_targeting_ratio();
+  s.search(h, 5000, tree_untargeted, rng_untargeted);
   const auto tr_untargeted = s.avg_targeting_ratio();
 
   const auto infoset = h_target.infoset();
@@ -156,9 +158,10 @@ TEST_CASE("targeting oos search", "[target]") {
 
   tree_t tree_targeted_strong;
 
-  s.search_targeted(h, 2000, tree_targeted_strong, rng_targeted,
+  s.reset_targeting_ratio();
+  s.search_targeted(h, 5000, tree_targeted_strong, rng_targeted,
                     target, target_infoset,
-                    0.1, 0.9, 0.01);
+                    0.1, 0.9, 0.01, .99);
 
   const auto tr_strong = s.avg_targeting_ratio();
   const auto &node_strong = tree_targeted_strong.lookup(infoset);
