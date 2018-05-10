@@ -48,6 +48,10 @@ add_executable(tests
 
         "oz/csrc/tests/test_oos.cpp"
         "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
+        "oz/csrc/sigma.cpp"
+        "oz/csrc/node.cpp"
+        "oz/csrc/tree.cpp"
 
         "oz/csrc/tests/test_leduk.cpp"
         "oz/csrc/games/leduk.cpp"
@@ -58,6 +62,9 @@ add_executable(tests
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduk_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
+
+        "oz/csrc/tests/test_mcts.cpp"
+        "oz/csrc/mcts.cpp"
 
         "oz/csrc/oos_rec.cpp"
         )
@@ -82,6 +89,19 @@ add_executable(solve_leduk
         "oz/csrc/games/leduk.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
+        "oz/csrc/sigma.cpp"
+        "oz/csrc/node.cpp"
+        "oz/csrc/tree.cpp"
+        )
+
+add_executable(solve_leduk_mcts
+        "oz/csrc/solve_leduk_mcts.cpp"
+        "oz/csrc/games/leduk.cpp"
+        "oz/csrc/best_response.cpp"
+        "oz/csrc/mcts.cpp"
+        "oz/csrc/history.cpp"
+        "oz/csrc/sigma.cpp"
         )
 
 add_executable(solve_goofspiel2
@@ -89,13 +109,23 @@ add_executable(solve_goofspiel2
         "oz/csrc/games/goofspiel2.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
+        "oz/csrc/sigma.cpp"
+        "oz/csrc/node.cpp"
+        "oz/csrc/tree.cpp"
         )
 
 pybind11_add_module(_ext
         "oz/csrc/oz.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
+        "oz/csrc/sigma.cpp"
+        "oz/csrc/node.cpp"
+        "oz/csrc/tree.cpp"
         "oz/csrc/batch.cpp"
+        "oz/csrc/mcts.cpp"
+        "oz/csrc/mcts_batch.cpp"
         "oz/csrc/py_sigma.cpp"
         "oz/csrc/games/flipguess.cpp"
         "oz/csrc/games/kuhn.cpp"
@@ -120,5 +150,6 @@ target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
 
 target_link_libraries(tests PRIVATE boost_container)
 target_link_libraries(solve_leduk PRIVATE boost_container)
+target_link_libraries(solve_leduk_mcts PRIVATE boost_container)
 target_link_libraries(solve_goofspiel2 PRIVATE boost_container)
 target_link_libraries(_ext PRIVATE boost_container)

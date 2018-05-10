@@ -1,21 +1,27 @@
 TODO
 ====
 
-   * (andyk) investigate exploding loss
+   * (andyk) actually mask out invalid actions instead of trying to
+     get the NN to assign 0 probability to them.
 
-ex: 4.32167
-mean loss: 0.00023
-................................................................
-
-   * (andyk) actually mask out invalid actions instead of trying to get the NN to assign 0 probability to them.
-
-Low priority:
-
-   * (andyk) average_sigma currently stores a reference, this will cause bugs if you keep
-     a reference to the sigma without a reference to the underlying tree, maybe a
-     shared pointer should be used? I don't really want to copy the tree into the
-     strategy...
+# Low priority:
 
    * (andyk) Add code to give names to actions
 
    * (andyk) Make code to generically play a game
+
+# Done:
+
+   * DONE (andyk) investigate reweighting
+
+   * DONE (andyk) investigate average targeting ratios not falling
+     below delta
+
+   * DONE (andyk) convert targeting to use an exponential moving
+     average to remove boundary effects at round changes
+
+   * DONE (andyk) average_sigma currently stores a reference, this
+     will cause bugs if you keep a reference to the sigma without a
+     reference to the underlying tree, maybe a shared pointer should
+     be used? I don't really want to copy the tree into the
+     strategy...

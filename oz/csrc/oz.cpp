@@ -9,6 +9,8 @@
 #include "oos.h"
 #include "batch.h"
 #include "encoder.h"
+#include "mcts.h"
+#include "mcts_batch.h"
 #include "py_sigma.h"
 #include "games/flipguess.h"
 #include "games/kuhn.h"
@@ -207,6 +209,7 @@ void bind_oz(py::module &m) {
         py::return_value_policy::move,
         py::keep_alive<0, 1>())
       .def("size", &tree_t::size)
+      .def("clear", &tree_t::clear)
       .def("create_node", &tree_t::create_node)
       .def("lookup", (node_t &(tree_t::*)(const infoset_t &)) &tree_t::lookup)
       .def_property_readonly("nodes", (tree_t::map_t &(tree_t::*)()) &tree_t::nodes);
@@ -245,21 +248,51 @@ void bind_oz(py::module &m) {
   py::class_<batch_search_t>(m, "BatchSearch")
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>, target_t,
-                    prob_t, prob_t, prob_t>(),
+                    prob_t, prob_t, prob_t, prob_t, prob_t>(),
            py::arg("batch_size"),
            py::arg("history"),
            py::arg("encoder"),
            py::arg("target"),
            py::arg("eps"),
            py::arg("delta"),
-           py::arg("gamma"))
+           py::arg("gamma"),
+           py::arg("beta"),
+           py::arg("eta"))
       .def("generate_batch", &batch_search_t::generate_batch)
       .def("step", (void (batch_search_t::*)(at::Tensor probs, rng_t &rng)) &batch_search_t::step)
       .def("step", (void (batch_search_t::*)(rng_t &rng)) &batch_search_t::step)
       .def("target", &batch_search_t::target)
-      .def_property_readonly("tree", &batch_search_t::tree)
+      .def("reset_targeting_ratio", &batch_search_t::reset_targeting_ratio)
+      .def_property_readonly("tree", &batch_search_t::tree,
+                             py::return_value_policy::reference_internal)
       .def_property_readonly("avg_targeting_ratio",
                              &batch_search_t::avg_targeting_ratio);
+
+  py::class_<mcts::params_t>(m, "MCTSParams")
+      .def(py::init<>())
+      .def_readwrite("c", &mcts::params_t::c)
+      .def_readwrite("gamma", &mcts::params_t::gamma)
+      .def_readwrite("eta", &mcts::params_t::eta)
+      .def_readwrite("d", &mcts::params_t::d)
+      .def_readwrite("smooth", &mcts::params_t::smooth)
+      .def_readwrite("search_player", &mcts::params_t::search_player);
+
+  py::class_<mcts::tree_t>(m, "MCTSTree")
+      .def(py::init<>())
+      .def("sigma_average", &mcts::tree_t::sigma_average,
+           py::return_value_policy::move,
+           py::keep_alive<0, 1>())
+//      .def("lookup", (mcts::node_t &(mcts::tree_t::*)(const infoset_t &)) &mcts::tree_t::lookup)
+      .def_readwrite("nodes", &mcts::tree_t::nodes);
+
+  py::class_<mcts::batch_search_t>(m, "MCTSBatchSearch")
+      .def(py::init<int, history_t, std::shared_ptr<encoder_t>, mcts::params_t>())
+      .def("generate_batch", &mcts::batch_search_t::generate_batch)
+      .def("step", (void (mcts::batch_search_t::*)(at::Tensor probs, rng_t &rng)) &mcts::batch_search_t::step)
+      .def("step", (void (mcts::batch_search_t::*)(rng_t &rng)) &mcts::batch_search_t::step)
+      .def_property_readonly("tree", &mcts::batch_search_t::tree,
+                             py::return_value_policy::reference_internal);
+
 
   m.def("make_flipguess", []() {
     return flipguess_t();

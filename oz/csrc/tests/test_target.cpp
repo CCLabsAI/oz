@@ -5,6 +5,7 @@
 #include "target/goofspiel2_target.h"
 
 #include "oos.h"
+#include "tree.h"
 
 using namespace std;
 using namespace oz;

@@ -59,6 +59,17 @@ bool sums_to_one(T col) {
   return abs(1.0 - sum_probs(col)) < 1e-9;
 }
 
+static inline const bool is_normal(double x) {
+    switch(std::fpclassify(x)) {
+        case FP_INFINITE:  return false;
+        case FP_NAN:       return false;
+        case FP_NORMAL:    return true;
+        case FP_SUBNORMAL: return false;
+        case FP_ZERO:      return true;
+        default:           return false;
+    }
+}
+
 } // namespace oz
 
 #endif // OZ_UTIL_H

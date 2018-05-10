@@ -16,11 +16,11 @@ using search_list_t = batch_search_t::search_list_t;
 using boost::container::pmr::new_delete_resource;
 
 auto batch_search_t::make_search(player_t search_player) -> search_t {
-  return {
+  return search_t {
     root_, search_player,
     target_, target_infoset_,
     new_delete_resource(),
-    eps_, delta_, gamma_
+    eps_, delta_, gamma_, eta_
   };
 }
 
@@ -30,14 +30,15 @@ batch_search_t::batch_search_t(int batch_size,
   batch_search_t(batch_size,
                  move(root), move(encoder),
                  null_target(),
-                 0.4, 0.9, 0.01)
+                 0.4, 0.9, 0.01, 0.99, 1.0)
 { }
 
 batch_search_t::batch_search_t(int batch_size,
                                history_t root,
                                encoder_ptr_t encoder,
                                target_t target,
-                               prob_t eps, prob_t delta, prob_t gamma) :
+                               prob_t eps, prob_t delta, prob_t gamma,
+                               prob_t beta, prob_t eta) :
     batch_size_(batch_size),
     root_(move(root)),
     encoder_(move(encoder)),
@@ -46,7 +47,8 @@ batch_search_t::batch_search_t(int batch_size,
     eps_(eps),
     delta_(delta),
     gamma_(gamma),
-    avg_targeting_ratio_N_(1),
+    beta_(beta),
+    eta_(eta),
     avg_targeting_ratio_(1.0)
 {
   auto player = P1;
@@ -59,12 +61,10 @@ batch_search_t::batch_search_t(int batch_size,
 }
 
 void batch_search_t::target(infoset_t target_infoset) {
-  avg_targeting_ratio_N_ = 1;
-  avg_targeting_ratio_ = 1.0;
   target_infoset_ = move(target_infoset);
 }
 
-bool search_needs_eval(const search_t &search) {
+static bool search_needs_eval(const search_t &search) {
   using state_t = search_t::state_t;
 
   return (
@@ -114,20 +114,16 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
         {
           Expects(search_needs_eval(search));
           const int n = i++;
-          // const auto infoset = search.infoset();
+          const auto infoset = search.infoset();
 
-          // const auto regrets = encoder_->decode(infoset, regret[n]);
-          // const auto average_strategy = encoder_->decode(infoset, avg[n]);
+          const auto average_strategy = encoder_->decode(infoset, probs[n]);
 
-          // const auto regrets_map = node_t::regret_map_t(begin(regrets),
-          //                                               end(regrets));
-
-          // const auto avg_map = node_t::avg_map_t(begin(average_strategy),
-          //                                        end(average_strategy));
+          const auto avg_map = action_prob_map_t(begin(average_strategy),
+                                                 end(average_strategy));
 
           // FIXME
-          search.create(tree_, rng);
-          // search.create_prior(tree_, regrets_map, avg_map, rng);
+          // search.create(tree_, rng);
+          search.create_prior(tree_, avg_map, rng);
         }
         break;
 
@@ -152,8 +148,7 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
       case state_t::FINISHED:
         // TODO find a more float precision friendly way to compute this
         // TODO maybe this should just be an exponential moving average? This setup could cause high variance...
-        avg_targeting_ratio_ += (search.targeting_ratio() - avg_targeting_ratio_) /
-                                    ++avg_targeting_ratio_N_;
+        avg_targeting_ratio_ = beta_*avg_targeting_ratio_ + (1-beta_)*search.targeting_ratio();
 
         Ensures(avg_targeting_ratio_ != 0);
 
@@ -161,6 +156,7 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
         auto next_player = (last_player == P1 ? P2 : P1);
         search = make_search(next_player);
 
+        // TODO make this optional?
         search.set_initial_weight(1.0/avg_targeting_ratio_);
         break;
     }

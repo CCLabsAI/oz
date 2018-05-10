@@ -1,13 +1,13 @@
+#include "best_response.h"
+
+#include "util.h"
+#include "hash.h"
+
 #include <cassert>
 #include <algorithm>
 #include <iterator>
 #include <vector>
 #include <set>
-
-#include "util.h"
-#include "hash.h"
-
-#include "best_response.h"
 
 namespace oz {
 

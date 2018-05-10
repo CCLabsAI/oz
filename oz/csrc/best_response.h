@@ -3,7 +3,8 @@
 
 #include <unordered_map>
 
-#include "oos.h"
+#include "history.h"
+#include "sigma.h"
 
 namespace oz {
 
