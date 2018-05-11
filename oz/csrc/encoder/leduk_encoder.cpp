@@ -174,12 +174,10 @@ auto leduk_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &
   auto i = a_dist(rng);
 
   auto a = actions[i];
-  auto pr_a = weights[i]/total;
+  auto pr_a = (total > 0) ? weights[i]/total : (prob_t) 1.0 / actions.size();
   auto rho1 = pr_a, rho2 = pr_a;
 
-  Ensures(total >= 0);
   Ensures(pr_a >= 0 && pr_a <= 1);
-
   return { a, pr_a, rho1, rho2 };
 }
 
