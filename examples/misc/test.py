@@ -44,13 +44,49 @@ class TargetedOOSPlayer(OOSPlayer):
             self.target, infoset,
             eps=self.eps, delta=self.eps, gamma=self.gamma)
 
+# TODO move me
+import oz.nn
+import torch
+import argparse
+
+def make_nn_player(encoder, checkpoint_path):
+    ob = torch.load(checkpoint_path)
+    encoding_size = encoder.encoding_size()
+    max_actions = encoder.max_actions()
+
+    train_args = argparse.Namespace(**ob['args'])
+    model = oz.nn.model_with_args(train_args, input_size=encoding_size, output_size=max_actions)
+    model.load_state_dict(ob['model_state'])
+    model.eval()
+
+    player = NeuralNetPlayer(model=model, encoder=encoder)
+    return player
+
+
+class NeuralNetPlayer:
+    def __init__(self, model, encoder):
+        self.model = model
+        self.encoder = encoder
+        self.encoding_size = encoder.encoding_size()
+
+    def sample_action(self, infoset, rng):
+        encoder = self.encoder
+        infoset_encoded = torch.zeros(self.encoding_size)
+        encoder.encode(infoset, infoset_encoded)
+        logits = self.model.forward(infoset_encoded.unsqueeze(0))
+        probs = logits.exp()
+        ap = encoder.decode_and_sample(infoset, probs[0], rng)
+        return ap.a
+
+    def think(self, infoset, rng):
+        pass
+
 class UniformRandomPlayer:
     def sample_action(self, infoset, rng):
         return random.choice(infoset.actions)
 
     def think(self, infoset, rng):
         pass
-
 
 class SequentialPlayer:
     def sample_action(self, infoset, rng):
@@ -102,7 +138,7 @@ def play_matches(n_matches, make_players, h, rng):
     return utilities
 
 def main():
-  
+
     t0 = int(round(time.time() * 1000))
     parser = argparse.ArgumentParser(description="run head-to-head play tests")
     parser.add_argument("--game", help="game to play", required=True)
@@ -132,6 +168,12 @@ def main():
     parser.add_argument("--beta", type=float,
                         help="opponent error factor",
                         default=0.99)
+    parser.add_argument("--checkpoint_path1",
+                        help="player 1 nn checkpoint",
+                        default=None)
+    parser.add_argument("--checkpoint_path2",
+                        help="player 2 nn checkpoint",
+                        default=None)
 
     args = parser.parse_args()
     #label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
@@ -144,14 +186,16 @@ def main():
     if args.game == 'leduk' or args.game == 'leduk_poker':
         history = oz.make_leduk_history()
         target = oz.make_leduk_target()
+        encoder = oz.make_leduk_encoder()
     elif args.game == 'goofspiel' or args.game == 'goofspiel2':
         history = oz.make_goofspiel2_history(args.goofcards)
         target = oz.make_goofspiel2_target()
+        encoder = oz.make_leduk_encoder()
     else:
         print('error: unknown game: {}'.format(args.game), file=sys.stderr)
         exit(1)
 
-    def make_player(algo, n_iter):
+    def make_player(algo, n_iter, checkpoint_path):
         if algo == 'random':
             return UniformRandomPlayer()
 
@@ -170,16 +214,20 @@ def main():
                                      delta=args.delta,
                                      gamma=args.gamma,
                                      beta=args.beta)
+        elif algo == 'nn':
+            if checkpoint_path is None:
+                print('error: missing checkpoint path', file=sys.stderr)
+                exit(1)
+            return make_nn_player(encoder, checkpoint_path)
 
         else:
-            print('error: unknown search algorithm: {}'.format(algo),
-                  file=sys.stderr)
+            print('error: unknown search algorithm: {}'.format(algo), file=sys.stderr)
             exit(1)
 
 
     def make_players():
-        player1 = make_player(args.p1, args.iter1)
-        player2 = make_player(args.p2, args.iter2)
+        player1 = make_player(args.p1, args.iter1, args.checkpoint_path1)
+        player2 = make_player(args.p2, args.iter2, args.checkpoint_path2)
         return player1, player2
 
 

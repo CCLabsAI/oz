@@ -7,6 +7,8 @@ import torch.utils.data
 
 import oz
 import oz.reservoir
+# TODO
+# import oz.nn
 
 import os
 import argparse
