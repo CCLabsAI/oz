@@ -7,15 +7,25 @@ spec:
     spec:
       containers:
       - name: pi
-        image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.21
-        command: ["/bin/bash", "-c", "experiments/scripts/run-test-${SCRIPT_NAME}.sh"]
+        image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.33
+        command: ["/bin/bash", "-c", "experiments/scripts/run-test-sq1.sh"]
         env:
           - name: GIT_HASH
-            value: b0f9d1984a21a5987fd73646c876e673bcf7a37a
+            value: a096257c9287fa3f5cb092ac5f62a4ab89630343
           - name: SCRIPT_NAME
             value: sq1
           - name: N_CORE
-            value: "68"
+            value: "34"
+          - name: CARDS
+            value: "13"
+          - name: P1
+            value: oos_targeted
+          - name: P2
+            value: oos_targeted
+          - name: INTER_1
+            value: "10000"
+          - name: INTER_2
+            value: "10000"
         resources:
             requests:
               cpu: 31
