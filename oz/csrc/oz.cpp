@@ -98,7 +98,18 @@ void bind_oz(py::module &m) {
 
   py::class_<kuhn_poker_t>(m, "KuhnPoker", py_Game);
 
-  py::class_<leduk_poker_t>(m, "LedukPoker", py_Game);
+  auto py_LedukPoker =
+    py::class_<leduk_poker_t>(m, "LedukPoker", py_Game)
+        .def("hand", (leduk_poker_t::card_t (leduk_poker_t::*)(player_t) const) &leduk_poker_t::hand)
+        .def("board", &leduk_poker_t::board)
+        .def("pot", (int (leduk_poker_t::*)(player_t) const) &leduk_poker_t::pot)
+        .def("folded", (bool (leduk_poker_t::*)(player_t) const) &leduk_poker_t::folded);
+
+  py::enum_<leduk_poker_t::card_t>(py_LedukPoker, "Card")
+      .value("NA", leduk_poker_t::card_t::NA)
+      .value("Jack", leduk_poker_t::card_t::Jack)
+      .value("Queen", leduk_poker_t::card_t::Queen)
+      .value("King", leduk_poker_t::card_t::King);
 
   py::class_<goofspiel2_t>(m, "Goofspiel2", py_Game)
     .def("score", (int (goofspiel2_t::*)(player_t p) const) &goofspiel2_t::score)

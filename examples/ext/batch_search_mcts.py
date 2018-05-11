@@ -29,6 +29,7 @@ params.eta = 0.9
 params.gamma = 0.1
 params.d = 0.002
 params.smooth = True
+params.search_player = oz.P1
 
 bs = oz.MCTSBatchSearch(20, history, enc, params)
 model = Net(enc.encoding_size())
