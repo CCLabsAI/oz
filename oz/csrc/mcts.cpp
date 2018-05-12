@@ -98,15 +98,53 @@ void search_t::create(tree_t &tree, rng_t &rng) {
   const auto player = history_.player();
   const auto infoset = history_.infoset();
   const auto actions = infoset.actions();
-  const auto n_actions = actions.size();
-  const prob_t p_prior = (prob_t) 1.0 / n_actions;
+  const prob_t p_prior = (prob_t) 1.0 / actions.size();
 
   auto p = tree.nodes.emplace(infoset, node_t { });
   node_t &node = p.first->second;
 
   node.q.reserve(actions.size());
-  for (const action_t a : infoset.actions()) {
+  for (const action_t a : actions) {
     node.q[a] = q_val_t { .w = 0, .p = p_prior, .n = 0 }; // create empty entry
+  }
+
+  tree_step(sample_node(node, params_, player, rng), &node);
+
+  if (history_.is_terminal()) {
+    state_ = state_t::BACKPROP;
+  }
+  else {
+    state_ = state_t::PLAYOUT;
+  }
+
+  Ensures(state_ == state_t::PLAYOUT || state_ == state_t::BACKPROP);
+}
+
+void search_t::create_prior(tree_t &tree, action_prob_map_t average_strategy, rng_t &rng) {
+  Expects(state_ == state_t::CREATE);
+  Expects(history_.player() != CHANCE);
+  Expects(!history_.is_terminal());
+
+  const auto player = history_.player();
+  const auto infoset = history_.infoset();
+  const auto actions = infoset.actions();
+
+  auto p = tree.nodes.emplace(infoset, node_t { });
+  node_t &node = p.first->second;
+
+  auto total = accumulate(begin(average_strategy),
+                          end(average_strategy), (prob_t) 0.0,
+                          [](prob_t a, const auto &x) { return a + x.second; });
+
+  Expects(total > 0);
+
+  node.q.reserve(actions.size());
+  for (const action_t a : actions) {
+    node.q[a] = q_val_t {
+      .w = 0,
+      .p = average_strategy[a] / total,
+      .n = 0
+    };
   }
 
   tree_step(sample_node(node, params_, player, rng), &node);

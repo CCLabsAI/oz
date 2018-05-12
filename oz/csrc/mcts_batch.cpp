@@ -76,19 +76,17 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
         break;
 
       case state_t::CREATE:
-      {
-        Expects(search_needs_eval(search));
-        const int n = i++;
-        const auto infoset = search.infoset();
+        {
+          Expects(search_needs_eval(search));
+          const int n = i++;
+          const auto infoset = search.infoset();
+          const auto average_strategy = encoder_->decode(infoset, probs[n]);
+          const auto avg_map = action_prob_map_t(begin(average_strategy),
+                                                 end(average_strategy));
 
-        const auto average_strategy = encoder_->decode(infoset, probs[n]);
-
-        const auto avg_map = action_prob_map_t(begin(average_strategy),
-                                               end(average_strategy));
-
-        search.create(tree_, rng);
-//        search.create_prior(tree_, avg_map, rng);
-      }
+          // search.create(tree_, rng);
+          search.create_prior(tree_, avg_map, rng);
+        }
         break;
 
       case state_t::PLAYOUT:
