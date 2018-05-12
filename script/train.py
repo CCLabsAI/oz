@@ -4,9 +4,12 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.utils.data
+import torch.distributed as dist
+from torch.multiprocessing import Process
 
 import oz
 import oz.reservoir
+import oz.dist
 # TODO
 # import oz.nn
 
@@ -16,13 +19,13 @@ from copy import copy
 import sys
 import signal
 
-interrupted = False
+# interrupted = False
 
-def sigint_handler(signal, frame):
-    global interrupted
-    interrupted = True
+# def sigint_handler(signal, frame):
+#     global interrupted
+#     interrupted = True
 
-signal.signal(signal.SIGINT, sigint_handler)
+# signal.signal(signal.SIGINT, sigint_handler)
 
 
 class Net(nn.Module):
@@ -119,7 +122,7 @@ class Trainer:
             if history.is_terminal():
                 sigma = self.batch_search.tree.sigma_average()
                 ex = oz.exploitability(self.root_history, sigma)
-                print("game ex: {:.5f}".format(ex))
+                # print("game ex: {:.5f}".format(ex))
 
                 self.history = copy(self.root_history)
                 self.batch_search = self.make_batch_search()
@@ -197,7 +200,119 @@ def run_trainer_reservoir(trainer, args, start_iteration=0, iter_callback=None):
                 trainer=trainer,
                 losses=losses)
 
-def run_trainer_local(trainer, n_iter):
+def init_process(rank, size, fn, backend='tcp'):
+    os.environ['MASTER_ADDR'] = '127.0.0.1'
+    os.environ['MASTER_PORT'] = '29500'
+    dist.init_process_group(backend, rank=rank, world_size=size)
+    fn(rank, size)
+
+def start_proceses(run, size):
+    processes = []
+    for rank in range(size):
+        p = Process(target=init_process, args=(rank, size, run))
+        p.start()
+        processes.append(p)
+
+    for p in processes:
+        p.join()
+
+def broadcast_model(model):
+    for param in model.parameters():
+        dist.broadcast(param.data, src=0)
+
+def gather_experience_rank0(size, data, targets):
+    data_gather_list = [torch.zeros_like(data)
+                           for i in range(size)]
+
+    target_gather_list = [torch.zeros_like(targets)
+                             for i in range(size)]
+
+    dist.gather(data, dst=0, gather_list=data_gather_list)
+    dist.gather(targets, dst=0, gather_list=target_gather_list)
+
+    all_train_data = torch.cat(data_gather_list)
+    all_train_targets = torch.cat(target_gather_list)
+
+    return all_train_data, all_train_targets
+
+def gather_experience(data, targets):
+    dist.gather(data, dst=0)
+    dist.gather(targets, dst=0)
+
+def run_trainer_distributed(trainer, args, size):
+    reservoir_beta_ratio = args.reservoir_beta_ratio
+    reservoir_size = args.reservoir_size
+
+    encoding_size = trainer.encoder.encoding_size()
+    max_actions = trainer.encoder.max_actions()
+    sample_size = [reservoir_size, encoding_size + max_actions]
+    reservoir = oz.reservoir.ExponentialReservoir(
+                    sample_size=sample_size,
+                    beta_ratio=reservoir_beta_ratio)
+
+    n_iter = 8
+    batch_size = 16
+
+    def run(rank, size):
+        print("[{}/{}]: alive!".format(rank, size))
+        # data = torch.zeros(batch_size, input_size)
+        # targets = torch.zeros(batch_size, output_size)
+
+        if rank == 0:
+            print("[{}/{}]: broadcast model".format(rank, size))
+            broadcast_model(trainer.model)
+            for i in range(n_iter):
+                print("[{}/{}]: starting iter: {}".format(rank, size, i))
+                data = torch.zeros(batch_size, encoding_size)
+                targets = torch.zeros(batch_size, max_actions)
+                for j in range(batch_size):
+                    infoset_encoding, action_probs = trainer.simulate()
+                    data[j] = infoset_encoding
+                    targets[j] = action_probs
+                    print(".", end="", flush=True)
+                all_data, all_targets = gather_experience_rank0(size, data, targets)
+
+                all_experience = torch.cat((all_data, all_targets), dim=1)
+                for j in range(all_experience.size(0)):
+                    reservoir.add(all_experience[j])
+
+                losses  = torch.zeros(args.train_steps)
+                sample  = reservoir.sample()
+                data    = sample[:,:encoding_size]
+                targets = sample[:,encoding_size:]
+
+                data_batched = data.view(-1, args.train_batch_size, encoding_size)
+                targets_batched = targets.view(-1, args.train_batch_size, max_actions)
+                n_batches = data_batched.size(0)
+                perm = torch.randperm(n_batches)
+
+                for k in range(args.train_steps):
+                    x = data_batched[perm[k % n_batches]]
+                    y = targets_batched[perm[k % n_batches]]
+                    loss = trainer.train(x, y)
+                    losses[k] = loss
+
+                mean_loss = loss.mean()
+                print("mean loss: {:.5f}".format(mean_loss.item()))
+
+
+        else:
+            broadcast_model(trainer.model)
+            print("[{}/{}]: got model".format(rank, size))
+            for i in range(n_iter):
+                print("[{}/{}]: starting iter: {}".format(rank, size, i))
+                data = torch.zeros(batch_size, encoding_size)
+                targets = torch.zeros(batch_size, max_actions)
+                for j in range(batch_size):
+                    infoset_encoding, action_probs = trainer.simulate()
+                    data[j] = infoset_encoding
+                    targets[j] = action_probs
+                    print(".", end="", flush=True)
+                gather_experience(data, targets)
+
+    start_proceses(run, size)
+
+def run_trainer(trainer, n_iter):
     for i in range(n_iter):
         infoset_encoding, action_probs = trainer.simulate()
         infoset_encoding = infoset_encoding.unsqueeze(dim=0)
@@ -210,10 +325,6 @@ def run_trainer_local(trainer, n_iter):
         loss = trainer.train(infoset_encoding, action_probs)
         print("loss: {:.5f}".format(loss.item()))
 
-
-def run_trainer_distributed(trainer):
-    pass
-
 def main():
     parser = argparse.ArgumentParser(description="train NN with OmegaZero")
     parser.add_argument("--game", help="game to play", required=True)
@@ -223,7 +334,7 @@ def main():
     parser.add_argument("--hidden_size", type=int,
                         help="mlp hidden layer size",
                         default=64)
-    parser.add_argument("--checkpoint_dir",
+    parser.add_argument("--checkpoint_dir", required=True,
                         help="checkpoint directory")
     parser.add_argument("--checkpoint_interval", type=int,
                         help="number of iterations between checkpoints",
@@ -233,7 +344,7 @@ def main():
                         default=6)
     parser.add_argument("--learning_rate", type=float,
                         help="learning rate",
-                        default=0.01)
+                        default=1e-3)
     parser.add_argument("--eps", type=float,
                         help="exploration factor",
                         default=0.4)
@@ -392,9 +503,10 @@ def run(args, checkpoint_data=None):
     else:
         start_iteration = 0
 
-    run_trainer_reservoir(trainer, args,
-        start_iteration=start_iteration,
-        iter_callback=iter_callback)
+    # run_trainer_reservoir(trainer, args,
+    #     start_iteration=start_iteration,
+    #     iter_callback=iter_callback)
+    run_trainer_distributed(trainer, args, size=8)
 
 if __name__ == "__main__":
     main()

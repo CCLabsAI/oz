@@ -43,11 +43,8 @@ def make_runner(runspec, net, train, simulate):
     output_size = runspec.output_size
 
     def run(rank, size):
-        data = torch.randn(batch_size, input_size)
-        targets = torch.randn(batch_size, output_size)
-
-        targets.abs_()
-        targets /= targets.sum(dim=1, keepdim=True)
+        data = torch.zeros(batch_size, input_size)
+        targets = torch.zeros(batch_size, output_size)
 
         if rank == 0:
             optimizer = optim.Adam(net.parameters(), lr=1e-3)
