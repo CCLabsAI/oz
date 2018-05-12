@@ -7,6 +7,8 @@ import torch.optim as optim
 import torch.distributed as dist
 from torch.multiprocessing import Process
 
+import oz.reservoir
+
 RunSpec = namedtuple('RunSpec', ['n_iter', 'batch_size', 'input_size', 'output_size'])
 
 
@@ -85,3 +87,83 @@ def start_proceses(run, size):
     for p in processes:
         p.join()
 
+
+def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callback=None):
+    reservoir_beta_ratio = args.reservoir_beta_ratio
+    reservoir_size = args.reservoir_size
+
+    encoding_size = trainer.encoder.encoding_size()
+    max_actions = trainer.encoder.max_actions()
+    sample_size = [reservoir_size, encoding_size + max_actions]
+    reservoir = oz.reservoir.ExponentialReservoir(
+                    sample_size=sample_size,
+                    beta_ratio=reservoir_beta_ratio)
+
+    def run(rank, size):
+        iteration_n = start_iteration
+
+        train_batch_size = args.train_batch_size
+        train_game_ply = args.train_game_ply
+        train_steps = args.train_steps
+        train_iter = args.train_iter
+        # print("[{}/{}]: alive!".format(rank, size))
+
+        if rank == 0:
+            while iteration_n < train_iter:
+                broadcast_net(trainer.model)
+                print("[{}/{}]: starting iter: {}".format(rank, size, iteration_n))
+                data = torch.zeros(train_batch_size, encoding_size)
+                targets = torch.zeros(train_batch_size, max_actions)
+                for j in range(train_game_ply):
+                    infoset_encoding, action_probs = trainer.simulate()
+                    data[j] = infoset_encoding
+                    targets[j] = action_probs
+                    print(".", end="", flush=True)
+                all_data, all_targets = gather_experience_rank0(size, data, targets)
+                print()
+
+                all_experience = torch.cat((all_data, all_targets), dim=1)
+                for j in range(all_experience.size(0)):
+                    reservoir.add(all_experience[j])
+
+                losses  = torch.zeros(train_steps)
+                sample  = reservoir.sample()
+                data    = sample[:,:encoding_size]
+                targets = sample[:,encoding_size:]
+
+                data_batched = data.view(-1, train_batch_size, encoding_size)
+                targets_batched = targets.view(-1, train_batch_size, max_actions)
+                n_batches = data_batched.size(0)
+                perm = torch.randperm(n_batches)
+
+                for k in range(train_steps):
+                    x = data_batched[perm[k % n_batches]]
+                    y = targets_batched[perm[k % n_batches]]
+                    loss = trainer.train(x, y)
+                    losses[k] = loss
+
+                iteration_n += 1
+
+                if iter_callback:
+                    iter_callback(
+                        iteration_n=iteration_n,
+                        args=args,
+                        interrupted=False,
+                        trainer=trainer,
+                        losses=losses)
+
+        else:
+            while iteration_n < train_iter:
+                broadcast_net(trainer.model)
+                print("[{}/{}]: starting iter: {}".format(rank, size, iteration_n))
+                data = torch.zeros(train_batch_size, encoding_size)
+                targets = torch.zeros(train_batch_size, max_actions)
+                for j in range(train_game_ply):
+                    infoset_encoding, action_probs = trainer.simulate()
+                    data[j] = infoset_encoding
+                    targets[j] = action_probs
+                    print(".", end="", flush=True)
+                gather_experience(data, targets)
+                iteration_n += 1
+
+    start_proceses(run, size)
