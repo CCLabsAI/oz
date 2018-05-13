@@ -121,10 +121,9 @@ def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callbac
                     targets[j] = action_probs
                     if args.progress:
                         print(".", end="", flush=True)
+                all_data, all_targets = gather_experience_rank0(size, data, targets)
                 if args.progress:
                     print(flush=True)
-
-                all_data, all_targets = gather_experience_rank0(size, data, targets)
 
                 all_experience = torch.cat((all_data, all_targets), dim=1)
                 for j in range(all_experience.size(0)):
@@ -169,8 +168,6 @@ def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callbac
                     targets[j] = action_probs
                     if args.progress:
                         print(".", end="", flush=True)
-                if args.progress:
-                    print(flush=True)
                 gather_experience(data, targets)
                 iteration_n += 1
 
