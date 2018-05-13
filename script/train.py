@@ -209,10 +209,10 @@ def run(args, checkpoint_data=None):
         if not interrupted:
             if args.print_ex:
                 ex = oz.exploitability(trainer.root_history, sigma_nn)
-                print('ex: {:.5f}'.format(ex))
+                print('ex: {:.5f}'.format(ex), flush=True)
 
             mean_loss = losses.mean()
-            print('mean loss: {:.5f}'.format(mean_loss.item()))
+            print('mean loss: {:.5f}'.format(mean_loss.item()), flush=True)
 
             if iteration_n % args.checkpoint_interval == 0:
                 save_checkpoint(iteration_n=iteration_n,

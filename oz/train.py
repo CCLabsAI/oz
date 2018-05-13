@@ -152,7 +152,7 @@ def run_trainer_reservoir(trainer, args, start_iteration=0, iter_callback=None):
 
     iteration_n = start_iteration
     while iteration_n < train_iter:
-        print("starting iteration: ", iteration_n)
+        print("starting iteration: ", iteration_n, flush=True)
         for j in range(train_game_ply):
             if interrupted:
                 break
@@ -162,7 +162,7 @@ def run_trainer_reservoir(trainer, args, start_iteration=0, iter_callback=None):
             if args.progress:
                 print(".", end="", flush=True)
         if args.progress:
-            print()
+            print(flush=True)
 
         if interrupted:
             if iter_callback:

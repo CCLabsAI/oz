@@ -106,13 +106,13 @@ def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callbac
         train_game_ply = args.train_game_ply
         train_steps = args.train_steps
         train_iter = args.train_iter
-        print("[{}/{}]: alive!".format(rank, size))
+        print("[{}/{}]: alive!".format(rank, size), flush=True)
 
         if rank == 0:
             while iteration_n < train_iter:
                 broadcast_net(trainer.model)
 
-                print("[{}/{}]: starting iter: {}".format(rank, size, iteration_n))
+                print("[{}/{}]: starting iter: {}".format(rank, size, iteration_n), flush=True)
                 data = torch.zeros(train_batch_size, encoding_size)
                 targets = torch.zeros(train_batch_size, max_actions)
                 for j in range(train_game_ply):
@@ -122,7 +122,7 @@ def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callbac
                     if args.progress:
                         print(".", end="", flush=True)
                 if args.progress:
-                    print()
+                    print(flush=True)
 
                 all_data, all_targets = gather_experience_rank0(size, data, targets)
 
@@ -160,7 +160,7 @@ def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callbac
             while iteration_n < train_iter:
                 broadcast_net(trainer.model)
 
-                print("[{}/{}]: starting iter: {}".format(rank, size, iteration_n))
+                print("[{}/{}]: starting iter: {}".format(rank, size, iteration_n), flush=True)
                 data = torch.zeros(train_batch_size, encoding_size)
                 targets = torch.zeros(train_batch_size, max_actions)
                 for j in range(train_game_ply):
@@ -170,7 +170,7 @@ def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callbac
                     if args.progress:
                         print(".", end="", flush=True)
                 if args.progress:
-                    print()
+                    print(flush=True)
                 gather_experience(data, targets)
                 iteration_n += 1
 
