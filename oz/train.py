@@ -1,8 +1,13 @@
 import oz
 import oz.reservoir
 import torch
+import torch.nn.functional as F
 
 from copy import copy
+
+Nan = float('nan')
+NInf_tensor = torch.tensor(float('-inf'))
+Zero_tensor = torch.tensor(0.0)
 
 class Trainer:
     def __init__(self, history, make_batch_search, encoder,
@@ -24,11 +29,29 @@ class Trainer:
         model = self.model
         optimizer = self.optimizer
         criterion = self.criterion
-        batch_size = data.shape[0]
+        batch_size = data.size(0)
+
+        mask = torch.isnan(targets)
 
         optimizer.zero_grad()
-        output = model(data);
-        loss = criterion(output, targets) / batch_size
+        logits = model(data);
+
+        # NB a nan target means that action is illegal
+        # we manually replace the logit for illegal actions with
+        # negative infinity
+        logits = torch.where(mask, NInf_tensor, logits)
+        logits = F.log_softmax(logits, dim=1)
+
+        # NB it seems that because of a (p > 0) check inside the
+        # implementation of kl_div means that a nan probability
+        # simply means a 0 loss
+        loss = criterion(logits, targets) / batch_size
+
+        # Here is an alternative version that zeros out the probability
+        # of illegal actions:
+        # targets_zeroed = torch.where(mask, Zero_tensor, targets)
+        # loss = criterion(logits, targets_zeroed) / batch_size
+
         loss.backward()
         optimizer.step()
 
@@ -54,7 +77,7 @@ class Trainer:
             else:
                 with torch.no_grad():
                     logits = self.model.forward(batch)
-                    probs = logits.exp()
+                    probs = F.softmax(logits, dim=1)
                 search.step(probs, rng)
 
         tree = search.tree
@@ -64,7 +87,7 @@ class Trainer:
         max_actions = encoder.max_actions()
 
         infoset_encoding = torch.zeros(encoding_size)
-        action_probs = torch.zeros(max_actions)
+        action_probs = torch.full((max_actions,), Nan)
 
         self.encoder.encode(infoset, infoset_encoding)
         self.encoder.encode_sigma(infoset, sigma, action_probs)
@@ -99,10 +122,6 @@ def run_trainer(trainer, n_iter):
         infoset_encoding, action_probs = trainer.simulate()
         infoset_encoding = infoset_encoding.unsqueeze(dim=0)
         action_probs = action_probs.unsqueeze(dim=0)
-
-        if i % 50 == 0:
-            ex = oz.exploitability(history, sigma_nn)
-            print("ex: {:.5f}".format(ex))
 
         loss = trainer.train(infoset_encoding, action_probs)
         print("loss: {:.5f}".format(loss.item()))

@@ -74,7 +74,9 @@ void goofspiel2_encoder_t::encode_sigma(infoset_t infoset,
   const auto actions = infoset.actions();
   auto x_a = x.accessor<nn_real_t, 1>();
 
-  x.zero_();
+  // NB don't zero the action probabilites, but leave them unchanged
+  // allowing the caller to, place NaN there for illegal actions
+  // x.zero_();
   for (const auto &action : actions) {
     const int a_goof = action.cast<goofspiel2_t::action_t>();
     x_a[a_goof] = sigma.pr(infoset, action);

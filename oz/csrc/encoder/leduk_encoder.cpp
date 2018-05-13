@@ -114,8 +114,9 @@ void leduk_encoder_t::encode_sigma(infoset_t infoset, sigma_t sigma, Tensor x) {
   const auto actions = infoset.actions();
   auto x_a = x.accessor<nn_real_t, 1>();
 
-  x.zero_();
-
+  // NB don't zero the action probabilites, but leave them unchanged
+  // allowing the caller to, place NaN there for illegal actions
+  // x.zero_();
   for (const auto &action : actions) {
     const auto a_leduk = action.cast<leduk_poker_t::action_t>();
     int i = action_to_idx(a_leduk);

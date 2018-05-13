@@ -15,7 +15,6 @@ class BasicMLP(nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        x = F.log_softmax(x, dim=1)
         return x
 
 
@@ -33,7 +32,6 @@ class DeepFullyConnected(nn.Module):
         for fc in self.fc:
             x = F.relu(fc(x))
         x = self.fc_logit(x)
-        x = F.log_softmax(x, dim=1)
         return x
 
 

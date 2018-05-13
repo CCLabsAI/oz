@@ -40,10 +40,10 @@ def main():
                         help="nn architecture",
                         choices=["mlp", "deep"],
                         default="mlp")
-    parser.add_argument("--opt",
-                        help="optimizer to use",
-                        choices=["sgd", "adam"],
-                        default="adam")
+    # parser.add_argument("--opt",
+    #                     help="optimizer to use",
+    #                     choices=["sgd", "adam"],
+    #                     default="adam")
     parser.add_argument("--hidden_size", type=int,
                         help="mlp hidden layer size",
                         default=64)
@@ -193,9 +193,10 @@ def run(args, checkpoint_data=None):
         d = torch.zeros(enc.encoding_size())
         enc.encode(infoset, d)
         sigma_logits = trainer.model.forward(d.unsqueeze(0))
-        sigma_pr = sigma_logits.exp()
+        sigma_pr = F.softmax(sigma_logits, dim=1)
         m = enc.decode(infoset, sigma_pr.data[0])
-        return m[action]
+        total = sum(m.values())
+        return m[action] / total
 
     sigma_nn = oz.make_py_sigma(pr_nn)
 
