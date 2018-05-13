@@ -7,6 +7,9 @@ import torch.optim as optim
 import torch.distributed as dist
 from torch.multiprocessing import Process
 
+import numpy as np
+import numpy.random
+
 import oz.reservoir
 
 RunSpec = namedtuple('RunSpec', ['n_iter', 'batch_size', 'input_size', 'output_size'])
@@ -134,14 +137,11 @@ def run_trainer_distributed(trainer, args, size, start_iteration=0, iter_callbac
                 data    = sample[:,:encoding_size]
                 targets = sample[:,encoding_size:]
 
-                data_batched = data.view(-1, train_batch_size, encoding_size)
-                targets_batched = targets.view(-1, train_batch_size, max_actions)
-                n_batches = data_batched.size(0)
-                perm = torch.randperm(n_batches)
-
                 for k in range(train_steps):
-                    x = data_batched[perm[k % n_batches]]
-                    y = targets_batched[perm[k % n_batches]]
+                    idx = np.random.choice(sample.size(0), args.train_batch_size)
+                    idx = torch.from_numpy(idx)
+                    x = data[idx]
+                    y = targets[idx]
                     loss = trainer.train(x, y)
                     losses[k] = loss
 
