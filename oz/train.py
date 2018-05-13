@@ -159,8 +159,10 @@ def run_trainer_reservoir(trainer, args, start_iteration=0, iter_callback=None):
             infoset_encoding, action_probs = trainer.simulate()
             d = torch.cat((infoset_encoding, action_probs))
             reservoir.add(d)
-            print(".", end="", flush=True)
-        print()
+            if args.progress:
+                print(".", end="", flush=True)
+        if args.progress:
+            print()
 
         if interrupted:
             if iter_callback:

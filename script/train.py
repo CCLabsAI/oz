@@ -33,6 +33,11 @@ def main():
     group.add_argument("--no-print_ex", dest="print_ex", action="store_false")
     parser.set_defaults(print_ex=False)
 
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--progress", dest="progress", action="store_true")
+    group.add_argument("--no-progress", dest="progress", action="store_false")
+    parser.set_defaults(progress=False)
+
     parser.add_argument("--workers", type=int,
                         help="number of workers",
                         default=8)
