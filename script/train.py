@@ -109,7 +109,7 @@ def main():
                         default=256)
     parser.add_argument("--train_iter", type=int,
                         help="nn training iterations",
-                        default=10000)
+                        default=1000)
 
     args = parser.parse_args()
 
