@@ -1,15 +1,15 @@
 #!/bin/bash
 
 echo "---------------start-------------- $N_CORE"
-echo "$(ls /mnt )"
+echo "$(ls /mnt/data/exp/goof13-a-100k/ )"
 
 CMD_CHECKPOINT_1=""
 CMD_CHECKPOINT_2=""
-if [ $CHECKPOINT_1 != "" ]
+if [ "$CHECKPOINT_1" != "" ]; then
   CMD_CHECKPOINT_1="--checkpoint_path1 $CHECKPOINT_1 "
 fi
 
-if [ $CHECKPOINT_2 != "" ]
+if [ "$CHECKPOINT_2" != "" ]; then
   CMD_CHECKPOINT_2="--checkpoint_path2 $CHECKPOINT_2 "
 fi
 
@@ -19,7 +19,7 @@ echo "-command- python /app/examples/misc/test.py --game goofspiel --goofcards=$
 
 
 for n in `seq $N_CORE`; do
-  python /app/examples/misc/test.py --game goofspiel --goofcards=$CARDS --p1 $P1 --p2 $P2 --iter1 $INTER_1 --iter2 $INTER_2 --eps 0.4 --delta 0.9 --gamma=0.01 --beta=0.99 > output/out$n.txt &
+  python /app/examples/misc/test.py --game goofspiel --goofcards=$CARDS --p1 $P1 $CMD_CHECKPOINT_1 --iter1 $INTER_1 --p2 $P2 $CMD_CHECKPOINT_2 --iter2 $INTER_2 --eps 0.4 --delta 0.9 --gamma=0.01 --beta=0.99 > output/out$n.txt &
 done
 
 wait
