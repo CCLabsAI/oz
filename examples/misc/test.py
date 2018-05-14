@@ -49,6 +49,7 @@ import oz.nn
 import torch
 import argparse
 
+
 def make_nn_player(encoder, checkpoint_path):
     ob = torch.load(checkpoint_path)
     encoding_size = encoder.encoding_size()
@@ -185,12 +186,12 @@ def main():
 
     if args.game == 'leduk' or args.game == 'leduk_poker':
         history = oz.make_leduk_history()
-        target = oz.make_leduk_target()
         encoder = oz.make_leduk_encoder()
+        target  = oz.make_leduk_target()
     elif args.game == 'goofspiel' or args.game == 'goofspiel2':
-        history = oz.make_goofspiel2_history(args.goofcards)
-        target = oz.make_goofspiel2_target()
-        encoder = oz.make_leduk_encoder()
+        history = oz.make_goofspiel2_history(n_cards)
+        encoder = oz.make_goofspiel2_encoder(n_cards)
+        target  = oz.make_goofspiel2_target()
     else:
         print('error: unknown game: {}'.format(args.game), file=sys.stderr)
         exit(1)
