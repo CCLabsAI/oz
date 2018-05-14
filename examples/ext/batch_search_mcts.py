@@ -8,8 +8,8 @@ import oz
 class Net(nn.Module):
     def __init__(self, input_size):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(input_size, 25)
-        self.fc2 = nn.Linear(25, 3)
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 3)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -29,6 +29,7 @@ params.eta = 0.9
 params.gamma = 0.1
 params.d = 0.002
 params.smooth = True
+params.search_player = oz.P1
 
 bs = oz.MCTSBatchSearch(20, history, enc, params)
 model = Net(enc.encoding_size())

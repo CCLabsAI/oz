@@ -74,7 +74,9 @@ void goofspiel2_encoder_t::encode_sigma(infoset_t infoset,
   const auto actions = infoset.actions();
   auto x_a = x.accessor<nn_real_t, 1>();
 
-  x.zero_();
+  // NB don't zero the action probabilites, but leave them unchanged
+  // allowing the caller to, place NaN there for illegal actions
+  // x.zero_();
   for (const auto &action : actions) {
     const int a_goof = action.cast<goofspiel2_t::action_t>();
     x_a[a_goof] = sigma.pr(infoset, action);
@@ -125,13 +127,10 @@ auto goofspiel2_encoder_t::decode_and_sample(oz::infoset_t infoset,
   auto i = a_dist(rng);
 
   auto a = actions[i];
-  auto pr_a = weights[i]/total;
+  auto pr_a = (total > 0) ? weights[i]/total : (prob_t) 1.0 / actions.size();
   auto rho1 = pr_a, rho2 = pr_a;
 
-  // TODO what if all the weights are 0?
-  Ensures(total > 0);
   Ensures(pr_a >= 0 && pr_a <= 1);
-
   return { a, pr_a, rho1, rho2 };
 }
 

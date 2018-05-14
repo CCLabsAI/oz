@@ -22,9 +22,11 @@ node_t::node_t(infoset_t::actions_list_t actions) {
             inserter(average_strategy_, end(average_strategy_)),
             make_zero_value);
 
+  prob_t p_uniform = (prob_t) 1.0 / actions.size();
+
   transform(begin(actions), end(actions),
             inserter(prior_, end(prior_)),
-            make_zero_value);
+            [&](const action_t &a) { return make_pair(a, p_uniform); });
 
   Ensures(!regrets_.empty());
   Ensures(!average_strategy_.empty());

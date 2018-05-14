@@ -60,6 +60,10 @@ class search_t final {
   void playout_step(action_t a);               // step playout forward one ply
   void backprop(tree_t &tree);                 // unwind updates along path
 
+  void create_prior(tree_t &tree,
+                    action_prob_map_t average_strategy,
+                    rng_t &rng);
+
   enum class state_t {
     SELECT,   // initial state
     CREATE,   // create node (with prior information)
