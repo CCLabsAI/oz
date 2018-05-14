@@ -79,7 +79,7 @@ def main():
                         help="opponent error factor",
                         default=0.01)
     parser.add_argument("--beta", type=float,
-                        help="opponent error factor",
+                        help="reweighting moving average decay rate",
                         default=0.99)
     parser.add_argument("--eta", type=float,
                         help="currently unused",
