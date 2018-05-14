@@ -189,8 +189,8 @@ def main():
         encoder = oz.make_leduk_encoder()
         target  = oz.make_leduk_target()
     elif args.game == 'goofspiel' or args.game == 'goofspiel2':
-        history = oz.make_goofspiel2_history(n_cards)
-        encoder = oz.make_goofspiel2_encoder(n_cards)
+        history = oz.make_goofspiel2_history(args.goofcards)
+        encoder = oz.make_goofspiel2_encoder(args.goofcards)
         target  = oz.make_goofspiel2_target()
     else:
         print('error: unknown game: {}'.format(args.game), file=sys.stderr)
