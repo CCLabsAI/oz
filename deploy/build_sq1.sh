@@ -2,7 +2,7 @@
 
 #experiment name and version
 experiment_name="sq1"
-v_oz_test="0.0.31"
+v_oz_test="0.0.47"
 export TEST_OZ_NAME="gcr.io/ornate-axiom-187403/oz-test-${experiment_name}:$v_oz_test"
 export SCRIPT_NAME='sq1'
 

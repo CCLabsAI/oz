@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
       - name: pi
-        image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.33
+        image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.47
         command: ["/bin/bash", "-c", "experiments/scripts/run-test-sq1.sh"]
         env:
           - name: GIT_HASH
@@ -15,19 +15,32 @@ spec:
           - name: SCRIPT_NAME
             value: sq1
           - name: N_CORE
-            value: "34"
+            value: "68"
           - name: CARDS
-            value: "13"
+            value: "6"
           - name: P1
-            value: oos_targeted
+            value: nn
           - name: P2
             value: oos_targeted
+          - name: FOLDER
+            value: "nn_oos_100K"
           - name: INTER_1
-            value: "10000"
+            value: "0"
           - name: INTER_2
-            value: "10000"
+            value: "100000"
+          - name: CHECKPOINT_1
+            value: /mnt/data/exp/goof6-a-100k/checkpoint-000100.pth
+          - name: CHECKPOINT_2
+            value: ""
         resources:
             requests:
               cpu: 31
+        volumeMounts:
+            - name: nfs
+              mountPath: "/mnt"
+      volumes:
+        - name: nfs
+          persistentVolumeClaim:
+            claimName: nfs
       restartPolicy: Never
   backoffLimit: 1

@@ -12,7 +12,8 @@ spec:
     spec:
       containers:
         - name: oz-test
-          image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.5
+          image: busybox
+          # image: gcr.io/ornate-axiom-187403/oz-test-sq1:0.0.5
           imagePullPolicy: Always
           env:
             - name: GIT_HASH
@@ -23,11 +24,16 @@ spec:
           #   - containerPort: 14000
           resources:
             requests:
-              cpu: 31
+              cpu: 1
           volumeMounts:
             - mountPath: /oz-test-logs
               name: logs
+            - name: nfs
+              mountPath: "/mnt"
       volumes:
         - name: logs
           emptyDir: {}
+        - name: nfs
+          persistentVolumeClaim:
+            claimName: nfs
         
