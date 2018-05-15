@@ -74,7 +74,7 @@ def main():
                         elif (first_line == True):
                             hash_value = line
                             first_line = False
-                        elif line.startswith("Iter"):
+                        elif line.startswith("Iters"):
                             name, iter1, iter2 = line.rstrip().split(' ')
                         elif line.startswith("Execution "):
                             name1, name2, exec_time = line.rstrip().split(' ')
@@ -87,8 +87,6 @@ def main():
                         elif line.startswith("Cards"):
                             name,cards_number = line.rstrip().split(':')
                             cards_number = int(cards_number)
-                        elif line.startswith("Iters"):
-                                name, iters_1, iters_2 = line.rstrip().split(' ')
                         elif line.startswith("epsilon"):
                             name, epsilon = line.rstrip().split(':')
                         elif line.startswith("beta"):
@@ -151,10 +149,8 @@ def main():
         print("Number of matches played  : ", tot_matches)
         print("Number of cards           : ", cards_number)
         print("Players                   :  P1 :", p1, "    P2 :", p2)
-        if(p1 == "oos_targeted"):
-          print("Iterations for P1         :", iter1)
-        if(p2 == "oos_targeted"):
-            print("Iterations for P2         :", iter2)
+        print("Iterations for P1         :", iter1)
+        print("Iterations for P2         :", iter2)
         print()
         print("Execution time for each task (80 match) : ", (exec_time / (1000 * 60)), "minutes")
         print("Number of tasks executed : ", count_files)
