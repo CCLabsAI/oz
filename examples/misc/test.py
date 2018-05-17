@@ -313,6 +313,7 @@ def main():
     print("Players", args.p1, args.p2)
     print("Iters", args.iter1, args.iter2)
     print("Checkpoints", args.checkpoint_path1, args.checkpoint_path2)
+    print("Batch size ", args.search_batch_size)
     print("beta:", args.beta)
     print("delta:", args.delta)
     print("epsilon:", args.eps)
