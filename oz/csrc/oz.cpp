@@ -12,6 +12,7 @@
 #include "mcts.h"
 #include "mcts_batch.h"
 #include "py_sigma.h"
+#include "py_sigma_batch.h"
 #include "games/flipguess.h"
 #include "games/kuhn.h"
 #include "games/leduk.h"
@@ -147,6 +148,7 @@ void bind_oz(py::module &m) {
       .def("__copy__", [](const history_t &self) { return history_t(self); });
 
   m.def("exploitability", &exploitability);
+  m.def("gebr", &gebr);
 
   py::class_<action_prob_t>(m, "ActionProb")
       .def_readwrite("a", &action_prob_t::a)
@@ -183,14 +185,22 @@ void bind_oz(py::module &m) {
            py::arg("gamma") = 0.01,
            py::arg("beta") = 0.99);
 
-  py::class_<sigma_t>(m, "Sigma")
-      .def("pr", &sigma_t::pr)
-      .def("sample_pr", &sigma_t::sample_pr)
-      .def("sample_eps", &sigma_t::sample_eps);
+  auto py_Sigma =
+    py::class_<sigma_t>(m, "Sigma")
+        .def("pr", &sigma_t::pr)
+        .def("sample_pr", &sigma_t::sample_pr)
+        .def("sample_eps", &sigma_t::sample_eps);
 
   m.def("make_py_sigma", [](py::object callback_fn) {
     return make_sigma<py_sigma_t>(move(callback_fn));
   });
+
+  py::class_<py_sigma_batch_t>(m, "SigmaBatch")
+    .def(py::init<>())
+    .def("walk_infosets", &py_sigma_batch_t::walk_infosets)
+    .def("generate_batch", &py_sigma_batch_t::generate_batch)
+    .def("store_probs", &py_sigma_batch_t::store_probs)
+    .def("make_sigma", &py_sigma_batch_t::make_sigma);
 
   {
     using search_t = oos_t::search_t;

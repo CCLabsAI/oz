@@ -27,7 +27,7 @@ namespace oz {
   };
 
   using action_value_map_t = flat_map<action_t, value_t>;
-  using action_prob_map_t  = flat_map<action_t, value_t>;
+  using action_prob_map_t  = flat_map<action_t, prob_t>;
 
   using regret_map_t = action_value_map_t;
 

@@ -21,6 +21,8 @@ struct q_val_t {
 using q_info_t = pair<infoset_t, action_t>;
 using q_stats_t = unordered_map<q_info_t, q_val_t>;
 
+infoset_t::actions_list_t actions(const history_t& h);
+
 value_t exploitability(history_t h, sigma_t sigma);
 
 value_t gebr(history_t h, player_t i,

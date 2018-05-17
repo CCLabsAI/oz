@@ -127,6 +127,7 @@ pybind11_add_module(_ext
         "oz/csrc/mcts.cpp"
         "oz/csrc/mcts_batch.cpp"
         "oz/csrc/py_sigma.cpp"
+        "oz/csrc/py_sigma_batch.cpp"
         "oz/csrc/games/flipguess.cpp"
         "oz/csrc/games/kuhn.cpp"
 

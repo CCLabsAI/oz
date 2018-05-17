@@ -24,6 +24,8 @@ class encoder_t {
                                           rng_t &rng) = 0;
 };
 
+using encoder_ptr_t = std::shared_ptr<encoder_t>;
+
 } // namespace oz
 
 #endif // OZ_ENCODER_H

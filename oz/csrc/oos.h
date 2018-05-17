@@ -63,8 +63,8 @@ class oos_t final {
         eps_(0.4),
         delta_(0.0),
         gamma_(0.0),
-        eta_(0.0),
-        zeta_(0.0)
+        eta_(0.0)
+        // zeta_(0.0)
     { }
 
     search_t(history_t history, player_t search_player,
@@ -82,8 +82,8 @@ class oos_t final {
         eps_(eps),
         delta_(delta),
         gamma_(gamma),
-        eta_(eta),
-        zeta_(zeta)
+        eta_(eta)
+        // zeta_(zeta)
     { }
 
     void select(const tree_t& tree, rng_t &rng); // walk from tip to leaf and updating path
@@ -173,7 +173,7 @@ class oos_t final {
     prob_t delta_;
     prob_t gamma_;
     prob_t eta_;
-    prob_t zeta_;
+    // prob_t zeta_;
   }; // class search_t
 }; // class oos_t
 
