@@ -47,21 +47,8 @@ class TargetedOOSPlayer(OOSPlayer):
 # TODO move me
 import oz.nn
 import torch
+import torch.nn.functional
 import argparse
-
-
-def make_nn_player(encoder, checkpoint_path):
-    ob = torch.load(checkpoint_path)
-    encoding_size = encoder.encoding_size()
-    max_actions = encoder.max_actions()
-
-    train_args = argparse.Namespace(**ob['args'])
-    model = oz.nn.model_with_args(train_args, input_size=encoding_size, output_size=max_actions)
-    model.load_state_dict(ob['model_state'])
-    model.eval()
-
-    player = NeuralNetPlayer(model=model, encoder=encoder)
-    return player
 
 
 class NeuralNetPlayer:
@@ -82,12 +69,74 @@ class NeuralNetPlayer:
     def think(self, infoset, rng):
         pass
 
+
+class NeuralOOSPlayer:
+    def __init__(self, model, encoder, target, history_root,
+                 simulation_iter, search_batch_size,
+                 eps, delta, gamma, beta):
+        self.model = model
+        self.encoder = encoder
+        self.target = target
+        self.history_root = history_root
+        self.simulation_iter = simulation_iter
+        self.search_batch_size = search_batch_size
+        self.eps = eps
+        self.delta = delta
+        self.gamma = gamma
+        self.beta = beta
+        self.eta = 1.0
+        self.encoding_size = encoder.encoding_size()
+        self.batch_search = self.make_batch_search()
+
+    def make_batch_search(self):
+        return oz.BatchSearch(batch_size=self.search_batch_size,
+                              history=self.history_root,
+                              encoder=self.encoder,
+                              target=self.target,
+                              eps=self.eps, delta=self.delta, gamma=self.gamma,
+                              beta=self.beta, eta=self.eta)
+
+    def sample_action(self, infoset, rng):
+        sigma = self.batch_search.tree.sigma_average()
+        ap = sigma.sample_pr(infoset, rng)
+        return ap.a
+
+    def think(self, infoset, rng):
+        search = self.batch_search
+        search.target(infoset)
+        for i in range(self.simulation_iter):
+            batch = search.generate_batch()
+
+            if len(batch) == 0:
+                search.step(rng)
+            else:
+                with torch.no_grad():
+                    logits = self.model.forward(batch)
+                    probs = torch.nn.functional.softmax(logits, dim=1)
+                search.step(probs, rng)
+
+
+def load_checkpoint_model(encoder, checkpoint_path):
+    ob = torch.load(checkpoint_path)
+    encoding_size = encoder.encoding_size()
+    max_actions = encoder.max_actions()
+
+    train_args = argparse.Namespace(**ob['args'])
+    model = oz.nn.model_with_args(train_args,
+                input_size=encoding_size,
+                output_size=max_actions)
+    model.load_state_dict(ob['model_state'])
+    model.eval()
+    return model
+
+
 class UniformRandomPlayer:
     def sample_action(self, infoset, rng):
         return random.choice(infoset.actions)
 
     def think(self, infoset, rng):
         pass
+
 
 class SequentialPlayer:
     def sample_action(self, infoset, rng):
@@ -175,10 +224,18 @@ def main():
     parser.add_argument("--checkpoint_path2",
                         help="player 2 nn checkpoint",
                         default=None)
+    parser.add_argument("--search_batch_size", type=int,
+                        help="number of concurrent searches when using NN",
+                        default=20)
 
     args = parser.parse_args()
-    #label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
-    label = os.environ['GIT_HASH']
+    if 'GIT_HASH' in os.environ:
+        label = os.environ['GIT_HASH']
+    else:
+        try:
+            label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+        except CalledProcessError:
+            label = 'unknown-git-revision'
     print(label)
 
     history = None
@@ -189,8 +246,8 @@ def main():
         encoder = oz.make_leduk_encoder()
         target  = oz.make_leduk_target()
     elif args.game == 'goofspiel' or args.game == 'goofspiel2':
-        history = oz.make_goofspiel2_history(n_cards)
-        encoder = oz.make_goofspiel2_encoder(n_cards)
+        history = oz.make_goofspiel2_history(args.goofcards)
+        encoder = oz.make_goofspiel2_encoder(args.goofcards)
         target  = oz.make_goofspiel2_target()
     else:
         print('error: unknown game: {}'.format(args.game), file=sys.stderr)
@@ -219,7 +276,22 @@ def main():
             if checkpoint_path is None:
                 print('error: missing checkpoint path', file=sys.stderr)
                 exit(1)
-            return make_nn_player(encoder, checkpoint_path)
+            model = load_checkpoint_model(encoder, checkpoint_path)
+            return NeuralNetPlayer(model=model, encoder=encoder)
+
+        elif algo == 'nn_oos':
+            if checkpoint_path is None:
+                print('error: missing checkpoint path', file=sys.stderr)
+                exit(1)
+            model = load_checkpoint_model(encoder, checkpoint_path)
+            return NeuralOOSPlayer(
+                model=model,
+                encoder=encoder,
+                target=target,
+                history_root=history,
+                simulation_iter=n_iter,
+                search_batch_size=args.search_batch_size,
+                eps=args.eps, delta=args.delta, gamma=args.gamma, beta=args.beta)
 
         else:
             print('error: unknown search algorithm: {}'.format(algo), file=sys.stderr)
