@@ -234,6 +234,7 @@ def main():
     else:
         try:
             label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+            label = label.decode('ascii').strip()
         except CalledProcessError:
             label = 'unknown-git-revision'
     print(label)
