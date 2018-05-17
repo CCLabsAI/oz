@@ -121,7 +121,6 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
           const auto avg_map = action_prob_map_t(begin(average_strategy),
                                                  end(average_strategy));
 
-          // FIXME
           // search.create(tree_, rng);
           search.create_prior(tree_, avg_map, rng);
         }

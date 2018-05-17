@@ -31,7 +31,7 @@ auto keys(const T &m) {
   return keys;
 }
 
-static auto actions(const history_t& h) -> infoset_t::actions_list_t {
+auto actions(const history_t& h) -> infoset_t::actions_list_t {
   if (h.player() == CHANCE) {
     const auto actions_pr = h.chance_actions();
     return keys(actions_pr);

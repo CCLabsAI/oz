@@ -1,9 +1,6 @@
 TODO
 ====
 
-   * (andyk) actually mask out invalid actions instead of trying to
-     get the NN to assign 0 probability to them.
-
 # Low priority:
 
    * (andyk) Add code to give names to actions
@@ -25,3 +22,6 @@ TODO
      reference to the underlying tree, maybe a shared pointer should
      be used? I don't really want to copy the tree into the
      strategy...
+
+   * DONE (andyk) actually mask out invalid actions instead of trying to
+     get the NN to assign 0 probability to them.
