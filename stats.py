@@ -76,6 +76,8 @@ def main():
                             first_line = False
                         elif line.startswith("Iters"):
                             name, iter1, iter2 = line.rstrip().split(' ')
+                        elif line.startswith("Checkpoints"):
+                            name, ckp1, ckp2 = line.rstrip().split(' ')
                         elif line.startswith("Execution "):
                             name1, name2, exec_time = line.rstrip().split(' ')
                             exec_time = int(exec_time)
@@ -151,6 +153,8 @@ def main():
         print("Players                   :  P1 :", p1, "    P2 :", p2)
         print("Iterations for P1         :", iter1)
         print("Iterations for P2         :", iter2)
+        print("Checkpoint for P1         :", ckp1)
+        print("Checkpoint for P2         :", ckp2)
         print()
         print("Execution time for each task (80 match) : ", (exec_time / (1000 * 60)), "minutes")
         print("Number of tasks executed : ", count_files)
