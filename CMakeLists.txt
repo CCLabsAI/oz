@@ -67,7 +67,7 @@ add_executable(tests
         "oz/csrc/mcts.cpp"
 
         "oz/csrc/oos_rec.cpp"
-        )
+        oz/csrc/games/liars_dice.h oz/csrc/games/liars_dice.cpp)
 
 
 target_include_directories(tests SYSTEM PRIVATE "lib/catch/include")
@@ -78,7 +78,7 @@ file(GLOB boost_container_SRC
         "lib/boost/libs/container/src/*.cpp"
         )
 
-add_library(boost_container STATIC ${boost_container_SRC})
+add_library(boost_container STATIC ${boost_container_SRC} oz/csrc/solve_liars_dice.cpp)
 set_property(TARGET boost_container PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # NB prevents the boost internal allocator DLMalloc from using sbrk
@@ -107,6 +107,17 @@ add_executable(solve_leduk_mcts
 add_executable(solve_goofspiel2
         "oz/csrc/solve_goofspiel2.cpp"
         "oz/csrc/games/goofspiel2.cpp"
+        "oz/csrc/best_response.cpp"
+        "oz/csrc/oos.cpp"
+        "oz/csrc/history.cpp"
+        "oz/csrc/sigma.cpp"
+        "oz/csrc/node.cpp"
+        "oz/csrc/tree.cpp"
+        )
+
+add_executable(solve_liars_dice
+        "oz/csrc/solve_liars_dice.cpp"
+        "oz/csrc/games/liars_dice.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
         "oz/csrc/history.cpp"
@@ -153,4 +164,5 @@ target_link_libraries(tests PRIVATE boost_container)
 target_link_libraries(solve_leduk PRIVATE boost_container)
 target_link_libraries(solve_leduk_mcts PRIVATE boost_container)
 target_link_libraries(solve_goofspiel2 PRIVATE boost_container)
+target_link_libraries(solve_liars_dice PRIVATE boost_container)
 target_link_libraries(_ext PRIVATE boost_container)

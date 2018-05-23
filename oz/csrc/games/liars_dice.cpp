@@ -1,7 +1,3 @@
-//
-// Created by Michela on 23/5/18.
-//
-
 #include "liars_dice.h"
 #include "hash.h"
 

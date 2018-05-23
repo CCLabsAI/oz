@@ -1,5 +1,5 @@
-#ifndef OZ_LIARS_DICE_H
-#define OZ_LIARS_DICE_H
+#ifndef OZ_LD_H
+#define OZ_LD_H
 
 #include <cassert>
 #include <array>
@@ -21,7 +21,7 @@ namespace oz {
     enum class action_t {
 
       // actions for P1 and P2 : Raising dice face or number of dice or call
-      Raise_0face = 1,
+          Raise_0face = 1,
       Raise_1face,
       Raise_2face,
       Raise_3face,
@@ -65,7 +65,7 @@ namespace oz {
       face_star,
 
       // TODO clean this up
-      DEAL1 = -2,
+          DEAL1 = -2,
       DEAL2 = -3,
     };
 
@@ -88,8 +88,8 @@ namespace oz {
 
       infoset_t(player_t player, dice_face_t face1, dice_face_t face2,
                 action_vector_t history, array<int, 2> bet, int raises_face, int raises_dice, int action_number):
-      player(player), face1(face1), face2(face2),
-      history(move(history)), bet(bet), raises_face(raises_face), raises_dice(raises_dice), action_number(action_number) { }
+          player(player), face1(face1), face2(face2),
+          history(move(history)), bet(bet), raises_face(raises_face), raises_dice(raises_dice), action_number(action_number) { }
 
       actions_list_t actions() const override;
       string str() const override;
@@ -167,4 +167,4 @@ namespace oz {
 
 } // namespace oz
 
-#endif // OZ_LIARS_DICE_H
+#endif // OZ_LD_H
