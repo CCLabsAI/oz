@@ -15,7 +15,7 @@ using namespace oz;
 using namespace std;
 
 int main(int argc, char **argv) {
-  history_t h = make_history<liar_dice_t>();
+  history_t h = make_history<liars_dice_t>();
   oos_t s;
   tree_t tree;
   rng_t rng(1);

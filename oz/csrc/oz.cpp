@@ -18,6 +18,8 @@
 #include "games/leduk.h"
 #include "encoder/leduk_encoder.h"
 #include "target/leduk_target.h"
+#include "games/liars_dice.h"
+#include "encoder/liars_dice_encoder.h"
 #include "games/goofspiel2.h"
 #include "target/goofspiel2_target.h"
 #include "encoder/goofspiel2_encoder.h"
@@ -265,6 +267,8 @@ void bind_oz(py::module &m) {
 
   py::class_<goofspiel2_encoder_t,
              std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder);
+  py::class_<liars_dice_encoder_t,
+      std::shared_ptr<liars_dice_encoder_t>>(m, "LiarsDiceEncoder", py_Encoder);
 
   py::class_<batch_search_t>(m, "BatchSearch")
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
@@ -361,6 +365,17 @@ void bind_oz(py::module &m) {
 
   m.def("make_goofspiel2_encoder", [](int n) {
     return std::make_shared<goofspiel2_encoder_t>(n);
+  });
+  m.def("make_liars_dice", []() {
+    return liars_dice_t();
+  });
+
+  m.def("make_liars_dice_history", []() {
+    return make_history<liars_dice_t>();
+  });
+
+  m.def("make_liars_sice_encoder", []() {
+    return std::make_shared<liars_dice_encoder_t>();
   });
 
 }

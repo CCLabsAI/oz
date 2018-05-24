@@ -15,7 +15,7 @@ namespace oz {
 
   using boost::container::static_vector;
 
-  class liar_dice_t final : public game_t {
+  class liars_dice_t final : public game_t {
   public:
 
     enum class action_t {
@@ -108,7 +108,7 @@ namespace oz {
     action_prob_map_t chance_actions() const override;
 
     std::unique_ptr<game_t> clone() const override {
-      return std::make_unique<liar_dice_t>(*this);
+      return std::make_unique<liars_dice_t>(*this);
     }
 
 

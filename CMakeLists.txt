@@ -63,11 +63,14 @@ add_executable(tests
         "oz/csrc/target/leduk_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
 
+        "oz/csrc/games/liars_dice.cpp"
         "oz/csrc/tests/test_mcts.cpp"
         "oz/csrc/mcts.cpp"
 
         "oz/csrc/oos_rec.cpp"
-        oz/csrc/games/liars_dice.h oz/csrc/games/liars_dice.cpp)
+
+        "oz/csrc/games/liars_dice.cpp"
+        )
 
 
 target_include_directories(tests SYSTEM PRIVATE "lib/catch/include")
@@ -149,6 +152,10 @@ pybind11_add_module(_ext
         "oz/csrc/games/goofspiel2.cpp"
         "oz/csrc/encoder/goofspiel2_encoder.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
+
+        "oz/csrc/games/liars_dice.cpp"
+        "oz/csrc/encoder/liars_dice_encoder.cpp"
+
         )
 
 target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")

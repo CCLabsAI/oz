@@ -11,7 +11,7 @@ namespace oz {
 
   using namespace std;
 
-  void liar_dice_t::act_(action_t a) {
+  void liars_dice_t::act_(action_t a) {
 
     if (player_ == CHANCE) {
       deal_hand(a);
@@ -144,7 +144,7 @@ namespace oz {
 
 
 
-  void liar_dice_t::deal_hand(action_t a) {
+  void liars_dice_t::deal_hand(action_t a) {
 
 
     if (!(a >= CHANCE_START && a <= CHANCE_FINISH)) {
@@ -260,7 +260,7 @@ namespace oz {
   }
 
 
-  auto liar_dice_t::utility(player_t player) const -> value_t {
+  auto liars_dice_t::utility(player_t player) const -> value_t {
     assert (is_terminal());
 
     value_t u = 0;
@@ -293,7 +293,7 @@ namespace oz {
     return relative_utility(player, u);
   }
 
-  auto liar_dice_t::hand_rank(dice_face_t dice_face) -> int {
+  auto liars_dice_t::hand_rank(dice_face_t dice_face) -> int {
 
 
     if (dice_face == dice_face_t::face_1) {
@@ -319,7 +319,7 @@ namespace oz {
     }
   }
 
-  auto liar_dice_t::infoset() const -> oz::infoset_t {
+  auto liars_dice_t::infoset() const -> oz::infoset_t {
 
     Expects(player() != CHANCE);
     return make_infoset<infoset_t>(player_, face1(player_), face2(player_),
@@ -327,7 +327,7 @@ namespace oz {
 
   }
 
-  auto liar_dice_t::infoset(oz::infoset_t::allocator_t alloc) const
+  auto liars_dice_t::infoset(oz::infoset_t::allocator_t alloc) const
   -> oz::infoset_t
   {
     Expects(player() != CHANCE);
@@ -337,12 +337,12 @@ namespace oz {
          history_, bet_, raises_face_, raises_dice_, action_number);
   }
 
-  auto liar_dice_t::is_terminal() const -> bool {
+  auto liars_dice_t::is_terminal() const -> bool {
     return called(P1) || called(P2) || round_ >= N_ROUNDS;
   }
 
 
-  auto liar_dice_t::infoset_t::actions() const -> actions_list_t {
+  auto liars_dice_t::infoset_t::actions() const -> actions_list_t {
 
 
     static const actions_list_t raise_40face_call{
@@ -526,7 +526,7 @@ namespace oz {
 
 
 
-  auto liar_dice_t::chance_actions(action_prob_allocator_t alloc) const -> action_prob_map_t {
+  auto liars_dice_t::chance_actions(action_prob_allocator_t alloc) const -> action_prob_map_t {
 
     Expects(player() == CHANCE);
 
@@ -553,7 +553,7 @@ namespace oz {
 
 
     if (face1(P1) == dice_face_t::NA) {
-      liar_dice_t::action_prob_map_t m(alloc);
+      liars_dice_t::action_prob_map_t m(alloc);
       for (auto action_it = begin(chance_actions_p1); action_it != end(chance_actions_p1); ++action_it) {
         Ensures(0 <= p && p <= 1);
         m.emplace(*action_it, p);
@@ -561,7 +561,7 @@ namespace oz {
       return m;
     }
     else if(N_DICES == 2 and face2(P1) == dice_face_t::NA) {
-      liar_dice_t::action_prob_map_t m(alloc);
+      liars_dice_t::action_prob_map_t m(alloc);
       for (auto action_it = begin(chance_actions_p1); action_it != end(chance_actions_p1); ++action_it) {
         m.emplace(*action_it, p);
         Ensures(0 <= p && p <= 1);
@@ -570,7 +570,7 @@ namespace oz {
       return m;
     }
     else if (face1(P2) == dice_face_t::NA) {
-      liar_dice_t::action_prob_map_t m(alloc);
+      liars_dice_t::action_prob_map_t m(alloc);
       for (auto action_it = begin(chance_actions_p2); action_it != end(chance_actions_p2); ++action_it) {
         Ensures(0 <= p && p <= 1);
         m.emplace(*action_it, p);
@@ -578,7 +578,7 @@ namespace oz {
       return m;
     }
     else if(N_DICES == 2 and face2(P2) == dice_face_t::NA) {
-      liar_dice_t::action_prob_map_t m(alloc);
+      liars_dice_t::action_prob_map_t m(alloc);
       for (auto action_it = begin(chance_actions_p2); action_it != end(chance_actions_p2); ++action_it) {
         m.emplace(*action_it, p);
         Ensures(0 <= p && p <= 1);
@@ -592,11 +592,11 @@ namespace oz {
 
   }
 
-  auto liar_dice_t::chance_actions() const -> action_prob_map_t {
-    return liar_dice_t::chance_actions({ });
+  auto liars_dice_t::chance_actions() const -> action_prob_map_t {
+    return liars_dice_t::chance_actions({ });
   }
 
-  auto liar_dice_t::infoset_t::str() const -> std::string {
+  auto liars_dice_t::infoset_t::str() const -> std::string {
 
     stringstream ss;
 
@@ -690,10 +690,10 @@ namespace oz {
   }
 
 
-  bool liar_dice_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
+  bool liars_dice_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
 
     if (typeid(*this) == typeid(that)) {
-      auto that_ = static_cast<const liar_dice_t::infoset_t &>(that);
+      auto that_ = static_cast<const liars_dice_t::infoset_t &>(that);
       return player == that_.player &&
              face1 == that_.face1 &&
              face2 == that_.face2 &&
@@ -706,7 +706,7 @@ namespace oz {
     }
   }
 
-  size_t liar_dice_t::infoset_t::hash() const {
+  size_t liars_dice_t::infoset_t::hash() const {
     size_t seed = 0;
     hash_combine(seed, player);
     hash_combine(seed, face1);
