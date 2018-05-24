@@ -20,6 +20,7 @@
 #include "target/leduk_target.h"
 #include "games/liars_dice.h"
 #include "encoder/liars_dice_encoder.h"
+#include "target/liars_dice_target.h"
 #include "games/goofspiel2.h"
 #include "target/goofspiel2_target.h"
 #include "encoder/goofspiel2_encoder.h"
@@ -377,5 +378,9 @@ void bind_oz(py::module &m) {
   m.def("make_liars_sice_encoder", []() {
     return std::make_shared<liars_dice_encoder_t>();
   });
+  m.def("make_liars_dice_target", []() {
+    return make_target<liars_dice_target_t>();
+  });
+
 
 }

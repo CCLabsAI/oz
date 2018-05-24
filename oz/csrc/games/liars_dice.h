@@ -162,6 +162,8 @@ namespace oz {
 
     bool called(player_t p) const { return called_[player_idx(p)]; }
     bool &called(player_t p) { return called_[player_idx(p)]; }
+    
+    const action_vector_t &history() const { return history_; }
 
   };
 

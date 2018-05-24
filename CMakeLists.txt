@@ -62,6 +62,7 @@ add_executable(tests
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduk_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
+	"oz/csrc/target/liars_dice_target.cpp"
 
         "oz/csrc/games/liars_dice.cpp"
         "oz/csrc/tests/test_mcts.cpp"
@@ -155,6 +156,7 @@ pybind11_add_module(_ext
 
         "oz/csrc/games/liars_dice.cpp"
         "oz/csrc/encoder/liars_dice_encoder.cpp"
+	"oz/csrc/target/liars_dice_target.cpp"
 
         )
 
