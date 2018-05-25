@@ -70,7 +70,7 @@ namespace oz {
     };
 
     static constexpr int N_PLAYERS = 2;
-    static constexpr int N_DICES = 2;
+    static constexpr int N_DICES = 1;
     static constexpr int MAX_VALUE_DICE = N_DICES * 2 ;
     using action_vector_t = vector<action_t>;
 
@@ -106,6 +106,8 @@ namespace oz {
     value_t utility(player_t player) const override;
     oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;
     action_prob_map_t chance_actions() const override;
+    
+    std::string str() const override;
 
     std::unique_ptr<game_t> clone() const override {
       return std::make_unique<liars_dice_t>(*this);
@@ -113,7 +115,8 @@ namespace oz {
 
 
     action_prob_map_t chance_actions(action_prob_allocator_t alloc) const override;
-
+    
+    
     static constexpr int N_ROUNDS = 1;
     static constexpr int MAX_VALUE_FACE = 5;
 

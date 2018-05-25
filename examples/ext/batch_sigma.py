@@ -7,8 +7,11 @@ import torch.nn.functional as F
 # history = oz.make_goofspiel2_history(6)
 # encoder = oz.make_goofspiel2_encoder(6)
 
-history = oz.make_leduk_history()
-encoder = oz.make_leduk_encoder()
+#history = oz.make_leduk_history()
+#encoder = oz.make_leduk_encoder()
+
+history = oz.make_liars_dice_history()
+encoder = oz.make_liars_dice_encoder()
 
 batch_sigma = oz.SigmaBatch()
 

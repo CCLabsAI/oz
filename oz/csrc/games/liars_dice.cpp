@@ -19,6 +19,7 @@ namespace oz {
     }
     else {
 
+      std::cout << infoset().str() << std::endl;
       history_.push_back(a);
       if (a == action_t::Call_liar) {
         called(player()) = true;
@@ -596,98 +597,134 @@ namespace oz {
     return liars_dice_t::chance_actions({ });
   }
 
+  
+  static std::ostream& print_face(std::ostream& os,
+                                  liars_dice_t::dice_face_t face,
+                                  const string &unk = "")
+  {
+    using dice_face_t = liars_dice_t::dice_face_t;
+    
+    if (face == dice_face_t::face_1) {
+      os << '1';
+    }
+    else if (face == dice_face_t::face_2) {
+      os << '2';
+      
+    }
+    else if (face == dice_face_t::face_3) {
+      os << '3';
+      
+    }
+    else if (face == dice_face_t::face_4) {
+      os << '4';
+      
+    }
+    else if (face == dice_face_t::face_5) {
+      os << '5';
+      
+    }
+    else if (face == dice_face_t::face_star) {
+      os << '*';
+      
+    }
+    else {
+      os << unk;
+      
+    }
+    
+    return os;
+  }
+  
+  static std::ostream& operator << (std::ostream& os,
+                                   const liars_dice_t::action_t &action)
+  {
+    using action_t = liars_dice_t::action_t;
+    
+    if (action == action_t::Raise_0face) {
+      os << 'z';
+    }
+    else if (action == action_t::Raise_1face) {
+      os << 'o';
+    }
+    else if (action == action_t::Raise_2face) {
+      os << 't';
+    }
+    else if (action == action_t::Raise_3face) {
+      os << 'h';
+    }
+    else if (action == action_t::Raise_4face) {
+      os << 'f';
+    }
+    else if (action == action_t::Raise_5face) {
+      os << 'i';
+    }
+    if (action == action_t::Raise_0dice) {
+      os << 'z';
+    }
+    else if (action == action_t::Raise_1dice) {
+      os << 'o';
+    }
+    else if (action == action_t::Raise_2dice) {
+      os << 't';
+    }
+    else if (action == action_t::Raise_3dice) {
+      os << 'x';
+    }
+    else if (action == action_t::Raise_4dice) {
+      os << 'x';
+    }
+    else if (action == action_t::Call_liar) {
+      os << 'c';
+    }
+    else if (action == action_t::NextRound) {
+      os << '/';
+    }
+    else {
+      os << '?';
+    }
+    
+    return os;
+  }
+
   auto liars_dice_t::infoset_t::str() const -> std::string {
+    
 
     stringstream ss;
-
-    if (face1 == dice_face_t::face_1) {
-      ss << "1";
-    }
-    else if (face1 == dice_face_t::face_2) {
-      ss << "2";
-    }
-    else if (face1 == dice_face_t::face_3) {
-      ss << "3";
-    }
-    else if (face1 == dice_face_t::face_4) {
-      ss << "4";
-    }
-    else if (face1 == dice_face_t::face_5) {
-      ss << "5";
-    }
-    else if (face1 == dice_face_t::face_star) {
-      ss << "star";
-    }
-
-    if (face2 == dice_face_t::face_1) {
-      ss << "1";
-    }
-    else if (face2 == dice_face_t::face_2) {
-      ss << "2";
-    }
-    else if (face2 == dice_face_t::face_3) {
-      ss << "3";
-    }
-    else if (face2 == dice_face_t::face_4) {
-      ss << "4";
-    }
-    else if (face2 == dice_face_t::face_5) {
-      ss << "5";
-    }
-    else if (face2 == dice_face_t::face_star) {
-      ss << "star";
-    }
-
-
+    print_face(ss, face1);
+    if(N_DICES == 2)
+      print_face(ss, face2);
+    
+    
+    
     if (!history.empty()) {
       ss << "/";
-    }
-
-    for (const auto& a : history) {
-      if (a == action_t::Raise_0face) {
-        ss << "No raise face ";
       }
-      else if (a == action_t::Raise_1face) {
-        ss << "raise_1face ";
-      }
-      else if (a == action_t::Raise_2face) {
-        ss << "raise_2face ";
-      }
-      else if (a == action_t::Raise_3face) {
-        ss << "raise_3face ";
-      }
-      else if (a == action_t::Raise_4face) {
-        ss << "raise_4face ";
-      }
-      else if (a == action_t::Raise_5face) {
-        ss << "raise_5face ";
-      }
-      else if (a == action_t::Raise_0dice) {
-        ss << "No raise dice ";
-      }
-      else if (a == action_t::Raise_1dice) {
-        ss << "raise_1dice ";
-      }
-      else if (a == action_t::Raise_2dice) {
-        ss << "raise_2dice ";
-      }
-      else if (a == action_t::Raise_3dice) {
-        ss << "raise_3dice ";
-      }
-      else if (a == action_t::Raise_4dice) {
-        ss << "riase_4dice ";
-      }
-      else if (a == action_t::Call_liar) {
-        ss << "c ";
-      }
-      else if (a == action_t::NextRound) {
-        ss << "/ ";
-      }
-      else { assert (false); }
-    }
-
+      
+    
+    for (const auto& a : history)
+       ss << a;
+      
     return ss.str();
   }
+      
+      
+  auto liars_dice_t::str() const -> std::string {
+    stringstream ss;
+        
+    print_face(ss, face1(P1), "?");
+    print_face(ss, face2(P2), "?");
+    
+    if (!history().empty()) {
+      ss << "/";
+    }
+        
+    for (const auto& a : history()) {
+      ss << a;
+    }
+        
+    return ss.str();
+  }
+
 
 
   bool liars_dice_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {

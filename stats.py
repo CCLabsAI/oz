@@ -31,6 +31,9 @@ def main():
     elif args.game == 'goofspiel' or args.game == 'goofspiel2':
         print('Statistics for Goofspiel')
         game_type = 2
+    elif args.game == 'liars_dice' :
+        print('Statistics for Liars Dice')
+        game_type = 2
     else:
         print('error: unknown game: {}'.format(args.game), file=sys.stderr)
         exit(1)

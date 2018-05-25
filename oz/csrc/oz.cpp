@@ -102,6 +102,23 @@ void bind_oz(py::module &m) {
 
   py::class_<kuhn_poker_t>(m, "KuhnPoker", py_Game);
 
+  
+  auto py_LiarsDice =
+  py::class_<liars_dice_t>(m, "LiarsDice", py_Game)
+  .def("face1", (liars_dice_t::dice_face_t (liars_dice_t::*)(player_t) const) &liars_dice_t::face1)
+  .def("face2", (liars_dice_t::dice_face_t (liars_dice_t::*)(player_t) const) &liars_dice_t::face2)
+  .def("bet", (int (liars_dice_t::*)(int) const) &liars_dice_t::bet)
+  .def("called", (bool (liars_dice_t::*)(player_t) const) &liars_dice_t::called);
+  
+  py::enum_<liars_dice_t::dice_face_t>(py_LiarsDice, "Face")
+  .value("NA", liars_dice_t::dice_face_t::NA)
+  .value("1", liars_dice_t::dice_face_t::face_1)
+  .value("2", liars_dice_t::dice_face_t::face_2)
+  .value("3", liars_dice_t::dice_face_t::face_3)
+  .value("4", liars_dice_t::dice_face_t::face_4)
+  .value("5", liars_dice_t::dice_face_t::face_5)
+  .value("star", liars_dice_t::dice_face_t::face_star);
+  
   auto py_LedukPoker =
     py::class_<leduk_poker_t>(m, "LedukPoker", py_Game)
         .def("hand", (leduk_poker_t::card_t (leduk_poker_t::*)(player_t) const) &leduk_poker_t::hand)
@@ -114,6 +131,9 @@ void bind_oz(py::module &m) {
       .value("Jack", leduk_poker_t::card_t::Jack)
       .value("Queen", leduk_poker_t::card_t::Queen)
       .value("King", leduk_poker_t::card_t::King);
+  
+  
+  
 
   py::class_<goofspiel2_t>(m, "Goofspiel2", py_Game)
     .def("score", (int (goofspiel2_t::*)(player_t p) const) &goofspiel2_t::score)
@@ -375,7 +395,7 @@ void bind_oz(py::module &m) {
     return make_history<liars_dice_t>();
   });
 
-  m.def("make_liars_sice_encoder", []() {
+  m.def("make_liars_dice_encoder", []() {
     return std::make_shared<liars_dice_encoder_t>();
   });
   m.def("make_liars_dice_target", []() {

@@ -202,7 +202,8 @@ def main():
                         default=1000)
     parser.add_argument("--matches", type=int,
                         help="number of matches to play",
-                        default=80)
+                        #default=80)
+                        default=5040)
     parser.add_argument("--goofcards", type=int,
                         help="number of cards for II Goofspiel",
                         default=6)
@@ -249,6 +250,10 @@ def main():
         history = oz.make_goofspiel2_history(args.goofcards)
         encoder = oz.make_goofspiel2_encoder(args.goofcards)
         target  = oz.make_goofspiel2_target()
+    elif args.game == 'liars_dice':
+        history = oz.make_liars_dice_history()
+        encoder = oz.make_liars_dice_encoder()
+        target  = oz.make_liars_dice_target()
     else:
         print('error: unknown game: {}'.format(args.game), file=sys.stderr)
         exit(1)
