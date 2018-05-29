@@ -237,7 +237,7 @@ def main():
             label = subprocess.check_output(['git', 'rev-parse', 'HEAD'])
         except CalledProcessError:
             label = 'unknown-git-revision'
-    print(label)
+    print("label :", label)
 
     history = None
     target = None

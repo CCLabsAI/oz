@@ -74,9 +74,8 @@ def main():
                                     all_results.append(0.5)
                                 else :
                                     all_results.append(0.0)
-                        elif (first_line == True):
-                            hash_value = line
-                            first_line = False
+                        if line.startswith("label "):
+                            name,hash_value = line.rstrip().split(':')
                         elif line.startswith("Iters"):
                             name, iter1, iter2 = line.rstrip().split(' ')
                         elif line.startswith("Checkpoints"):
