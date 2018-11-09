@@ -21,6 +21,9 @@
 #include "games/liars_dice.h"
 #include "encoder/liars_dice_encoder.h"
 #include "target/liars_dice_target.h"
+#include "games/tic_tac_toes.h"
+#include "encoder/tic_tac_toes_encoder.h"
+#include "target/tic_tac_toes_target.h"
 #include "games/goofspiel2.h"
 #include "target/goofspiel2_target.h"
 #include "encoder/goofspiel2_encoder.h"
@@ -118,6 +121,24 @@ void bind_oz(py::module &m) {
   .value("4", liars_dice_t::dice_face_t::face_4)
   .value("5", liars_dice_t::dice_face_t::face_5)
   .value("star", liars_dice_t::dice_face_t::face_star);
+  
+  auto py_TicTacToes =
+  py::class_<tic_tac_toes_t>(m, "TicTacToes", py_Game)
+  .def("tot_moves_P1", (int (tic_tac_toes_t::*)(int) const) &tic_tac_toes_t::tot_moves_P1)
+  .def("tot_moves_P2", (int (tic_tac_toes_t::*)(int) const) &tic_tac_toes_t::tot_moves_P2);
+  
+  py::enum_<tic_tac_toes_t::action_t>(py_TicTacToes, "ActionNumber")
+  .value("1", tic_tac_toes_t::action_t::fill_1)
+  .value("2", tic_tac_toes_t::action_t::fill_2)
+  .value("3", tic_tac_toes_t::action_t::fill_3)
+  .value("4", tic_tac_toes_t::action_t::fill_4)
+  .value("5", tic_tac_toes_t::action_t::fill_5)
+  .value("6", tic_tac_toes_t::action_t::fill_6)
+  .value("7", tic_tac_toes_t::action_t::fill_7)
+  .value("8", tic_tac_toes_t::action_t::fill_8)
+  .value("9", tic_tac_toes_t::action_t::fill_9);
+  
+  
   
   auto py_LedukPoker =
     py::class_<leduk_poker_t>(m, "LedukPoker", py_Game)
@@ -290,6 +311,8 @@ void bind_oz(py::module &m) {
              std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder);
   py::class_<liars_dice_encoder_t,
       std::shared_ptr<liars_dice_encoder_t>>(m, "LiarsDiceEncoder", py_Encoder);
+  py::class_<tic_tac_toes_encoder_t,
+  std::shared_ptr<tic_tac_toes_encoder_t>>(m, "TicTacToesEncoder", py_Encoder);
 
   py::class_<batch_search_t>(m, "BatchSearch")
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
@@ -390,6 +413,9 @@ void bind_oz(py::module &m) {
   m.def("make_liars_dice", []() {
     return liars_dice_t();
   });
+  m.def("make_tic_tac_toes", []() {
+    return tic_tac_toes_t();
+  });
 
   m.def("make_liars_dice_history", []() {
     return make_history<liars_dice_t>();
@@ -400,6 +426,17 @@ void bind_oz(py::module &m) {
   });
   m.def("make_liars_dice_target", []() {
     return make_target<liars_dice_target_t>();
+  });
+  
+  m.def("make_tic_tac_toes_history", []() {
+    return make_history<tic_tac_toes_t>();
+  });
+  
+  m.def("make_tic_tac_toes_encoder", []() {
+    return std::make_shared<tic_tac_toes_encoder_t>();
+  });
+  m.def("make_tic_tac_toes_target", []() {
+    return make_target<tic_tac_toes_target_t>();
   });
 
 

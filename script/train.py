@@ -164,13 +164,20 @@ def run(args, checkpoint_data=None):
         history = oz.make_goofspiel2_history(n_cards)
         encoder = oz.make_goofspiel2_encoder(n_cards)
         target  = oz.make_goofspiel2_target()
+    elif game == 'liars_dice':
+        history = oz.make_liars_dice_history()
+        encoder = oz.make_liars_dice_encoder()
+        target  = oz.make_liars_dice_target()
+    elif game == 'tic_tac_toes':
+      history = oz.make_tic_tac_toes_history()
+      encoder = oz.make_tic_tac_toes_encoder()
+      target  = oz.make_tic_tac_toes_target()
 
     rng = oz.Random()
-
     model = oz.nn.model_with_args(args,
                 input_size=encoder.encoding_size(),
                 output_size=encoder.max_actions())
-
+    
     def make_batch_search():
         return oz.BatchSearch(batch_size=args.search_batch_size,
                               history=history,
@@ -192,6 +199,7 @@ def run(args, checkpoint_data=None):
                       simulation_iter=args.simulation_iter,
                       play_eps=args.play_eps,
                       rng=rng)
+
 
     # TODO make this more efficient
     def pr_nn(infoset, action):
@@ -233,6 +241,7 @@ def run(args, checkpoint_data=None):
     else:
         start_iteration = 0
 
+
     if args.dist:
         oz.dist.run_trainer_distributed(trainer, args,
             size=args.workers,
@@ -243,9 +252,11 @@ def run(args, checkpoint_data=None):
             oz.train.interrupted = True
         signal.signal(signal.SIGINT, sigint_handler)
 
+
         oz.train.run_trainer_reservoir(trainer, args,
             start_iteration=start_iteration,
             iter_callback=iter_callback)
+
 
 if __name__ == "__main__":
     main()

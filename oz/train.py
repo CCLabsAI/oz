@@ -66,7 +66,6 @@ class Trainer:
         encoder = self.encoder
         rng = self.rng
         probs = None
-
         infoset = history.infoset()
         search.target(infoset)
 
@@ -79,7 +78,9 @@ class Trainer:
                 with torch.no_grad():
                     logits = self.model.forward(batch)
                     probs = F.softmax(logits, dim=1)
+
                 search.step(probs, rng)
+
 
         tree = search.tree
         sigma = tree.sigma_average()
@@ -157,6 +158,7 @@ def run_trainer_reservoir(trainer, args, start_iteration=0, iter_callback=None):
         for j in range(train_game_ply):
             if interrupted:
                 break
+
             infoset_encoding, action_probs = trainer.simulate()
             d = torch.cat((infoset_encoding, action_probs))
             reservoir.add(d)
@@ -197,3 +199,6 @@ def run_trainer_reservoir(trainer, args, start_iteration=0, iter_callback=None):
                 interrupted=False,
                 trainer=trainer,
                 losses=losses)
+
+
+
