@@ -15,9 +15,9 @@
 #include "py_sigma_batch.h"
 #include "games/flipguess.h"
 #include "games/kuhn.h"
-#include "games/leduk.h"
-#include "encoder/leduk_encoder.h"
-#include "target/leduk_target.h"
+#include "games/leduc.h"
+#include "encoder/leduc_encoder.h"
+#include "target/leduc_target.h"
 #include "games/goofspiel2.h"
 #include "target/goofspiel2_target.h"
 #include "encoder/goofspiel2_encoder.h"
@@ -99,18 +99,18 @@ void bind_oz(py::module &m) {
 
   py::class_<kuhn_poker_t>(m, "KuhnPoker", py_Game);
 
-  auto py_LedukPoker =
-    py::class_<leduk_poker_t>(m, "LedukPoker", py_Game)
-        .def("hand", (leduk_poker_t::card_t (leduk_poker_t::*)(player_t) const) &leduk_poker_t::hand)
-        .def("board", &leduk_poker_t::board)
-        .def("pot", (int (leduk_poker_t::*)(player_t) const) &leduk_poker_t::pot)
-        .def("folded", (bool (leduk_poker_t::*)(player_t) const) &leduk_poker_t::folded);
+  auto py_LeducPoker =
+    py::class_<leduc_poker_t>(m, "LeducPoker", py_Game)
+        .def("hand", (leduc_poker_t::card_t (leduc_poker_t::*)(player_t) const) &leduc_poker_t::hand)
+        .def("board", &leduc_poker_t::board)
+        .def("pot", (int (leduc_poker_t::*)(player_t) const) &leduc_poker_t::pot)
+        .def("folded", (bool (leduc_poker_t::*)(player_t) const) &leduc_poker_t::folded);
 
-  py::enum_<leduk_poker_t::card_t>(py_LedukPoker, "Card")
-      .value("NA", leduk_poker_t::card_t::NA)
-      .value("Jack", leduk_poker_t::card_t::Jack)
-      .value("Queen", leduk_poker_t::card_t::Queen)
-      .value("King", leduk_poker_t::card_t::King);
+  py::enum_<leduc_poker_t::card_t>(py_LeducPoker, "Card")
+      .value("NA", leduc_poker_t::card_t::NA)
+      .value("Jack", leduc_poker_t::card_t::Jack)
+      .value("Queen", leduc_poker_t::card_t::Queen)
+      .value("King", leduc_poker_t::card_t::King);
 
   py::class_<goofspiel2_t>(m, "Goofspiel2", py_Game)
     .def("score", (int (goofspiel2_t::*)(player_t p) const) &goofspiel2_t::score)
@@ -260,8 +260,8 @@ void bind_oz(py::module &m) {
           .def("decode", &encoder_t::decode)
           .def("decode_and_sample", &encoder_t::decode_and_sample);
 
-  py::class_<leduk_encoder_t,
-             std::shared_ptr<leduk_encoder_t>>(m, "LedukEncoder", py_Encoder);
+  py::class_<leduc_encoder_t,
+             std::shared_ptr<leduc_encoder_t>>(m, "LeducEncoder", py_Encoder);
 
   py::class_<goofspiel2_encoder_t,
              std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder);
@@ -331,20 +331,20 @@ void bind_oz(py::module &m) {
     return make_history<kuhn_poker_t>();
   });
 
-  m.def("make_leduk", []() {
-    return leduk_poker_t();
+  m.def("make_leduc", []() {
+    return leduc_poker_t();
   });
 
-  m.def("make_leduk_history", []() {
-    return make_history<leduk_poker_t>();
+  m.def("make_leduc_history", []() {
+    return make_history<leduc_poker_t>();
   });
 
-  m.def("make_leduk_encoder", []() {
-    return std::make_shared<leduk_encoder_t>();
+  m.def("make_leduc_encoder", []() {
+    return std::make_shared<leduc_encoder_t>();
   });
 
-  m.def("make_leduk_target", []() {
-    return make_target<leduk_target_t>();
+  m.def("make_leduc_target", []() {
+    return make_target<leduc_target_t>();
   });
 
   m.def("make_goofspiel2", [](int n) {

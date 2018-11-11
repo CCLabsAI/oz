@@ -1,4 +1,4 @@
-#include "leduk.h"
+#include "leduc.h"
 
 #include "hash.h"
 
@@ -11,9 +11,9 @@ namespace oz {
 
 using namespace std;
 
-constexpr int leduk_poker_t::RAISE_PER_ROUND[];
+constexpr int leduc_poker_t::RAISE_PER_ROUND[];
 
-void leduk_poker_t::act_(action_t a) {
+void leduc_poker_t::act_(action_t a) {
   if (player_ == CHANCE) {
     deal_hand(a);
   }
@@ -51,7 +51,7 @@ void leduk_poker_t::act_(action_t a) {
   }
 }
 
-void leduk_poker_t::start_next_round() {
+void leduc_poker_t::start_next_round() {
   history_.push_back(action_t::NextRound);
   raises_ = 0;
   checked_ = false;
@@ -59,7 +59,7 @@ void leduk_poker_t::start_next_round() {
   player_ = CHANCE;
 }
 
-void leduk_poker_t::deal_hand(action_t a) {
+void leduc_poker_t::deal_hand(action_t a) {
   if (!(a >= CHANCE_START && a <= CHANCE_FINISH)) {
     throw std::invalid_argument("illegal action");
   }
@@ -119,11 +119,11 @@ void leduk_poker_t::deal_hand(action_t a) {
   }
 }
 
-auto leduk_poker_t::is_terminal() const -> bool {
+auto leduc_poker_t::is_terminal() const -> bool {
   return folded(P1) || folded(P2) || round_ >= N_ROUNDS;
 }
 
-auto leduk_poker_t::utility(player_t player) const -> value_t {
+auto leduc_poker_t::utility(player_t player) const -> value_t {
   assert (is_terminal());
 
   value_t u;
@@ -152,7 +152,7 @@ auto leduk_poker_t::utility(player_t player) const -> value_t {
   return relative_utility(player, u);
 }
 
-auto leduk_poker_t::hand_rank(card_t card, card_t board) -> int {
+auto leduc_poker_t::hand_rank(card_t card, card_t board) -> int {
   if (card == board) {
     return PAIR_RANK;
   }
@@ -161,13 +161,13 @@ auto leduk_poker_t::hand_rank(card_t card, card_t board) -> int {
   }
 }
 
-auto leduk_poker_t::infoset() const -> oz::infoset_t {
+auto leduc_poker_t::infoset() const -> oz::infoset_t {
   Expects(player() != CHANCE);
   return make_infoset<infoset_t>(player_, hand(player_), board_,
                                  history_, pot_, raises_);
 }
 
-auto leduk_poker_t::infoset(oz::infoset_t::allocator_t alloc) const
+auto leduc_poker_t::infoset(oz::infoset_t::allocator_t alloc) const
   -> oz::infoset_t
 {
   Expects(player() != CHANCE);
@@ -177,8 +177,8 @@ auto leduk_poker_t::infoset(oz::infoset_t::allocator_t alloc) const
                 history_, pot_, raises_);
 }
 
-static inline int card_idx(leduk_poker_t::card_t a) {
-  using card_t = leduk_poker_t::card_t;
+static inline int card_idx(leduc_poker_t::card_t a) {
+  using card_t = leduc_poker_t::card_t;
 
   switch(a) {
     case card_t::Jack:
@@ -196,12 +196,12 @@ using count_vector_t = array<int, 3>;
 
 static inline auto count_to_probs(const vector<oz::action_t> &actions,
                                   count_vector_t counts,
-                                  leduk_poker_t::action_prob_allocator_t alloc)
-  -> leduk_poker_t::action_prob_map_t
+                                  leduc_poker_t::action_prob_allocator_t alloc)
+  -> leduc_poker_t::action_prob_map_t
 {
   Expects(actions.size() == counts.size());
   const prob_t total = accumulate(begin(counts), end(counts), (prob_t) 0);
-  leduk_poker_t::action_prob_map_t m(alloc);
+  leduc_poker_t::action_prob_map_t m(alloc);
 
   Expects(total > 0);
 
@@ -221,7 +221,7 @@ static inline auto count_to_probs(const vector<oz::action_t> &actions,
   return m;
 }
 
-auto leduk_poker_t::chance_actions(action_prob_allocator_t alloc) const
+auto leduc_poker_t::chance_actions(action_prob_allocator_t alloc) const
   -> action_prob_map_t
 {
   Expects(player() == CHANCE);
@@ -263,11 +263,11 @@ auto leduk_poker_t::chance_actions(action_prob_allocator_t alloc) const
   return { };
 }
 
-auto leduk_poker_t::chance_actions() const -> action_prob_map_t {
-  return leduk_poker_t::chance_actions({ });
+auto leduc_poker_t::chance_actions() const -> action_prob_map_t {
+  return leduc_poker_t::chance_actions({ });
 }
 
-auto leduk_poker_t::infoset_t::actions() const -> actions_list_t {
+auto leduc_poker_t::infoset_t::actions() const -> actions_list_t {
   static const actions_list_t raise_call_fold {
       make_action(action_t::Raise),
       make_action(action_t::Call),
@@ -288,10 +288,10 @@ auto leduk_poker_t::infoset_t::actions() const -> actions_list_t {
 }
 
 static std::ostream& print_card(std::ostream& os,
-                                leduk_poker_t::card_t card,
+                                leduc_poker_t::card_t card,
                                 const string &unk = "")
 {
-  using card_t = leduk_poker_t::card_t;
+  using card_t = leduc_poker_t::card_t;
 
   if (card == card_t::Jack) {
     os << 'J';
@@ -310,9 +310,9 @@ static std::ostream& print_card(std::ostream& os,
 }
 
 static std::ostream& operator <<(std::ostream& os,
-                                 const leduk_poker_t::action_t &action)
+                                 const leduc_poker_t::action_t &action)
 {
-  using action_t = leduk_poker_t::action_t;
+  using action_t = leduc_poker_t::action_t;
 
   if (action == action_t::Raise) {
     os << 'r';
@@ -334,7 +334,7 @@ static std::ostream& operator <<(std::ostream& os,
 }
 
 
-auto leduk_poker_t::infoset_t::str() const -> std::string {
+auto leduc_poker_t::infoset_t::str() const -> std::string {
   stringstream ss;
 
   print_card(ss, hand);
@@ -351,7 +351,7 @@ auto leduk_poker_t::infoset_t::str() const -> std::string {
   return ss.str();
 }
 
-auto leduk_poker_t::str() const -> std::string {
+auto leduc_poker_t::str() const -> std::string {
   stringstream ss;
 
   print_card(ss, hand(P1), "?");
@@ -369,9 +369,9 @@ auto leduk_poker_t::str() const -> std::string {
   return ss.str();
 }
 
-bool leduk_poker_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
+bool leduc_poker_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
   if (typeid(*this) == typeid(that)) {
-    auto that_ = static_cast<const leduk_poker_t::infoset_t &>(that);
+    auto that_ = static_cast<const leduc_poker_t::infoset_t &>(that);
     return
         player  == that_.player  &&
         hand    == that_.hand    &&
@@ -385,7 +385,7 @@ bool leduk_poker_t::infoset_t::is_equal(const infoset_t::concept_t &that) const 
   }
 }
 
-size_t leduk_poker_t::infoset_t::hash() const {
+size_t leduc_poker_t::infoset_t::hash() const {
   size_t seed = 0;
   hash_combine(seed, player);
   hash_combine(seed, hand);

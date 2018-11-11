@@ -4,7 +4,7 @@
 #include "encoder.h"
 #include "oos.h"
 #include "tree.h"
-#include "games/leduk.h"
+#include "games/leduc.h"
 
 #include <torch/torch.h>
 

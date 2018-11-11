@@ -1,27 +1,27 @@
 #include "oos.h"
 
-#include "leduk_target.h"
+#include "leduc_target.h"
 
 namespace oz {
 
 using namespace std;
 
 static auto cast_history(const history_t &h)
--> const leduk_poker_t& {
-  return h.cast<leduk_poker_t>();
+-> const leduc_poker_t& {
+  return h.cast<leduc_poker_t>();
 }
 
 static auto cast_infoset(const infoset_t &infoset)
-  -> const leduk_poker_t::infoset_t& {
-  return infoset.cast<leduk_poker_t::infoset_t>();
+  -> const leduc_poker_t::infoset_t& {
+  return infoset.cast<leduc_poker_t::infoset_t>();
 }
 
-auto leduk_target_t::target_actions(const infoset_t &target_infoset,
+auto leduc_target_t::target_actions(const infoset_t &target_infoset,
                                     const history_t &current_history) const
   -> set<action_t>
 {
-  using card_t = leduk_poker_t::card_t;
-  using action_t = leduk_poker_t::action_t;
+  using card_t = leduc_poker_t::card_t;
+  using action_t = leduc_poker_t::action_t;
 
   const auto &target_infoset_base = cast_infoset(target_infoset);
   const auto &current_game = cast_history(current_history);

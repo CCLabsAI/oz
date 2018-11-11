@@ -17,7 +17,7 @@ using std::vector;
 
 using boost::container::static_vector;
 
-class leduk_poker_t final : public game_t {
+class leduc_poker_t final : public game_t {
  public:
 
   enum class action_t {
@@ -78,7 +78,7 @@ class leduk_poker_t final : public game_t {
   action_prob_map_t chance_actions() const override;
 
   std::unique_ptr<game_t> clone() const override {
-    return std::make_unique<leduk_poker_t>(*this);
+    return std::make_unique<leduc_poker_t>(*this);
   }
 
   oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;

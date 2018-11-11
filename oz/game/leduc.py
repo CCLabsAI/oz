@@ -55,7 +55,7 @@ _P1 = 0
 _P2 = 1
 
 
-class LedukPoker:
+class LeducPoker:
     Player = Player
     Action = Action
     ChanceAction = ChanceAction
@@ -247,7 +247,7 @@ class LedukPoker:
 
         @property
         def actions(self):
-            if self.raises < LedukPoker.MAX_RAISES:
+            if self.raises < LeducPoker.MAX_RAISES:
                 return Action.fold_call_raise
             else:
                 return Action.fold_call

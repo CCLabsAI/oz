@@ -53,14 +53,14 @@ add_executable(tests
         "oz/csrc/node.cpp"
         "oz/csrc/tree.cpp"
 
-        "oz/csrc/tests/test_leduk.cpp"
-        "oz/csrc/games/leduk.cpp"
+        "oz/csrc/tests/test_leduc.cpp"
+        "oz/csrc/games/leduc.cpp"
 
         "oz/csrc/tests/test_goofspiel2.cpp"
         "oz/csrc/games/goofspiel2.cpp"
 
         "oz/csrc/tests/test_target.cpp"
-        "oz/csrc/target/leduk_target.cpp"
+        "oz/csrc/target/leduc_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
 
         "oz/csrc/tests/test_mcts.cpp"
@@ -84,9 +84,9 @@ set_property(TARGET boost_container PROPERTY POSITION_INDEPENDENT_CODE ON)
 # NB prevents the boost internal allocator DLMalloc from using sbrk
 target_compile_options(boost_container PRIVATE "-DHAVE_MORECORE=0")
 
-add_executable(solve_leduk
-        "oz/csrc/solve_leduk.cpp"
-        "oz/csrc/games/leduk.cpp"
+add_executable(solve_leduc
+        "oz/csrc/solve_leduc.cpp"
+        "oz/csrc/games/leduc.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
         "oz/csrc/history.cpp"
@@ -95,9 +95,9 @@ add_executable(solve_leduk
         "oz/csrc/tree.cpp"
         )
 
-add_executable(solve_leduk_mcts
-        "oz/csrc/solve_leduk_mcts.cpp"
-        "oz/csrc/games/leduk.cpp"
+add_executable(solve_leduc_mcts
+        "oz/csrc/solve_leduc_mcts.cpp"
+        "oz/csrc/games/leduc.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/mcts.cpp"
         "oz/csrc/history.cpp"
@@ -131,9 +131,9 @@ pybind11_add_module(_ext
         "oz/csrc/games/flipguess.cpp"
         "oz/csrc/games/kuhn.cpp"
 
-        "oz/csrc/games/leduk.cpp"
-        "oz/csrc/encoder/leduk_encoder.cpp"
-        "oz/csrc/target/leduk_target.cpp"
+        "oz/csrc/games/leduc.cpp"
+        "oz/csrc/encoder/leduc_encoder.cpp"
+        "oz/csrc/target/leduc_target.cpp"
 
         "oz/csrc/games/goofspiel2.cpp"
         "oz/csrc/encoder/goofspiel2_encoder.cpp"
@@ -145,12 +145,12 @@ target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
 #check_ipo_supported(RESULT result)
 #if(result)
   #set_property(TARGET boost_container PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-  #set_property(TARGET solve_leduk PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  #set_property(TARGET solve_leduc PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
   #set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 #endif()
 
 target_link_libraries(tests PRIVATE boost_container)
-target_link_libraries(solve_leduk PRIVATE boost_container)
-target_link_libraries(solve_leduk_mcts PRIVATE boost_container)
+target_link_libraries(solve_leduc PRIVATE boost_container)
+target_link_libraries(solve_leduc_mcts PRIVATE boost_container)
 target_link_libraries(solve_goofspiel2 PRIVATE boost_container)
 target_link_libraries(_ext PRIVATE boost_container)

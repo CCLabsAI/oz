@@ -4,11 +4,11 @@
 #include <set>
 
 #include "target.h"
-#include "games/leduk.h"
+#include "games/leduc.h"
 
 namespace oz {
 
-class leduk_target_t final : public target_t::concept_t {
+class leduc_target_t final : public target_t::concept_t {
  public:
   set<action_t> target_actions(const infoset_t &target_infoset,
                                const history_t &current_history) const override;
