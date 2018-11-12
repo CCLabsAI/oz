@@ -59,6 +59,9 @@ add_executable(tests
         "oz/csrc/tests/test_goofspiel2.cpp"
         "oz/csrc/games/goofspiel2.cpp"
 
+        "oz/csrc/tests/test_holdem.cpp"
+        "oz/csrc/games/holdem.cpp"
+
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduc_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
