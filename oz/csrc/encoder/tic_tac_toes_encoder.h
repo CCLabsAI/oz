@@ -42,7 +42,7 @@ namespace oz {
     static void action_one_hot(int action, ta_t &x_a, int i);
     static void rounds_one_hot(
                                int player_idx,
-                               const tic_tac_toes_t::action_vector_t &actions, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2, ta_t &x_a, int i);
+                               array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2, ta_t &x_a, int i);
 
 
     static constexpr int N_ROUNDS = 1;

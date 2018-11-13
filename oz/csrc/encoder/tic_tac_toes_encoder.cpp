@@ -27,7 +27,6 @@ namespace oz {
   }
 
   void tic_tac_toes_encoder_t::rounds_one_hot(int action_number,
-                                              const tic_tac_toes_t::action_vector_t &actions,
                                               array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1,
                                               array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2,
                                               ta_t &x_a, int i)
@@ -94,7 +93,7 @@ namespace oz {
 
     int pos = 0;
 
-    rounds_one_hot(action_number, game_infoset.history, tot_moves_P1, tot_moves_P2, x_a, pos);
+    rounds_one_hot(action_number, tot_moves_P1, tot_moves_P2, x_a, pos);
     
 
   }
