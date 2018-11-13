@@ -8,3 +8,4 @@ release/
 
 cclabs.gcp.json
 __pycache__
+oz.egg-info/

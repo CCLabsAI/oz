@@ -16,14 +16,13 @@ static auto cast_infoset(const infoset_t &infoset)
   return infoset.cast<tic_tac_toes_t::infoset_t>();
 }
 
-auto tic_tac_toes_target_t::target_actions(const infoset_t &target_infoset,
-                                    const history_t &current_history) const
+  auto tic_tac_toes_target_t::target_actions(const infoset_t &target_infoset,const history_t &current_history) const
   -> set<action_t>
 {
   using action_t = tic_tac_toes_t::action_t;
 
   const auto &target_infoset_base = cast_infoset(target_infoset);
-  const auto &current_game = cast_history(current_history);
+  /*const auto &current_game = cast_history(current_history);
 
  
  
@@ -31,8 +30,6 @@ auto tic_tac_toes_target_t::target_actions(const infoset_t &target_infoset,
   const auto &current_actions = current_game.history();
   const auto &target_actions = target_infoset_base.history;
   const auto next_ply_n = current_actions.size();
-
-  // Q: should the history prefix match for targeting to work?
 
   if (current_actions.size() < target_actions.size()) {
     const auto target = target_actions[next_ply_n];
@@ -51,9 +48,9 @@ auto tic_tac_toes_target_t::target_actions(const infoset_t &target_infoset,
 
     return { make_action(target) };
   }
-  else {
+  else {*/
     return { };
-  }
+  //}
 }
 
 } // namespace oz

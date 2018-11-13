@@ -26,7 +26,7 @@ namespace oz {
    
   }
 
-  void tic_tac_toes_encoder_t::rounds_one_hot(int action_number,
+  /*void tic_tac_toes_encoder_t::rounds_one_hot(int action_number,
                                               array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1,
                                               array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2,
                                               ta_t &x_a, int i)
@@ -75,35 +75,69 @@ namespace oz {
       }
     }
     
-  }
+  }*/
 
   void tic_tac_toes_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
     
     Expects(x.size(0) == encoding_size());
-
+    
+    
     const auto &game_infoset = cast_infoset(infoset);
     const auto &tot_moves_P1 = game_infoset.tot_moves_P1;
     const auto &tot_moves_P2 = game_infoset.tot_moves_P2;
     const auto &action_number = game_infoset.action_number;
-    
-    Expects(game_infoset.player != CHANCE);
+    const auto category_pos = MAX_ACTIONS * MAX_ACTIONS;
 
-    x.zero_();
+
+    bool player_1 = game_infoset.player == P1;
     auto x_a = x.accessor<nn_real_t, 1>();
 
     int pos = 0;
-    if (action_number > 4){
-      for(unsigned int i=0; i<9; i++){
-        cout << tot_moves_P1[i] << " ";
-        cout << tot_moves_P2[i] << endl;
-        
+    unsigned int found_flag = 0;
+    
+    // Encode the action of the player
+    // Player 1
+    if (player_1){
+      for (unsigned int n = 0; n < MAX_ACTIONS; ++n){
+        if (tot_moves_P1[n] > 0){
+          x_a[n*MAX_ACTIONS + n] = 1.0;
+        }
       }
-      cout << endl;
       
-      getchar();
+      // Encoding the category of the action
+      int n, pos;
+      for (n = 0, pos = category_pos; n < MAX_ACTIONS; n++, pos += 2) {
+        if (tot_moves_P1[n] == 1) {
+            x_a[pos + 0] = 1.0;
+        }
+        
+        else if (tot_moves_P1[n] == 2) {
+            x_a[pos + 1] = 1.0;
+        }
+      }
     }
-
-    rounds_one_hot(action_number, tot_moves_P1, tot_moves_P2, x_a, pos);
+    // Player 2
+    else {
+      for (unsigned int n = 0; n < MAX_ACTIONS; ++n){
+        if (tot_moves_P2[n] > 0){
+          x_a[n*MAX_ACTIONS + n] = 1.0;
+        }
+      }
+      
+      // Encoding the category of the action
+      int n, pos;
+      for (n = 0, pos = category_pos; n < MAX_ACTIONS; n++, pos += 2) {
+        if (tot_moves_P2[n] == 1) {
+          x_a[pos + 0] = 1.0;
+        }
+        
+        else if (tot_moves_P2[n] == 2) {
+          x_a[pos + 1] = 1.0;
+        }
+      }
+      
+    }
+    
     
 
   }
@@ -112,27 +146,26 @@ namespace oz {
 
     
     using action_t = tic_tac_toes_encoder_t::action_t;
-    unsigned int legal_action_base = 36;
     
     switch (action) {
       case action_t::fill_1:
-        return legal_action_base;
+        return 0;
       case action_t::fill_2:
-        return legal_action_base + 1;
+        return 1;
       case action_t::fill_3:
-        return legal_action_base + 2;
+        return 2;
       case action_t::fill_4:
-        return legal_action_base + 3;
+        return 3;
       case action_t::fill_5:
-        return legal_action_base + 4;
+        return 4;
       case action_t::fill_6:
-        return legal_action_base + 5;
+        return 5;
       case action_t::fill_7:
-        return legal_action_base + 6;
+        return 6;
       case action_t::fill_8:
-        return legal_action_base + 7;
+        return 7;
       case action_t::fill_9:
-        return legal_action_base + 8;
+        return 8;
       default:
         Ensures(false);
         return 0;
@@ -144,20 +177,8 @@ namespace oz {
 
     
     const auto actions = infoset.actions();
-    const auto &game_infoset = cast_infoset(infoset);
-    const auto &tot_moves_P1 = game_infoset.tot_moves_P1;
-    const auto &tot_moves_P2 = game_infoset.tot_moves_P2;
-    const auto &action_number = game_infoset.action_number;
     
     auto x_a = x.accessor<nn_real_t, 1>();
-    unsigned int legal_action_base = 36;
-
-
-    /*for(unsigned int i = 0; i < MAX_SQUARES; i++){
-      if (action_number % 2 == 0){
-        for
-      }
-    }*/
     for (const auto &action : actions) {
       const auto a_tic_tac_toes = action.cast<tic_tac_toes_encoder_t::action_t>();
       int i = action_to_idx(a_tic_tac_toes);

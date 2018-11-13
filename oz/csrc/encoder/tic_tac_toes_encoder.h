@@ -47,11 +47,17 @@ namespace oz {
     static constexpr int N_ROUNDS = 1;
     
     static constexpr int ACTION_SIZE = 9 ;
-    static constexpr int ROUND_SIZE = 5 * ACTION_SIZE;
+    // fix the sizes (*5 was random)
+    static constexpr int ROUND_SIZE = 5 * ACTION_SIZE * 5;
 
-    static constexpr int ENCODING_SIZE =  150;
-    static constexpr int MAX_ACTIONS = 9 * 4;
-
+    
+    // MAX_ACTIONS is the number of actions that the player could possibly choose from : there are 9 spaces in the tic tac toe grid
+    static constexpr int MAX_ACTIONS = 9;
+    
+    // Encoding size is the max number of actions that a player can play in a game (5)
+    // by the MAX_ACTIONS (9)
+    static constexpr int ENCODING_SIZE =  9 * 9 + 2 * 9;
+    
 
   };
 

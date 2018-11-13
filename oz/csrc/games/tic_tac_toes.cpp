@@ -54,7 +54,7 @@ namespace oz {
       if (player_idx(player_) == 0){
         
         if (tot_moves_P2(0) == 1){
-          tot_moves_P1(0) = 10 + action_number;
+          tot_moves_P1(0) = 2;
           if (show_move == 1){
             cout << discovery << tot_moves_P1(0) << endl;
           }
@@ -77,7 +77,7 @@ namespace oz {
       // case current player is Player 2
       else {
         if (tot_moves_P1(0) == 1){
-          tot_moves_P2(0) = 10 + action_number;
+          tot_moves_P2(0) = 2;
           
           if (show_move == 1)
             cout << discovery << tot_moves_P2(0) << endl;
@@ -105,7 +105,7 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(1) == 1){
-          tot_moves_P1(1) = 10 + action_number;
+          tot_moves_P1(1) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(1) << endl;
@@ -129,7 +129,7 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(1) == 1){
-            tot_moves_P2(1) = 10 + action_number;
+            tot_moves_P2(1) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(1) << endl;
@@ -158,7 +158,7 @@ namespace oz {
       
       if (player_idx(player_) == 0){
         if (tot_moves_P2(2) == 1){
-          tot_moves_P1(2) = 10 + action_number;
+          tot_moves_P1(2) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(2) << endl;
@@ -181,7 +181,7 @@ namespace oz {
         // case current player is Player 2
         else {
           if (tot_moves_P1(2) == 1){
-            tot_moves_P2(2) = 10 + action_number;
+            tot_moves_P2(2) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(2) << endl;
@@ -210,7 +210,7 @@ namespace oz {
       
       if (player_idx(player_) == 0){
         if (tot_moves_P2(3) == 1){
-          tot_moves_P1(3) = 10 + action_number;
+          tot_moves_P1(3) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(3) << endl;
@@ -234,7 +234,7 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(3) == 1){
-            tot_moves_P2(3) = 10 + action_number;
+            tot_moves_P2(3) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(3) << endl;
@@ -263,7 +263,7 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(4) == 1){
-          tot_moves_P1(4) = 10 + action_number;
+          tot_moves_P1(4) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(4) << endl;
@@ -287,7 +287,7 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(4) == 1){
-            tot_moves_P2(4) = 10 + action_number;
+            tot_moves_P2(4) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(4) << endl;
@@ -318,7 +318,7 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(5) == 1){
-          tot_moves_P1(5) = 10 + action_number;
+          tot_moves_P1(5) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P2(5) << endl;
@@ -342,7 +342,7 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(5) == 1){
-            tot_moves_P2(5) = 10 + action_number;
+            tot_moves_P2(5) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(5) << endl;
@@ -373,7 +373,7 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(6) == 1){
-          tot_moves_P1(6) = 10 + action_number;
+          tot_moves_P1(6) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(6) << endl;
@@ -398,7 +398,7 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(6) == 1){
-            tot_moves_P2(6) = 10 + action_number;
+            tot_moves_P2(6) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(6) << endl;
@@ -431,7 +431,7 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(7) == 1){
-          tot_moves_P1(7) = 10 + action_number;
+          tot_moves_P1(7) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(7) << endl;
@@ -455,7 +455,7 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(7) == 1){
-            tot_moves_P2(7) = 10 + action_number;
+            tot_moves_P2(7) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(7) << endl;
@@ -486,7 +486,7 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(8) == 1){
-          tot_moves_P1(8) = 10 + action_number;
+          tot_moves_P1(8) = 2;
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(8) << endl;
@@ -512,7 +512,7 @@ namespace oz {
       else {
         
           if (tot_moves_P1(8) == 1){
-            tot_moves_P2(8) = 10 + action_number;
+            tot_moves_P2(8) = 2;
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(8) << endl;
@@ -651,7 +651,7 @@ namespace oz {
   
   auto tic_tac_toes_t::infoset() const -> oz::infoset_t {
     Expects(player() != CHANCE);
-    return make_infoset<infoset_t>(player_, history_, action_number, is_terminal_flag,
+    return make_infoset<infoset_t>(player_, action_number, is_terminal_flag,
                                     tot_moves_P1_, tot_moves_P2_);
 
   }
@@ -665,7 +665,7 @@ namespace oz {
     return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
         (alloc,
          player_,
-         history_, action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
+         action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
   }
 
   auto tic_tac_toes_t::is_terminal() const -> bool {
@@ -789,7 +789,6 @@ namespace oz {
       auto that_ = static_cast<const tic_tac_toes_t::infoset_t &>(that);
       
       return player == that_.player &&
-             history == that_.history &&
              tot_moves_P1 == that_.tot_moves_P1 &&
              tot_moves_P2 == that_.tot_moves_P2;
     }

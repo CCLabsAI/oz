@@ -56,12 +56,9 @@ namespace oz {
 
    
 
-    using action_vector_t = vector<action_t>;
     
-
     struct infoset_t : public oz::infoset_t::concept_t {
       const player_t player;
-      const action_vector_t history;
       const int action_number;
       
       const int is_terminal_flag;
@@ -71,8 +68,8 @@ namespace oz {
       
       
 
-      infoset_t(player_t player, action_vector_t history, int action_number, int is_terminal_flag, array<int, 9> tot_moves_P1, array<int, 9> tot_moves_P2):
-          player(player),history(move(history)), action_number(action_number), is_terminal_flag(is_terminal_flag), tot_moves_P1(tot_moves_P1), tot_moves_P2(tot_moves_P2) { }
+      infoset_t(player_t player, int action_number, int is_terminal_flag, array<int, 9> tot_moves_P1, array<int, 9> tot_moves_P2):
+          player(player), action_number(action_number),is_terminal_flag(is_terminal_flag), tot_moves_P1(tot_moves_P1), tot_moves_P2(tot_moves_P2){ }
 
       actions_list_t actions() const override;
       string str() const override;
@@ -99,7 +96,6 @@ namespace oz {
 
     action_prob_map_t chance_actions(action_prob_allocator_t alloc) const override;
     
-    
     static constexpr int MAX_VALUE_ACTION = 9;
    
 
@@ -113,8 +109,8 @@ namespace oz {
     array<int, 9> tot_moves_P2_ {{0,0,0,0,0,0,0,0,0}};
     int action_number = 0;
     int is_terminal_flag = 0;
-    action_vector_t history_;
-
+    
+    
     
     player_t other_player() const {
       assert(player_ == P1 || player_ == P2);
@@ -140,8 +136,7 @@ namespace oz {
     int &tot_moves_P1(int n) { return tot_moves_P1_[n]; }
     int &tot_moves_P2(int n) { return tot_moves_P2_[n]; }
     
-    const action_vector_t &history() const { return history_; }
-
+    
   };
 
 } // namespace oz
