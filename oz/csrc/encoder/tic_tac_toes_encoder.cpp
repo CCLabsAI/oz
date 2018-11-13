@@ -33,27 +33,48 @@ namespace oz {
                                               ta_t &x_a, int i)
   {
 
-    
     int round_n = 0, action_n = 0;
     // player 2
     if (action_number % 2 == 0){
-      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++)
-        if (tot_moves_P2[index] == 1)
+      
+      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
+        if (tot_moves_P2[index] - 11 == round_n){
           action_one_hot(index, x_a, i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
+          action_n++;
+        }
+      }
+      action_n = 4;
+      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
+        if (tot_moves_P2[index] == 1){
+          action_one_hot(index, x_a, i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
+          round_n ++;
+          
+          
+        }
+      }
     }
     // player 1
     else {
-      if (tot_moves_P1[0] == 2){
-        cout << 2 << endl;
-        getchar();
-      }
       
-      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++)
-        if (tot_moves_P1[index] == 1)
+      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
+        if (tot_moves_P1[index] - 11 == round_n){
+          
           action_one_hot(index, x_a, i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
-    
+          action_n++;
+        }
+      }
+        
+      action_n = 4;
+      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
+        if (tot_moves_P1[index] == 1){
+          
+          
+          action_one_hot(index, x_a, 35 + i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
+          round_n ++;
+        }
+        
+      }
     }
-    
     
   }
 

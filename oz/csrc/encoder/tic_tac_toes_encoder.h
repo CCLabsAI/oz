@@ -50,7 +50,7 @@ namespace oz {
     static constexpr int ACTION_SIZE = 9 ;
     static constexpr int ROUND_SIZE = 5 * ACTION_SIZE;
 
-    static constexpr int ENCODING_SIZE =  90;
+    static constexpr int ENCODING_SIZE =  ROUND_SIZE * 5;
     static constexpr int MAX_ACTIONS = 9;
 
 

@@ -19,7 +19,7 @@ namespace oz {
     
     string discovery = "--";
     if (show_move == 1){
-      cout << player_idx(player_) <<endl;
+      cout << "Player " << player_idx(player_) <<endl;
     }
     if (action_number > MAX_VALUE_ACTION ) {
       throw std::invalid_argument("maximum number of moves reached");
@@ -54,9 +54,9 @@ namespace oz {
       if (player_idx(player_) == 0){
         
         if (tot_moves_P2(0) == 1){
-          tot_moves_P1(0) = 2;
+          tot_moves_P1(0) = 10 + action_number;
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(0) << endl;
           }
         }
         else{
@@ -77,10 +77,10 @@ namespace oz {
       // case current player is Player 2
       else {
         if (tot_moves_P1(0) == 1){
-          tot_moves_P2(0) = 2;
+          tot_moves_P2(0) = 10 + action_number;
           
           if (show_move == 1)
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P2(0) << endl;
         }
         else{
           tot_moves_P2(0) = 1;
@@ -105,10 +105,10 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(1) == 1){
-          tot_moves_P1(1) = 2;
+          tot_moves_P1(1) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(1) << endl;
           }
         }
         else{
@@ -129,10 +129,10 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(1) == 1){
-            tot_moves_P2(1) = 2;
+            tot_moves_P2(1) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(1) << endl;
             }
           }
           else{
@@ -158,10 +158,10 @@ namespace oz {
       
       if (player_idx(player_) == 0){
         if (tot_moves_P2(2) == 1){
-          tot_moves_P1(2) = 2;
+          tot_moves_P1(2) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(2) << endl;
           }
         }
         else{
@@ -181,10 +181,10 @@ namespace oz {
         // case current player is Player 2
         else {
           if (tot_moves_P1(2) == 1){
-            tot_moves_P2(2) = 2;
+            tot_moves_P2(2) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(2) << endl;
             }
           }
           else{
@@ -210,10 +210,10 @@ namespace oz {
       
       if (player_idx(player_) == 0){
         if (tot_moves_P2(3) == 1){
-          tot_moves_P1(3) = 2;
+          tot_moves_P1(3) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(3) << endl;
           }
         }
         else{
@@ -234,10 +234,10 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(3) == 1){
-            tot_moves_P2(3) = 2;
+            tot_moves_P2(3) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(3) << endl;
             }
           }
           else{
@@ -263,10 +263,10 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(4) == 1){
-          tot_moves_P1(4) = 2;
+          tot_moves_P1(4) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(4) << endl;
           }
         }
         else{
@@ -287,10 +287,10 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(4) == 1){
-            tot_moves_P2(4) = 2;
+            tot_moves_P2(4) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(4) << endl;
             }
           }
         
@@ -318,10 +318,10 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(5) == 1){
-          tot_moves_P1(5) = 2;
+          tot_moves_P1(5) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P2(5) << endl;
           }
         }
         else{
@@ -342,10 +342,10 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(5) == 1){
-            tot_moves_P2(5) = 2;
+            tot_moves_P2(5) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(5) << endl;
             }
           }
           else{
@@ -373,10 +373,10 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(6) == 1){
-          tot_moves_P1(6) = 2;
+          tot_moves_P1(6) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(6) << endl;
           }
         }
         else{
@@ -398,10 +398,10 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(6) == 1){
-            tot_moves_P2(6) = 2;
+            tot_moves_P2(6) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(6) << endl;
             }
           }
           else{
@@ -431,10 +431,10 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(7) == 1){
-          tot_moves_P1(7) = 2;
+          tot_moves_P1(7) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(7) << endl;
           }
         }
         else{
@@ -455,10 +455,10 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(7) == 1){
-            tot_moves_P2(7) = 2;
+            tot_moves_P2(7) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(7) << endl;
             }
           }
           else{
@@ -486,10 +486,10 @@ namespace oz {
       // Check that the action is legal based on the hidden previous actions of the opponent
       if (player_idx(player_) == 0){
         if (tot_moves_P2(8) == 1){
-          tot_moves_P1(8) = 2;
+          tot_moves_P1(8) = 10 + action_number;
           
           if (show_move == 1){
-            cout << discovery << endl;
+            cout << discovery << tot_moves_P1(8) << endl;
           }
         }
         else{
@@ -512,10 +512,10 @@ namespace oz {
       else {
         
           if (tot_moves_P1(8) == 1){
-            tot_moves_P2(8) = 2;
+            tot_moves_P2(8) = 10 + action_number;
             
             if (show_move == 1){
-              cout << discovery << endl;
+              cout << discovery << tot_moves_P2(8) << endl;
             }
           }
           else{
@@ -551,16 +551,19 @@ namespace oz {
     if (is_terminal_flag == 2){
       u = 0;
     }
-    else
-      u = 1;
+    else{
+      if (action_number % 2 == 0)
+        u = -1;
+      else
+        u = 1;
+    }
       
     if (show_move == 1){
-        cout << u <<endl;
+        cout << "Result " << u <<endl;
         getchar();
         }
       
-    //cout << relative_utility(player, u) << endl;
-    return relative_utility(player, u);
+    return u;
     
       
   }
