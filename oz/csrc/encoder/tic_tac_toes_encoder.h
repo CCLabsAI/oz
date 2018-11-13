@@ -41,8 +41,7 @@ namespace oz {
 
     static void action_one_hot(int action, ta_t &x_a, int i);
     static void rounds_one_hot(
-                               int player_idx,
-                               array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2, ta_t &x_a, int i);
+                               int action_number, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2, ta_t &x_a, int i);
 
 
     static constexpr int N_ROUNDS = 1;
@@ -50,8 +49,8 @@ namespace oz {
     static constexpr int ACTION_SIZE = 9 ;
     static constexpr int ROUND_SIZE = 5 * ACTION_SIZE;
 
-    static constexpr int ENCODING_SIZE =  ROUND_SIZE * 5;
-    static constexpr int MAX_ACTIONS = 9;
+    static constexpr int ENCODING_SIZE =  150;
+    static constexpr int MAX_ACTIONS = 9 * 4;
 
 
   };

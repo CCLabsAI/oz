@@ -63,6 +63,7 @@ namespace oz {
       const player_t player;
       const action_vector_t history;
       const int action_number;
+      
       const int is_terminal_flag;
       
       const array<int, MAX_SQUARES> tot_moves_P1;
