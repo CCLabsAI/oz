@@ -40,10 +40,6 @@ namespace oz {
 
 
     static void action_one_hot(int action, ta_t &x_a, int i);
-    static void rounds_one_hot(
-                               int action_number, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1, array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2, ta_t &x_a, int i);
-
-
     static constexpr int N_ROUNDS = 1;
     
     static constexpr int ACTION_SIZE = 9 ;
@@ -56,7 +52,9 @@ namespace oz {
     
     // Encoding size is the max number of actions that a player can play in a game (5)
     // by the MAX_ACTIONS (9)
-    static constexpr int ENCODING_SIZE =  9 * 9 + 2 * 9;
+    
+    //check here. It make sense that there are more because when discovering but not sure about *9
+    static constexpr int ENCODING_SIZE =  (9 * 9 + 2 * 9) * 9;
     
 
   };

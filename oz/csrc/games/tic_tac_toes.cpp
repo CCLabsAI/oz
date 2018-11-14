@@ -17,6 +17,8 @@ namespace oz {
 
   void tic_tac_toes_t::act_(action_t a) {
     
+    unsigned int base_opponent_piece = 10;
+    
     string discovery = "--";
     if (show_move == 1){
       cout << "Player " << player_idx(player_) <<endl;
@@ -24,25 +26,21 @@ namespace oz {
     if (action_number > MAX_VALUE_ACTION ) {
       throw std::invalid_argument("maximum number of moves reached");
     }
-    int past_action[9] = { 0 };
     if (player_idx(player_) == 0){
-      for (unsigned int i = 0; i < 9; i ++){
-        if (tot_moves_P1(i) == 1)
-          past_action[i] = 1;
+      if (action_number == MAX_VALUE_ACTION){
+        is_terminal_flag = is_winning_move_vector(pieces_P1_);
+        if (is_terminal_flag == 0)
+          is_terminal_flag = 2;
       }
     }
     else{
-      for (unsigned int i = 0; i < 9; i ++){
-        if (tot_moves_P2(i) == 1)
-          past_action[i] = 1;
+      if (action_number == MAX_VALUE_ACTION){
+        is_terminal_flag = is_winning_move_vector(pieces_P2_);
+        if (is_terminal_flag == 0)
+          is_terminal_flag = 2;
       }
     }
     
-    if (action_number == MAX_VALUE_ACTION){
-      is_terminal_flag = is_winning_move(past_action);
-      if (is_terminal_flag == 0)
-        is_terminal_flag = 2;
-    }
     
     
     if (a == action_t::fill_1) {
@@ -55,14 +53,16 @@ namespace oz {
         
         if (tot_moves_P2(0) == 1){
           tot_moves_P1(0) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 1);
           if (show_move == 1){
-            cout << discovery << tot_moves_P1(0) << endl;
+            cout << discovery << endl;
           }
         }
         else{
           tot_moves_P1(0) = 1;
-          past_action[0] = 1;
-          is_terminal_flag = is_winning_move(past_action);
+          pieces_P1_.push_back(1);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
+                                             
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -78,14 +78,15 @@ namespace oz {
       else {
         if (tot_moves_P1(0) == 1){
           tot_moves_P2(0) = 2;
+          pieces_P2_.push_back(base_opponent_piece + 1);
           
           if (show_move == 1)
-            cout << discovery << tot_moves_P2(0) << endl;
+            cout << discovery << endl;
         }
         else{
           tot_moves_P2(0) = 1;
-          past_action[0] = 1;
-          is_terminal_flag = is_winning_move(past_action);
+          pieces_P2_.push_back(1);
+          is_terminal_flag = is_winning_move_vector(pieces_P2_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -106,16 +107,17 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(1) == 1){
           tot_moves_P1(1) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 2);
           
           if (show_move == 1){
-            cout << discovery << tot_moves_P1(1) << endl;
+            cout << discovery << endl;
           }
         }
         else{
 
           tot_moves_P1(1) = 1;
-          past_action[1] = 1;
-          is_terminal_flag = is_winning_move(past_action);
+          pieces_P1_.push_back(2);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -130,16 +132,17 @@ namespace oz {
       else {
           if (tot_moves_P1(1) == 1){
             tot_moves_P2(1) = 2;
+            pieces_P2_.push_back(base_opponent_piece + 2);
             
             if (show_move == 1){
-              cout << discovery << tot_moves_P2(1) << endl;
+              cout << discovery << endl;
             }
           }
           else{
             
             tot_moves_P2(1) = 1;
-            past_action[1] = 1;
-            is_terminal_flag = is_winning_move(past_action);
+            pieces_P2_.push_back(2);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
@@ -159,15 +162,16 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(2) == 1){
           tot_moves_P1(2) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 3);
           
           if (show_move == 1){
-            cout << discovery << tot_moves_P1(2) << endl;
+            cout << discovery << endl;
           }
         }
         else{
           tot_moves_P1(2) = 1;
-          past_action[2] = 1;
-          is_terminal_flag = is_winning_move(past_action);
+          pieces_P1_.push_back(3);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -182,16 +186,17 @@ namespace oz {
         else {
           if (tot_moves_P1(2) == 1){
             tot_moves_P2(2) = 2;
+            pieces_P2_.push_back(base_opponent_piece + 3);
             
             if (show_move == 1){
-              cout << discovery << tot_moves_P2(2) << endl;
+              cout << discovery << endl;
             }
           }
           else{
             
             tot_moves_P2(2) = 1;
-            past_action[2] = 1;
-            is_terminal_flag = is_winning_move(past_action);
+            pieces_P2_.push_back(3);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
@@ -211,6 +216,7 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(3) == 1){
           tot_moves_P1(3) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 4);
           
           if (show_move == 1){
             cout << discovery << tot_moves_P1(3) << endl;
@@ -219,8 +225,8 @@ namespace oz {
         else{
           
           tot_moves_P1(3) = 1;
-          past_action[3] = 1;
-          is_terminal_flag = is_winning_move(past_action);
+          pieces_P1_.push_back(4);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -235,16 +241,17 @@ namespace oz {
       else {
           if (tot_moves_P1(3) == 1){
             tot_moves_P2(3) = 2;
+            pieces_P2_.push_back(base_opponent_piece + 4);
             
             if (show_move == 1){
-              cout << discovery << tot_moves_P2(3) << endl;
+              cout << discovery << endl;
             }
           }
           else{
             
             tot_moves_P2(3) = 1;
-            past_action[3] = 1;
-            is_terminal_flag = is_winning_move(past_action);
+            pieces_P2_.push_back(4);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
@@ -264,16 +271,17 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(4) == 1){
           tot_moves_P1(4) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 5);
           
           if (show_move == 1){
-            cout << discovery << tot_moves_P1(4) << endl;
+            cout << discovery << endl;
           }
         }
         else{
           
           tot_moves_P1(4) = 1;
-          past_action[4] = 1;
-          is_terminal_flag = is_winning_move(past_action);
+          pieces_P1_.push_back(5);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -288,6 +296,7 @@ namespace oz {
       else {
           if (tot_moves_P1(4) == 1){
             tot_moves_P2(4) = 2;
+            pieces_P2_.push_back(base_opponent_piece + 5);
             
             if (show_move == 1){
               cout << discovery << tot_moves_P2(4) << endl;
@@ -297,8 +306,8 @@ namespace oz {
           else{
             
             tot_moves_P2(4) = 1;
-            past_action[4] = 1;
-            is_terminal_flag = is_winning_move(past_action);
+            pieces_P2_.push_back(5);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
@@ -319,16 +328,17 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(5) == 1){
           tot_moves_P1(5) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 6);
           
           if (show_move == 1){
-            cout << discovery << tot_moves_P2(5) << endl;
+            cout << discovery << endl;
           }
         }
         else{
           
           tot_moves_P1(5) = 1;
-          past_action[5] = 1;
-          is_terminal_flag = is_winning_move(past_action);
+          pieces_P1_.push_back(6);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -343,16 +353,17 @@ namespace oz {
       else {
           if (tot_moves_P1(5) == 1){
             tot_moves_P2(5) = 2;
+            pieces_P2_.push_back(base_opponent_piece + 6);
             
             if (show_move == 1){
-              cout << discovery << tot_moves_P2(5) << endl;
+              cout << discovery << endl;
             }
           }
           else{
             
             tot_moves_P2(5) = 1;
-            past_action[5] = 1;
-            is_terminal_flag = is_winning_move(past_action);
+            pieces_P2_.push_back(6);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
@@ -374,17 +385,18 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(6) == 1){
           tot_moves_P1(6) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 7);
           
           if (show_move == 1){
-            cout << discovery << tot_moves_P1(6) << endl;
+            cout << discovery << endl;
           }
         }
         else{
           
           tot_moves_P1(6) = 1;
-          past_action[6] = 1;
+          pieces_P1_.push_back(7);
           
-          is_terminal_flag = is_winning_move(past_action);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -398,18 +410,19 @@ namespace oz {
       // case current player is Player 2
       else {
           if (tot_moves_P1(6) == 1){
-            tot_moves_P2(6) = 2;
+            tot_moves_P2(7) = 2;
+            pieces_P2_.push_back(base_opponent_piece + 7);
             
             if (show_move == 1){
-              cout << discovery << tot_moves_P2(6) << endl;
+              cout << discovery << endl;
             }
           }
           else{
             
             tot_moves_P2(6) = 1;
-            past_action[6] = 1;
+            pieces_P2_.push_back(7);
             
-            is_terminal_flag = is_winning_move(past_action);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             
             action_number += 1;
@@ -432,17 +445,18 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(7) == 1){
           tot_moves_P1(7) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 8);
           
           if (show_move == 1){
-            cout << discovery << tot_moves_P1(7) << endl;
+            cout << discovery << endl;
           }
         }
         else{
           
           tot_moves_P1(7) = 1;
-          past_action[7] = 1;
+          pieces_P1_.push_back(8);
           
-          is_terminal_flag = is_winning_move(past_action);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -456,17 +470,18 @@ namespace oz {
       else {
           if (tot_moves_P1(7) == 1){
             tot_moves_P2(7) = 2;
+            pieces_P2_.push_back(base_opponent_piece + 8);
             
             if (show_move == 1){
-              cout << discovery << tot_moves_P2(7) << endl;
+              cout << discovery << endl;
             }
           }
           else{
             
             tot_moves_P2(7) = 1;
-            past_action[7] = 1;
+            pieces_P2_.push_back(8);
             
-            is_terminal_flag = is_winning_move(past_action);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
@@ -487,17 +502,18 @@ namespace oz {
       if (player_idx(player_) == 0){
         if (tot_moves_P2(8) == 1){
           tot_moves_P1(8) = 2;
+          pieces_P1_.push_back(base_opponent_piece + 9);
           
           if (show_move == 1){
-            cout << discovery << tot_moves_P1(8) << endl;
+            cout << discovery << endl;
           }
         }
         else{
           
           tot_moves_P1(8) = 1;
-          past_action[8] = 1;
+          pieces_P1_.push_back(9);
           
-          is_terminal_flag = is_winning_move(past_action);
+          is_terminal_flag = is_winning_move_vector(pieces_P1_);
           player_ = other_player();
           action_number += 1;
           if (is_terminal_flag == 0) {
@@ -512,18 +528,19 @@ namespace oz {
       else {
         
           if (tot_moves_P1(8) == 1){
+            pieces_P2_.push_back(base_opponent_piece + 9);
             tot_moves_P2(8) = 2;
             
             if (show_move == 1){
-              cout << discovery << tot_moves_P2(8) << endl;
+              cout << discovery << endl;
             }
           }
           else{
             
             tot_moves_P2(8) = 1;
-            past_action[8] = 1;
+            pieces_P2_.push_back(9);
             
-            is_terminal_flag = is_winning_move(past_action);
+            is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
@@ -568,91 +585,103 @@ namespace oz {
       
   }
 
-      
-  auto tic_tac_toes_t::is_winning_move(int tot_moves[]) -> int{
-    unsigned int end_of_the_game = 0;
-    
-    if (tot_moves[0] == 1){
-      /* case
-      x - -
-      x - -
-      x - -
-      */
-      if (tot_moves[1] == 1 and tot_moves[2] == 1){
-        end_of_the_game = 1;
-      }
-      /* case
-      - - -
-      - - -
-      x x x
-      */
-      else if (tot_moves[3] == 1 and tot_moves[6] == 1){
-        end_of_the_game = 1;
-      }
-      /* case
-      - - x
-      - x -
-      x - -
-      */
-      else if (tot_moves[4] == 1 and tot_moves[8] == 1){
-        end_of_the_game = 1;
-      }
-    }
-    /* case
-     - - -
-     x x x
-     - - -
-     */
-    if (tot_moves[1] == 1 and tot_moves[4] == 1 and tot_moves[7] == 1){
-      end_of_the_game = 1;
-    }
-    if (tot_moves[2] == 1) {
-      
-      /* case
-      x x x
-      - - -
-      - - -
-      */
-      if (tot_moves[5] == 1 and tot_moves[8] == 1){
-        end_of_the_game = 1;
-        }
-      /* case
-      x - -
-      - x -
-      - - x
-      */
-      else if (tot_moves[4] == 1 and tot_moves[6] == 1){
-        end_of_the_game = 1;
-        }
-      
-    }
-    /* case
-     - x -
-     - x -
-     - x -
-     */
-    
-    if (tot_moves[3] == 1 and tot_moves[4] == 1 and tot_moves[5] == 1){
-      end_of_the_game = 1;
-      
-    }
-    /* case
-     - - x
-     - - x
-     - - x
-     */
-    if (tot_moves[6] == 1 and tot_moves[7] == 1 and tot_moves[8] == 1){
-      end_of_the_game = 1;
-      
-    }
-    return end_of_the_game;
-    
-  }
   
+      
+  auto tic_tac_toes_t::is_winning_move_vector(vector<int> moves) -> int{
+    
+    
+    unsigned int end_of_the_game = 0;
+    int tot_moves[MAX_VALUE_ACTION] = {0,0,0,0,0,0,0,0,0};
+    
+    
+    for (const auto& move : moves){
+      if (move < 10){
+        tot_moves[move - 1] = 1;
+      }
+    }
+    
+    
+    
+        
+        if (tot_moves[0] == 1){
+          /* case
+           x - -
+           x - -
+           x - -
+           */
+          if (tot_moves[1] == 1 and tot_moves[2] == 1){
+            end_of_the_game = 1;
+          }
+          /* case
+           - - -
+           - - -
+           x x x
+           */
+          else if (tot_moves[3] == 1 and tot_moves[6] == 1){
+            end_of_the_game = 1;
+          }
+          /* case
+           - - x
+           - x -
+           x - -
+           */
+          else if (tot_moves[4] == 1 and tot_moves[8] == 1){
+            end_of_the_game = 1;
+          }
+        }
+        /* case
+         - - -
+         x x x
+         - - -
+         */
+        if (tot_moves[1] == 1 and tot_moves[4] == 1 and tot_moves[7] == 1){
+          end_of_the_game = 1;
+        }
+        if (tot_moves[2] == 1) {
+          
+          /* case
+           x x x
+           - - -
+           - - -
+           */
+          if (tot_moves[5] == 1 and tot_moves[8] == 1){
+            end_of_the_game = 1;
+          }
+          /* case
+           x - -
+           - x -
+           - - x
+           */
+          else if (tot_moves[4] == 1 and tot_moves[6] == 1){
+            end_of_the_game = 1;
+          }
+          
+        }
+        /* case
+         - x -
+         - x -
+         - x -
+         */
+        
+        if (tot_moves[3] == 1 and tot_moves[4] == 1 and tot_moves[5] == 1){
+          end_of_the_game = 1;
+          
+        }
+        /* case
+         - - x
+         - - x
+         - - x
+         */
+        if (tot_moves[6] == 1 and tot_moves[7] == 1 and tot_moves[8] == 1){
+          end_of_the_game = 1;
+          
+        }
+        return end_of_the_game;
+        
+      }
   auto tic_tac_toes_t::infoset() const -> oz::infoset_t {
     Expects(player() != CHANCE);
-    return make_infoset<infoset_t>(player_, action_number, is_terminal_flag,
-                                    tot_moves_P1_, tot_moves_P2_);
+    return make_infoset<infoset_t>(player_, pieces_P1_, pieces_P2_, action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
 
   }
   
@@ -664,7 +693,7 @@ namespace oz {
     
     return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
         (alloc,
-         player_,
+         player_, pieces_P1_, pieces_P2_,
          action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
   }
 
@@ -755,12 +784,12 @@ namespace oz {
 
   auto tic_tac_toes_t::infoset_t::str() const -> std::string {
     stringstream ss;
-    /*if (!history.empty()) {
+    /*if (!pieces.empty()) {
       ss << "/";
       }
       
     
-    for (const auto& a : history) {
+    for (const auto& a : pieces) {
       ss << a;
     }*/
     
@@ -771,11 +800,11 @@ namespace oz {
   auto tic_tac_toes_t::str() const -> std::string {
     stringstream ss;
         
-    /*if (!history().empty()) {
+    /*if (!pieces().empty()) {
       ss << "/";
     }
         
-    for (const auto& a : history()) {
+    for (const auto& a : pieces()) {
       ss << a;
     }*/
         
@@ -789,6 +818,8 @@ namespace oz {
       auto that_ = static_cast<const tic_tac_toes_t::infoset_t &>(that);
       
       return player == that_.player &&
+             pieces_P1 == that_.pieces_P1 &&
+            pieces_P2 == that_.pieces_P2 &&
              tot_moves_P1 == that_.tot_moves_P1 &&
              tot_moves_P2 == that_.tot_moves_P2;
     }
@@ -803,6 +834,12 @@ namespace oz {
   size_t tic_tac_toes_t::infoset_t::hash() const {
     size_t seed = 0;
     hash_combine(seed, player);
+    for (const auto &a : pieces_P1) {
+      hash_combine(seed, a);
+    }
+    for (const auto &a : pieces_P2) {
+      hash_combine(seed, a);
+    }
     hash_combine(seed, tot_moves_P1[0]);
     hash_combine(seed, tot_moves_P1[1]);
     hash_combine(seed, tot_moves_P1[2]);

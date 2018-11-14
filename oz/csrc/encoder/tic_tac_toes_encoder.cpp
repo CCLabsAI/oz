@@ -85,9 +85,11 @@ namespace oz {
     const auto &game_infoset = cast_infoset(infoset);
     const auto &tot_moves_P1 = game_infoset.tot_moves_P1;
     const auto &tot_moves_P2 = game_infoset.tot_moves_P2;
+    const auto &pieces_P1 = game_infoset.pieces_P1;
+    const auto &pieces_P2 = game_infoset.pieces_P2;
     const auto &action_number = game_infoset.action_number;
     const auto category_pos = MAX_ACTIONS * MAX_ACTIONS;
-
+    
 
     bool player_1 = game_infoset.player == P1;
     auto x_a = x.accessor<nn_real_t, 1>();
@@ -98,10 +100,17 @@ namespace oz {
     // Encode the action of the player
     // Player 1
     if (player_1){
-      for (unsigned int n = 0; n < MAX_ACTIONS; ++n){
-        if (tot_moves_P1[n] > 0){
-          x_a[n*MAX_ACTIONS + n] = 1.0;
+      const auto n_pieces = static_cast<int>(pieces_P1.size());
+      for (int n = 0; n < n_pieces; n++) {
+        const int piece_idx = pieces_P1[n];
+        if (piece_idx < 10){
+          x_a[n*MAX_ACTIONS + piece_idx] = 1.0;
+          
         }
+        /*else {
+          x_a[n*MAX_ACTIONS + piece_idx - 10] = 1.0;
+        }*/
+        
       }
       
       // Encoding the category of the action
@@ -118,11 +127,16 @@ namespace oz {
     }
     // Player 2
     else {
-      for (unsigned int n = 0; n < MAX_ACTIONS; ++n){
-        if (tot_moves_P2[n] > 0){
-          x_a[n*MAX_ACTIONS + n] = 1.0;
+      const auto n_pieces = static_cast<int>(pieces_P2.size());
+      /*for (int n = 0; n < n_pieces; n++) {
+        const int piece_idx = pieces_P2[n];
+        if (piece_idx < 10){
+          x_a[n*MAX_ACTIONS + piece_idx] = 1.0;
         }
-      }
+        else {
+          x_a[n*MAX_ACTIONS + piece_idx - 10] = 1.0;
+        }
+      }*/
       
       // Encoding the category of the action
       int n, pos;
