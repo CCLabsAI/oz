@@ -47,13 +47,9 @@ namespace oz {
     if (player_idx(player_) == 0){
         
         // Case the square chosen has been already chosen by the opponent in the past
-        if (tot_moves_P2(0) == 1){
-            tot_moves_P1(0) = 2;
-            pieces_P1_.push_back(a);
-        }
+        /*   pieces_P1_.push_back(a);
         // Legal move
-        else{
-            tot_moves_P1(0) = 1;
+        else{*/
             pieces_P1_.push_back(a);
             pieces_P1_.push_back(action_t::NextRound);
             history_.push_back(action_t::NextRound);
@@ -66,17 +62,15 @@ namespace oz {
                     is_terminal_flag = 2;
                 }
             }
-        }
+       // }
     }
       
     // case current player is Player 2
     else {
-        if (tot_moves_P1(0) == 1){
-            tot_moves_P2(0) = 2;
-            pieces_P2_.push_back(a);
+        /*if (
+        pieces_P2_.push_back(a);
         }
-        else{
-            tot_moves_P2(0) = 1;
+        else{*/
             pieces_P2_.push_back(a);
             pieces_P1_.push_back(action_t::NextRound);
             history_.push_back(action_t::NextRound);
@@ -89,7 +83,7 @@ namespace oz {
                 }
             }
         }
-    }
+    //}
   }
     
 
@@ -216,7 +210,7 @@ namespace oz {
       }
   auto tic_tac_toes_t::infoset() const -> oz::infoset_t {
     Expects(player() != CHANCE);
-    return make_infoset<infoset_t>(player_, pieces_P1_, pieces_P2_, history_, action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
+    return make_infoset<infoset_t>(player_, pieces_P1_, pieces_P2_, history_, action_number, is_terminal_flag);
 
   }
   
@@ -229,7 +223,7 @@ namespace oz {
     return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
         (alloc,
          player_, pieces_P1_, pieces_P2_, history_,
-         action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
+         action_number, is_terminal_flag);
   }
 
   auto tic_tac_toes_t::is_terminal() const -> bool {
@@ -244,19 +238,19 @@ namespace oz {
     
     if (player_idx(player) == 0){
       for (int i=0; i < 9; i++){
-        if (tot_moves_P1[i] == 0){
+        /*if (tot_moves_P1[i] == 0){
           actions.push_back(make_action(i));
-        }
+        }*/
       }
     }
         
       
     else{
       for (int i=0; i < 9; i++){
-        if (tot_moves_P2[i] == 0){
+        /*if (tot_moves_P2[i] == 0){
           actions.push_back(make_action(i));
           
-        }
+        }*/
         }
       
       }
@@ -358,9 +352,7 @@ namespace oz {
       return player == that_.player &&
              pieces_P1 == that_.pieces_P1 &&
              pieces_P2 == that_.pieces_P2 &&
-             history == that_.history &&
-             tot_moves_P1 == that_.tot_moves_P1 &&
-             tot_moves_P2 == that_.tot_moves_P2;
+             history == that_.history;
     }
     else {
       
@@ -380,25 +372,6 @@ namespace oz {
       hash_combine(seed, a);
     }
     for (const auto &a : history) { hash_combine(seed, a); }
-    hash_combine(seed, tot_moves_P1[0]);
-    hash_combine(seed, tot_moves_P1[1]);
-    hash_combine(seed, tot_moves_P1[2]);
-    hash_combine(seed, tot_moves_P1[3]);
-    hash_combine(seed, tot_moves_P1[4]);
-    hash_combine(seed, tot_moves_P1[5]);
-    hash_combine(seed, tot_moves_P1[6]);
-    hash_combine(seed, tot_moves_P1[7]);
-    hash_combine(seed, tot_moves_P1[8]);
-
-    hash_combine(seed, tot_moves_P2[0]);
-    hash_combine(seed, tot_moves_P2[1]);
-    hash_combine(seed, tot_moves_P2[2]);
-    hash_combine(seed, tot_moves_P2[3]);
-    hash_combine(seed, tot_moves_P2[4]);
-    hash_combine(seed, tot_moves_P2[5]);
-    hash_combine(seed, tot_moves_P2[6]);
-    hash_combine(seed, tot_moves_P2[7]);
-    hash_combine(seed, tot_moves_P2[8]);
     
     return seed;
   }

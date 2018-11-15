@@ -123,9 +123,7 @@ void bind_oz(py::module &m) {
   .value("star", liars_dice_t::dice_face_t::face_star);
   
   auto py_TicTacToes =
-  py::class_<tic_tac_toes_t>(m, "TicTacToes", py_Game)
-  .def("tot_moves_P1", (int (tic_tac_toes_t::*)(int) const) &tic_tac_toes_t::tot_moves_P1)
-  .def("tot_moves_P2", (int (tic_tac_toes_t::*)(int) const) &tic_tac_toes_t::tot_moves_P2);
+  py::class_<tic_tac_toes_t>(m, "TicTacToes", py_Game);
   
   py::enum_<tic_tac_toes_t::action_t>(py_TicTacToes, "ActionNumber")
   .value("1", tic_tac_toes_t::action_t::fill_1)
