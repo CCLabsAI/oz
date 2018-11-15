@@ -720,6 +720,7 @@ namespace oz {
       for (int i=0; i < 9; i++){
         if (tot_moves_P2[i] == 0){
           actions.push_back(make_action(i));
+          
         }
         }
       

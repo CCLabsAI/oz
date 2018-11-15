@@ -104,12 +104,12 @@ namespace oz {
       for (int n = 0; n < n_pieces; n++) {
         const int piece_idx = pieces_P1[n];
         if (piece_idx < 10){
-          x_a[n*MAX_ACTIONS + piece_idx] = 1.0;
+          x_a[n*MAX_ACTIONS + piece_idx - 1] = 1.0;
           
         }
-        /*else {
-          x_a[n*MAX_ACTIONS + piece_idx - 10] = 1.0;
-        }*/
+        else {
+          x_a[n*MAX_ACTIONS + piece_idx - 11] = 1.0;
+        }
         
       }
       
@@ -127,19 +127,19 @@ namespace oz {
     }
     // Player 2
     else {
+      int n, pos;
       const auto n_pieces = static_cast<int>(pieces_P2.size());
-      /*for (int n = 0; n < n_pieces; n++) {
+      for (n = 0; n < n_pieces; n++) {
         const int piece_idx = pieces_P2[n];
         if (piece_idx < 10){
-          x_a[n*MAX_ACTIONS + piece_idx] = 1.0;
+          x_a[n*MAX_ACTIONS + piece_idx - 1] = 1.0;
         }
         else {
-          x_a[n*MAX_ACTIONS + piece_idx - 10] = 1.0;
+          x_a[n*MAX_ACTIONS + piece_idx - 11] = 1.0;
         }
-      }*/
+      }
       
       // Encoding the category of the action
-      int n, pos;
       for (n = 0, pos = category_pos; n < MAX_ACTIONS; n++, pos += 2) {
         if (tot_moves_P2[n] == 1) {
           x_a[pos + 0] = 1.0;

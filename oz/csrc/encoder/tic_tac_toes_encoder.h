@@ -53,8 +53,7 @@ namespace oz {
     // Encoding size is the max number of actions that a player can play in a game (5)
     // by the MAX_ACTIONS (9)
     
-    //check here. It make sense that there are more because when discovering but not sure about *9
-    static constexpr int ENCODING_SIZE =  (9 * 9 + 2 * 9) * 9;
+    static constexpr int ENCODING_SIZE =  (9 * 9 + 2 * 9) * 10;
     
 
   };
