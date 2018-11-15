@@ -28,7 +28,7 @@ add_compile_options("$<$<CONFIG:Release>:-march=native>")
 add_compile_options("$<$<CONFIG:RelWithDebInfo>:-march=native>")
 
 find_package(PythonInterp 3.4 REQUIRED)
-find_package(PyTorch 0.4.0 REQUIRED)
+find_package(PyTorch 1.0.0 REQUIRED)
 
 include_directories(SYSTEM "lib/gsl-lite/include")
 include_directories(SYSTEM "lib/boost/include")
@@ -154,7 +154,7 @@ pybind11_add_module(_ext
         "oz/csrc/target/holdem_target.cpp"
         )
 
-target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
+target_include_directories(_ext SYSTEM PRIVATE ${PYTORCH_INCLUDE_DIRS})
 
 #check_ipo_supported(RESULT result)
 #if(result)
