@@ -49,13 +49,15 @@ namespace oz {
       fill_6,
       fill_7,
       fill_8,
-      fill_9 = 8
+      fill_9 = 8,
+          
+      NextRound = 100
 
       // There is no chance player
     };
 
     
-    using action_vector_t = vector<int>;
+    using action_vector_t = static_vector<action_t, MAX_SQUARES>;
    
 
     
@@ -63,6 +65,7 @@ namespace oz {
       const player_t player;
       const action_vector_t pieces_P1;
       const action_vector_t pieces_P2;
+      const action_vector_t history;
       const int action_number;
       
       const int is_terminal_flag;
@@ -72,8 +75,8 @@ namespace oz {
       
       
 
-      infoset_t(player_t player,action_vector_t pieces_P1, action_vector_t pieces_P2, int action_number, int is_terminal_flag, array<int, 9> tot_moves_P1, array<int, 9> tot_moves_P2):
-          player(player),pieces_P1(move(pieces_P1)), pieces_P2(move(pieces_P2)), action_number(action_number),is_terminal_flag(is_terminal_flag), tot_moves_P1(tot_moves_P1), tot_moves_P2(tot_moves_P2){ }
+      infoset_t(player_t player,action_vector_t pieces_P1, action_vector_t pieces_P2, action_vector_t history, int action_number, int is_terminal_flag, array<int, 9> tot_moves_P1, array<int, 9> tot_moves_P2):
+          player(player),pieces_P1(move(pieces_P1)), pieces_P2(move(pieces_P2)), history(move(history)), action_number(action_number),is_terminal_flag(is_terminal_flag), tot_moves_P1(tot_moves_P1), tot_moves_P2(tot_moves_P2){ }
 
       actions_list_t actions() const override;
       string str() const override;
@@ -115,6 +118,8 @@ namespace oz {
     int is_terminal_flag = 0;
     action_vector_t pieces_P1_;
     action_vector_t pieces_P2_;
+    int turn_ = 0;
+    action_vector_t history_;
     
     
     
@@ -131,7 +136,7 @@ namespace oz {
         default: return -1; // should not be reachable
       }
     }
-    static int is_winning_move_vector(vector<int> moves);
+    static int is_winning_move_vector(action_vector_t moves);
 
     
     
@@ -144,6 +149,10 @@ namespace oz {
     
     const action_vector_t &pieces_P1() const { return pieces_P1_; }
     const action_vector_t &pieces_P2() const { return pieces_P2_; }
+    
+    int turn() const { return turn_; }
+    
+    const action_vector_t &history() const { return history_; }
     
   };
 

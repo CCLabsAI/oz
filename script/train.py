@@ -169,9 +169,9 @@ def run(args, checkpoint_data=None):
         encoder = oz.make_liars_dice_encoder()
         target  = oz.make_liars_dice_target()
     elif game == 'tic_tac_toes':
-      history = oz.make_tic_tac_toes_history()
-      encoder = oz.make_tic_tac_toes_encoder()
-      target  = oz.make_tic_tac_toes_target()
+        history = oz.make_tic_tac_toes_history()
+        encoder = oz.make_tic_tac_toes_encoder()
+        target  = oz.make_tic_tac_toes_target()
 
     rng = oz.Random()
     model = oz.nn.model_with_args(args,

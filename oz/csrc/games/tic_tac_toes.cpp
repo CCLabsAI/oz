@@ -41,522 +41,57 @@ namespace oz {
       }
     }
     
-    
-    
-    if (a == action_t::fill_1) {
-      if (show_move == 1){
-        cout << 1 << endl;
-      }
-      
-      // case current player is Player 1
-      if (player_idx(player_) == 0){
+    cout << infoset().str() << endl;
+    history_.push_back(a);
+    // case current player is Player 1
+    if (player_idx(player_) == 0){
         
+        // Case the square chosen has been already chosen by the opponent in the past
         if (tot_moves_P2(0) == 1){
-          tot_moves_P1(0) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 1);
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
+            tot_moves_P1(0) = 2;
+            pieces_P1_.push_back(a);
         }
+        // Legal move
         else{
-          tot_moves_P1(0) = 1;
-          pieces_P1_.push_back(1);
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
+            tot_moves_P1(0) = 1;
+            pieces_P1_.push_back(a);
+            pieces_P1_.push_back(action_t::NextRound);
+            history_.push_back(action_t::NextRound);
+            is_terminal_flag = is_winning_move_vector(pieces_P1_);
                                              
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
+            player_ = other_player();
+            action_number += 1;
+            if (is_terminal_flag == 0) {
+                if (action_number == MAX_VALUE_ACTION){
+                    is_terminal_flag = 2;
+                }
             }
-          }
-          
-      }
-      }
+        }
+    }
       
-      // case current player is Player 2
-      else {
+    // case current player is Player 2
+    else {
         if (tot_moves_P1(0) == 1){
-          tot_moves_P2(0) = 2;
-          pieces_P2_.push_back(base_opponent_piece + 1);
-          
-          if (show_move == 1)
-            cout << discovery << endl;
+            tot_moves_P2(0) = 2;
+            pieces_P2_.push_back(a);
         }
         else{
-          tot_moves_P2(0) = 1;
-          pieces_P2_.push_back(1);
-          is_terminal_flag = is_winning_move_vector(pieces_P2_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-      
-    }
-    else if (a == action_t::fill_2) {
-      if (show_move == 1){
-        cout << 2 << endl;
-      }
-      
-      // Check that the action is legal based on the hidden previous actions of the opponent
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(1) == 1){
-          tot_moves_P1(1) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 2);
-          
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
-        }
-        else{
-
-          tot_moves_P1(1) = 1;
-          pieces_P1_.push_back(2);
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-        
-      // case current player is Player 2
-      else {
-          if (tot_moves_P1(1) == 1){
-            tot_moves_P2(1) = 2;
-            pieces_P2_.push_back(base_opponent_piece + 2);
-            
-            if (show_move == 1){
-              cout << discovery << endl;
-            }
-          }
-          else{
-            
-            tot_moves_P2(1) = 1;
-            pieces_P2_.push_back(2);
+            tot_moves_P2(0) = 1;
+            pieces_P2_.push_back(a);
+            pieces_P1_.push_back(action_t::NextRound);
+            history_.push_back(action_t::NextRound);
             is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
             action_number += 1;
             if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
+                if (action_number == MAX_VALUE_ACTION){
                 is_terminal_flag = 2;
-              }
+                }
             }
-          }
         }
     }
+  }
     
-    else if (a == action_t::fill_3) {
-      if (show_move == 1){
-        cout << 3 << endl;
-      }
-      
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(2) == 1){
-          tot_moves_P1(2) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 3);
-          
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
-        }
-        else{
-          tot_moves_P1(2) = 1;
-          pieces_P1_.push_back(3);
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-        
-        // case current player is Player 2
-        else {
-          if (tot_moves_P1(2) == 1){
-            tot_moves_P2(2) = 2;
-            pieces_P2_.push_back(base_opponent_piece + 3);
-            
-            if (show_move == 1){
-              cout << discovery << endl;
-            }
-          }
-          else{
-            
-            tot_moves_P2(2) = 1;
-            pieces_P2_.push_back(3);
-            is_terminal_flag = is_winning_move_vector(pieces_P2_);
-            player_ = other_player();
-            action_number += 1;
-            if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
-                is_terminal_flag = 2;
-              }
-            }
-          }
-        }
-    }
-    else if (a == action_t::fill_4) {
-      if (show_move == 1){
-        cout << 4 << endl;
-      }
-      
-      
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(3) == 1){
-          tot_moves_P1(3) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 4);
-          
-          if (show_move == 1){
-            cout << discovery << tot_moves_P1(3) << endl;
-          }
-        }
-        else{
-          
-          tot_moves_P1(3) = 1;
-          pieces_P1_.push_back(4);
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-        
-      // case current player is Player 2
-      else {
-          if (tot_moves_P1(3) == 1){
-            tot_moves_P2(3) = 2;
-            pieces_P2_.push_back(base_opponent_piece + 4);
-            
-            if (show_move == 1){
-              cout << discovery << endl;
-            }
-          }
-          else{
-            
-            tot_moves_P2(3) = 1;
-            pieces_P2_.push_back(4);
-            is_terminal_flag = is_winning_move_vector(pieces_P2_);
-            player_ = other_player();
-            action_number += 1;
-            if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
-                is_terminal_flag = 2;
-              }
-            }
-          }
-        }
-    }
-    else if (a == action_t::fill_5) {
-      if (show_move == 1){
-        cout << 5 << endl;
-      }
-      
-      // Check that the action is legal based on the hidden previous actions of the opponent
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(4) == 1){
-          tot_moves_P1(4) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 5);
-          
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
-        }
-        else{
-          
-          tot_moves_P1(4) = 1;
-          pieces_P1_.push_back(5);
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-        
-      // case current player is Player 2
-      else {
-          if (tot_moves_P1(4) == 1){
-            tot_moves_P2(4) = 2;
-            pieces_P2_.push_back(base_opponent_piece + 5);
-            
-            if (show_move == 1){
-              cout << discovery << tot_moves_P2(4) << endl;
-            }
-          }
-        
-          else{
-            
-            tot_moves_P2(4) = 1;
-            pieces_P2_.push_back(5);
-            is_terminal_flag = is_winning_move_vector(pieces_P2_);
-            player_ = other_player();
-            action_number += 1;
-            if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
-                is_terminal_flag = 2;
-              }
-            }
-          }
-        }
-      
-    }
-    else if (a == action_t::fill_6) {
-      if (show_move == 1){
-        cout << 6 << endl;
-      }
-      
-      // Check that the action is legal based on the hidden previous actions of the opponent
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(5) == 1){
-          tot_moves_P1(5) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 6);
-          
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
-        }
-        else{
-          
-          tot_moves_P1(5) = 1;
-          pieces_P1_.push_back(6);
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-        
-      // case current player is Player 2
-      else {
-          if (tot_moves_P1(5) == 1){
-            tot_moves_P2(5) = 2;
-            pieces_P2_.push_back(base_opponent_piece + 6);
-            
-            if (show_move == 1){
-              cout << discovery << endl;
-            }
-          }
-          else{
-            
-            tot_moves_P2(5) = 1;
-            pieces_P2_.push_back(6);
-            is_terminal_flag = is_winning_move_vector(pieces_P2_);
-            player_ = other_player();
-            action_number += 1;
-            if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
-                is_terminal_flag = 2;
-              }
-            }
-          }
-        }
-      
-
-    }
-    else if (a == action_t::fill_7) {
-      if (show_move == 1){
-        cout << 7 << endl;
-      }
-      
-      // Check that the action is legal based on the hidden previous actions of the opponent
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(6) == 1){
-          tot_moves_P1(6) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 7);
-          
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
-        }
-        else{
-          
-          tot_moves_P1(6) = 1;
-          pieces_P1_.push_back(7);
-          
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-        
-      // case current player is Player 2
-      else {
-          if (tot_moves_P1(6) == 1){
-            tot_moves_P2(7) = 2;
-            pieces_P2_.push_back(base_opponent_piece + 7);
-            
-            if (show_move == 1){
-              cout << discovery << endl;
-            }
-          }
-          else{
-            
-            tot_moves_P2(6) = 1;
-            pieces_P2_.push_back(7);
-            
-            is_terminal_flag = is_winning_move_vector(pieces_P2_);
-            player_ = other_player();
-            
-            action_number += 1;
-            if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
-                is_terminal_flag = 2;
-              }
-            }
-          }
-        }
-      
-      
-    }
-    else if (a == action_t::fill_8) {
-      if (show_move == 1){
-        cout << 8 << endl;
-      }
-      
-      // Check that the action is legal based on the hidden previous actions of the opponent
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(7) == 1){
-          tot_moves_P1(7) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 8);
-          
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
-        }
-        else{
-          
-          tot_moves_P1(7) = 1;
-          pieces_P1_.push_back(8);
-          
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-      // case current player is Player 2
-      else {
-          if (tot_moves_P1(7) == 1){
-            tot_moves_P2(7) = 2;
-            pieces_P2_.push_back(base_opponent_piece + 8);
-            
-            if (show_move == 1){
-              cout << discovery << endl;
-            }
-          }
-          else{
-            
-            tot_moves_P2(7) = 1;
-            pieces_P2_.push_back(8);
-            
-            is_terminal_flag = is_winning_move_vector(pieces_P2_);
-            player_ = other_player();
-            action_number += 1;
-            if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
-                is_terminal_flag = 2;
-              }
-            }
-          }
-        }
-      
-    }
-    else if (a == action_t::fill_9) {
-      if (show_move == 1){
-        cout << 9 << endl;
-      }
-      
-      // Check that the action is legal based on the hidden previous actions of the opponent
-      if (player_idx(player_) == 0){
-        if (tot_moves_P2(8) == 1){
-          tot_moves_P1(8) = 2;
-          pieces_P1_.push_back(base_opponent_piece + 9);
-          
-          if (show_move == 1){
-            cout << discovery << endl;
-          }
-        }
-        else{
-          
-          tot_moves_P1(8) = 1;
-          pieces_P1_.push_back(9);
-          
-          is_terminal_flag = is_winning_move_vector(pieces_P1_);
-          player_ = other_player();
-          action_number += 1;
-          if (is_terminal_flag == 0) {
-            if (action_number == MAX_VALUE_ACTION){
-              is_terminal_flag = 2;
-            }
-          }
-        }
-      }
-        
-      // case current player is Player 2
-      else {
-        
-          if (tot_moves_P1(8) == 1){
-            pieces_P2_.push_back(base_opponent_piece + 9);
-            tot_moves_P2(8) = 2;
-            
-            if (show_move == 1){
-              cout << discovery << endl;
-            }
-          }
-          else{
-            
-            tot_moves_P2(8) = 1;
-            pieces_P2_.push_back(9);
-            
-            is_terminal_flag = is_winning_move_vector(pieces_P2_);
-            player_ = other_player();
-            action_number += 1;
-            if (is_terminal_flag == 0) {
-              if (action_number == MAX_VALUE_ACTION){
-                is_terminal_flag = 2;
-              }
-            }
-          }
-        }
-    }
-    
-      else {
-        throw std::invalid_argument("invalid action");
-      }
-    }
-  
 
 
 
@@ -587,7 +122,7 @@ namespace oz {
 
   
       
-  auto tic_tac_toes_t::is_winning_move_vector(vector<int> moves) -> int{
+  auto tic_tac_toes_t::is_winning_move_vector(action_vector_t moves) -> int{
     
     
     unsigned int end_of_the_game = 0;
@@ -595,8 +130,8 @@ namespace oz {
     
     
     for (const auto& move : moves){
-      if (move < 10){
-        tot_moves[move - 1] = 1;
+      if (move == action_t::fill_1){
+        tot_moves[0] = 1;
       }
     }
     
@@ -681,7 +216,7 @@ namespace oz {
       }
   auto tic_tac_toes_t::infoset() const -> oz::infoset_t {
     Expects(player() != CHANCE);
-    return make_infoset<infoset_t>(player_, pieces_P1_, pieces_P2_, action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
+    return make_infoset<infoset_t>(player_, pieces_P1_, pieces_P2_, history_, action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
 
   }
   
@@ -693,7 +228,7 @@ namespace oz {
     
     return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
         (alloc,
-         player_, pieces_P1_, pieces_P2_,
+         player_, pieces_P1_, pieces_P2_, history_,
          action_number, is_terminal_flag, tot_moves_P1_, tot_moves_P2_);
   }
 
@@ -766,7 +301,7 @@ namespace oz {
     else if (action == action_t::fill_6) {
       os << '6';
     }
-    if (action == action_t::fill_7) {
+    else if (action == action_t::fill_7) {
       os << '7';
     }
     else if (action == action_t::fill_8) {
@@ -775,43 +310,45 @@ namespace oz {
     else if (action == action_t::fill_9) {
       os << '9';
     }
-    /*else {
+    else if (action == action_t::NextRound) {
+        os << '/';
+    }
+    else {
       os << '?';
       getchar();
-    }*/
+    }
     
     return os;
   }
 
   auto tic_tac_toes_t::infoset_t::str() const -> std::string {
     stringstream ss;
-    /*if (!pieces.empty()) {
-      ss << "/";
-      }
-      
-    
-    for (const auto& a : pieces) {
-      ss << a;
-    }*/
-    
+
+    if (!history.empty()) {
+        ss << "/";
+    }
+
+    for (const auto& a : history) {
+        ss << a;
+    }
+
     return ss.str();
-  }
+}
       
       
   auto tic_tac_toes_t::str() const -> std::string {
-    stringstream ss;
-        
-    /*if (!pieces().empty()) {
-      ss << "/";
-    }
-        
-    for (const auto& a : pieces()) {
-      ss << a;
-    }*/
-        
-    return ss.str();
-  }
+      stringstream ss;
 
+      if (!history().empty()) {
+        ss << "/";
+      }
+
+      for (const auto& a : history()) {
+        ss << a;
+      }
+
+      return ss.str();
+}
 
 
   bool tic_tac_toes_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
@@ -820,7 +357,8 @@ namespace oz {
       
       return player == that_.player &&
              pieces_P1 == that_.pieces_P1 &&
-            pieces_P2 == that_.pieces_P2 &&
+             pieces_P2 == that_.pieces_P2 &&
+             history == that_.history &&
              tot_moves_P1 == that_.tot_moves_P1 &&
              tot_moves_P2 == that_.tot_moves_P2;
     }
@@ -841,6 +379,7 @@ namespace oz {
     for (const auto &a : pieces_P2) {
       hash_combine(seed, a);
     }
+    for (const auto &a : history) { hash_combine(seed, a); }
     hash_combine(seed, tot_moves_P1[0]);
     hash_combine(seed, tot_moves_P1[1]);
     hash_combine(seed, tot_moves_P1[2]);
