@@ -8,21 +8,43 @@
 #include <string>
 #include <iostream>
 
-bool show_log = 0;
 bool show_move = 0;
 
 namespace oz {
 
   using namespace std;
+    
+    
+   int actions_to_idx(const tic_tac_toes_t::action_t a){
+      switch(a){
+          case tic_tac_toes_t::action_t::fill_1 :
+              return 0;
+          case tic_tac_toes_t::action_t::fill_2 :
+              return 1;
+          case tic_tac_toes_t::action_t::fill_3 :
+              return 2;
+          case tic_tac_toes_t::action_t::fill_4 :
+              return 3;
+          case tic_tac_toes_t::action_t::fill_5 :
+              return 4;
+          case tic_tac_toes_t::action_t::fill_6 :
+              return 5;
+          case tic_tac_toes_t::action_t::fill_7 :
+              return 6;
+          case tic_tac_toes_t::action_t::fill_8 :
+              return 7;
+          case tic_tac_toes_t::action_t::fill_9 :
+              return 8;
+          default: return -1;
+          
+          }
+              
+  }
+    
+    
 
   void tic_tac_toes_t::act_(action_t a) {
     
-    unsigned int base_opponent_piece = 10;
-    
-    string discovery = "--";
-    if (show_move == 1){
-      cout << "Player " << player_idx(player_) <<endl;
-    }
     if (action_number > MAX_VALUE_ACTION ) {
       throw std::invalid_argument("maximum number of moves reached");
     }
@@ -41,19 +63,35 @@ namespace oz {
       }
     }
     
-    cout << infoset().str() << endl;
     history_.push_back(a);
+    //cout << infoset().str() << endl;
+      
+      
     // case current player is Player 1
     if (player_idx(player_) == 0){
         
-        // Case the square chosen has been already chosen by the opponent in the past
-        /*   pieces_P1_.push_back(a);
+        // calculate opponent past actions 
+        int past_actions[MAX_SQUARES] = {0,0,0,0,0,0,0,0};
+        for (const auto& a : pieces_P2_){
+               int idx = actions_to_idx(a);
+               past_actions[idx] = 1;
+           }
+        unsigned int current_action_idx = actions_to_idx(a);
+        
+        // case illegal move
+        if(past_actions[current_action_idx] == 1)
+            pieces_P1_.push_back(a);
+        
         // Legal move
-        else{*/
+        else{
             pieces_P1_.push_back(a);
             pieces_P1_.push_back(action_t::NextRound);
+            
             history_.push_back(action_t::NextRound);
+            
+            
             is_terminal_flag = is_winning_move_vector(pieces_P1_);
+    
                                              
             player_ = other_player();
             action_number += 1;
@@ -62,17 +100,29 @@ namespace oz {
                     is_terminal_flag = 2;
                 }
             }
-       // }
+            
+        }
     }
       
     // case current player is Player 2
     else {
-        /*if (
-        pieces_P2_.push_back(a);
-        }
-        else{*/
+        // calculate opponent past actions 
+        int past_actions[MAX_SQUARES] = {0,0,0,0,0,0,0,0};
+        for (const auto& a : pieces_P1_){
+               int idx = actions_to_idx(a);
+               past_actions[idx] = 1;
+           }
+        unsigned int current_action_idx = actions_to_idx(a);
+        
+        // case illegal move
+        if(past_actions[current_action_idx] == 1)
             pieces_P2_.push_back(a);
-            pieces_P1_.push_back(action_t::NextRound);
+        
+        // Legal move
+        else{
+               
+            pieces_P2_.push_back(a);
+            pieces_P2_.push_back(action_t::NextRound);
             history_.push_back(action_t::NextRound);
             is_terminal_flag = is_winning_move_vector(pieces_P2_);
             player_ = other_player();
@@ -82,8 +132,9 @@ namespace oz {
                 is_terminal_flag = 2;
                 }
             }
+            
         }
-    //}
+    }
   }
     
 
@@ -122,14 +173,13 @@ namespace oz {
     unsigned int end_of_the_game = 0;
     int tot_moves[MAX_VALUE_ACTION] = {0,0,0,0,0,0,0,0,0};
     
-    
-    for (const auto& move : moves){
-      if (move == action_t::fill_1){
-        tot_moves[0] = 1;
-      }
+    unsigned int moves_size = moves.size();
+    for (unsigned int i = 0; i < moves_size; ++i){
+            if(actions_to_idx(moves[i]) == -1){
+                tot_moves[actions_to_idx(moves[i - 1])] = 1;
+            }
     }
-    
-    
+      
     
         
         if (tot_moves[0] == 1){
@@ -232,27 +282,49 @@ namespace oz {
   }
 
 
+  
+
   auto tic_tac_toes_t::infoset_t::actions() const -> actions_list_t {
+    
     actions_list_t actions;
+    int past_actions[MAX_SQUARES] = {0,0,0,0,0,0,0,0};
+     
     
-    
+    // Player P1
     if (player_idx(player) == 0){
-      for (int i=0; i < 9; i++){
-        /*if (tot_moves_P1[i] == 0){
-          actions.push_back(make_action(i));
-        }*/
-      }
+      if (history.empty()){
+          for (unsigned int i = 0; i < MAX_SQUARES; ++i)
+              actions.push_back(make_action(i));
+       }
+       else {
+           for (const auto& a : pieces_P1){
+               int idx = actions_to_idx(a);
+               past_actions[idx] = 1;
+           }
+           for (unsigned int i = 0; i < MAX_SQUARES; ++i){
+               if(past_actions[i] == 0)
+                   actions.push_back(make_action(i));
+           }
+           
+           
+       }
     }
-        
-      
+    // Player P2
     else{
-      for (int i=0; i < 9; i++){
-        /*if (tot_moves_P2[i] == 0){
-          actions.push_back(make_action(i));
-          
-        }*/
-        }
-      
+      if (history.empty()){
+          for (unsigned int i = 0; i < MAX_SQUARES; ++i)
+              actions.push_back(make_action(i));
+       }
+       else {
+           for (const auto& a : pieces_P2){
+               int idx = actions_to_idx(a);
+               past_actions[idx] = 1;
+           }
+           for (unsigned int i = 0; i < MAX_SQUARES; ++i){
+               if(past_actions[i] == 0)
+                   actions.push_back(make_action(i));
+           }
+       }
       }
     
     return actions;

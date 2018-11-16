@@ -57,7 +57,7 @@ namespace oz {
     };
 
     
-    using action_vector_t = static_vector<action_t, MAX_SQUARES>;
+    using action_vector_t = static_vector<action_t, MAX_SQUARES * MAX_SQUARES>;
    
 
     
@@ -90,6 +90,7 @@ namespace oz {
     oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;
     action_prob_map_t chance_actions() const override;
     std::string str() const override;
+      
     
 
     std::unique_ptr<game_t> clone() const override {

@@ -20,63 +20,80 @@ namespace oz {
   }
 
   
-  void tic_tac_toes_encoder_t::action_one_hot(int action, ta_t &x_a, int i) {
-    x_a[i + action] = 1.0;
+    
+  int action_to_idx(const tic_tac_toes_t::action_t a){
+      switch(a){
+          case tic_tac_toes_t::action_t::fill_1 :
+              return 0;
+          case tic_tac_toes_t::action_t::fill_2 :
+              return 1;
+          case tic_tac_toes_t::action_t::fill_3 :
+              return 2;
+          case tic_tac_toes_t::action_t::fill_4 :
+              return 3;
+          case tic_tac_toes_t::action_t::fill_5 :
+              return 4;
+          case tic_tac_toes_t::action_t::fill_6 :
+              return 5;
+          case tic_tac_toes_t::action_t::fill_7 :
+              return 6;
+          case tic_tac_toes_t::action_t::fill_8 :
+              return 7;
+          case tic_tac_toes_t::action_t::fill_9 :
+              return 8;
+          default: Ensures(false);
+              return -1;
+          
+          }
+    }
+    
+  void tic_tac_toes_encoder_t::action_one_hot(action_t action, ta_t &x_a, int i) {
+    x_a[i + action_to_idx(action)] = 1.0;
     
    
   }
+    
+    
+   
 
-  /*void tic_tac_toes_encoder_t::rounds_one_hot(int action_number,
-                                              array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P1,
-                                              array<int, tic_tac_toes_t::MAX_SQUARES> tot_moves_P2,
-                                              ta_t &x_a, int i)
-  {
+    void tic_tac_toes_encoder_t::rounds_one_hot(const tic_tac_toes_t::action_vector_t &actions, ta_t &x_a, int i){
+        int round_n = 0, action_n = 0;
+        tic_tac_toes_t::action_vector_t round_actions;
+        
+        for (const auto &a : actions) {
+            switch (a) {
+                case action_t::fill_1:
+                case action_t::fill_2:
+                case action_t::fill_3:
+                case action_t::fill_4:
+                case action_t::fill_5:
+                case action_t::fill_6:
+                case action_t::fill_7:
+                case action_t::fill_8:
+                case action_t::fill_9:
+                    round_actions.push_back(a);
+                    break;
+                case action_t::NextRound:
+                    action_n += (5 - round_actions.size());
+                    for (unsigned int index = 0; index < round_actions.size(); ++index){
+                        action_one_hot(round_actions[index], x_a, i + round_n*ROUND_SIZE + action_n*ACTION_SIZE);
+                        action_n++;
+                    }
+                    round_n++;
+                    action_n = 0;
+                    round_actions.clear();
+                    break;
+                default:
+                    assert (false);
+            }
 
-    int round_n = 0, action_n = 0;
-    // player 2
-    if (action_number % 2 == 0){
-      
-      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
-        if (tot_moves_P2[index] - 11 == round_n){
-          action_one_hot(index, x_a, i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
-          action_n++;
+            if (round_n > N_ROUNDS) {
+              break;
+            }
         }
-      }
-      action_n = 4;
-      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
-        if (tot_moves_P2[index] == 1){
-          action_one_hot(index, x_a, i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
-          round_n ++;
-          
-          
-        }
-      }
-    }
-    // player 1
-    else {
-      
-      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
-        if (tot_moves_P1[index] - 11 == round_n){
-          
-          action_one_hot(index, x_a, i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
-          action_n++;
-        }
-      }
-        
-      action_n = 4;
-      for (int index = 0; index < tic_tac_toes_t::MAX_SQUARES; index ++){
-        if (tot_moves_P1[index] == 1){
-          
-          
-          action_one_hot(index, x_a, 35 + i + round_n * tic_tac_toes_encoder_t::ROUND_SIZE + action_n * tic_tac_toes_encoder_t::ACTION_SIZE);
-          round_n ++;
-        }
-        
-      }
     }
     
-  }*/
-
+    
   void tic_tac_toes_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
     
     Expects(x.size(0) == encoding_size());
@@ -88,111 +105,25 @@ namespace oz {
     const auto &action_number = game_infoset.action_number;
     const auto category_pos = MAX_ACTIONS * MAX_ACTIONS;
     
-
     bool player_1 = game_infoset.player == P1;
     auto x_a = x.accessor<nn_real_t, 1>();
 
-    int n, pos;
-    unsigned int found_flag = 0;
-    
-    // Encode the action of the player
+    int pos = 0;
+      
     // Player 1
     if (player_1){
-        const auto n_pieces = static_cast<int>(pieces_P1.size());
-        pos = category_pos;
+        rounds_one_hot(game_infoset.pieces_P1, x_a, pos);
       
-        for (n = 0; n < n_pieces; n++) {
-            const int piece_idx = 0; //pieces_P1[n];
-            if (piece_idx < 10){
-              x_a[n*MAX_ACTIONS + piece_idx - 1] = 1.0;
-              x_a[pos + 0] = 1.0;
-              pos += 2;
-
-            }
-            else {
-              x_a[n*MAX_ACTIONS + piece_idx - 11] = 1.0;
-              x_a[pos + 1] = 1.0;
-              pos += 2;
-            }
-        
-      }
-      
-      // Encoding the category of the action
-      /*for (n = 0, pos = category_pos; n < MAX_ACTIONS; n++, pos += 2) {
-        if (tot_moves_P1[n] == 1) {
-            x_a[pos + 0] = 1.0;
-        }
-        
-        else if (tot_moves_P1[n] == 2) {
-            x_a[pos + 1] = 1.0;
-        }
-      }*/
     }
     // Player 2
     else {
-      const auto n_pieces = static_cast<int>(pieces_P2.size());
-      pos = category_pos;
-      for (n = 0; n < n_pieces; n++) {
-        const int piece_idx = 0; //pieces_P2[n];
-        if (piece_idx < 10){
-          x_a[n*MAX_ACTIONS + piece_idx - 1] = 1.0;
-          x_a[pos + 0] = 1.0;
-          pos += 2;
-        }
-        else {
-          x_a[n*MAX_ACTIONS + piece_idx - 11] = 1.0;
-          x_a[pos + 1] = 1.0;
-          pos += 2;
-        }
-      }
-      
-      // Encoding the category of the action
-      /*for (n = 0, pos = category_pos; n < MAX_ACTIONS; n++, pos += 2) {
-        if (tot_moves_P2[n] == 1) {
-          x_a[pos + 0] = 1.0;
-        }
-        
-        else if (tot_moves_P2[n] == 2) {
-          x_a[pos + 1] = 1.0;
-        }
-      }*/
-      
+          rounds_one_hot(game_infoset.pieces_P2, x_a, pos);
     }
     
     
 
   }
 
-  static int action_to_idx(tic_tac_toes_encoder_t::action_t action) {
-
-    
-    using action_t = tic_tac_toes_encoder_t::action_t;
-    
-    switch (action) {
-      case action_t::fill_1:
-        return 0;
-      case action_t::fill_2:
-        return 1;
-      case action_t::fill_3:
-        return 2;
-      case action_t::fill_4:
-        return 3;
-      case action_t::fill_5:
-        return 4;
-      case action_t::fill_6:
-        return 5;
-      case action_t::fill_7:
-        return 6;
-      case action_t::fill_8:
-        return 7;
-      case action_t::fill_9:
-        return 8;
-      default:
-        Ensures(false);
-        return 0;
-    }
-    
-  }
 
   void tic_tac_toes_encoder_t::encode_sigma(infoset_t infoset, sigma_t sigma, Tensor x) {
 

@@ -37,10 +37,11 @@ namespace oz {
   private:
     using nn_real_t = float;
     using ta_t = at::TensorAccessor<nn_real_t, 1>;
+    
 
-
-    static void action_one_hot(int action, ta_t &x_a, int i);
-    static constexpr int N_ROUNDS = 1;
+    static void action_one_hot(action_t action, ta_t &x_a, int i);
+    static void rounds_one_hot(const tic_tac_toes_t::action_vector_t &actions, ta_t &x_a, int i);
+    static constexpr int N_ROUNDS = 5;
     
     static constexpr int ACTION_SIZE = 9 ;
     // fix the sizes (*5 was random)
