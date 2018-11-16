@@ -28,7 +28,7 @@ namespace oz {
     public:
 
       static constexpr int MAX_SQUARES = 9;
-    
+      
       enum class action_t {
 
       /* actions for P1 and P2 :
@@ -57,7 +57,10 @@ namespace oz {
     };
 
     
-    using action_vector_t = static_vector<action_t, MAX_SQUARES * MAX_SQUARES>;
+    static constexpr int MAX_HISTORY = 26;
+    // max history is 1/12/23/34/45/56/67/78/89/
+      
+    using action_vector_t = static_vector<action_t, MAX_HISTORY>;
    
 
     
