@@ -259,7 +259,7 @@ auto leduc_poker_t::chance_actions(action_prob_allocator_t alloc) const
     return count_to_probs(chance_actions_board, counts, alloc);
   }
 
-  assert (false);
+  assert (false); // NB not reachable
   return { };
 }
 
@@ -269,14 +269,14 @@ auto leduc_poker_t::chance_actions() const -> action_prob_map_t {
 
 auto leduc_poker_t::infoset_t::actions() const -> actions_list_t {
   static const actions_list_t raise_call_fold {
-      make_action(action_t::Raise),
-      make_action(action_t::Call),
-      make_action(action_t::Fold),
+    make_action(action_t::Raise),
+    make_action(action_t::Call),
+    make_action(action_t::Fold),
   };
 
   static const actions_list_t call_fold {
-      make_action(action_t::Call),
-      make_action(action_t::Fold),
+    make_action(action_t::Call),
+    make_action(action_t::Fold),
   };
 
   if (raises < MAX_RAISES) {

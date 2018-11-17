@@ -116,7 +116,7 @@ class leduc_poker_t final : public game_t {
     switch (p) {
       case P1: return 0;
       case P2: return 1;
-      default: return 0; // should not be reachable
+      default: return 0; // NB not reachable
     }
   }
 
