@@ -22,7 +22,7 @@ void leduc_poker_t::act_(action_t a) {
     history_.push_back(a);
 
     if (a == action_t::Fold) {
-      folded(player()) = true;
+      folded(player_) = true;
     }
     else if (a == action_t::Call) {
       pot(player_) = pot(other_player());
@@ -124,7 +124,7 @@ auto leduc_poker_t::is_terminal() const -> bool {
 }
 
 auto leduc_poker_t::utility(player_t player) const -> value_t {
-  assert (is_terminal());
+  Expects(is_terminal());
 
   value_t u;
 
@@ -259,7 +259,7 @@ auto leduc_poker_t::chance_actions(action_prob_allocator_t alloc) const
     return count_to_probs(chance_actions_board, counts, alloc);
   }
 
-  assert (false); // NB not reachable
+  assert(false); // NB not reachable
   return { };
 }
 
