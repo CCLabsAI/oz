@@ -373,12 +373,9 @@ bool leduc_poker_t::infoset_t::is_equal(const infoset_t::concept_t &that) const 
   if (typeid(*this) == typeid(that)) {
     auto that_ = static_cast<const leduc_poker_t::infoset_t &>(that);
     return
-        player  == that_.player  &&
         hand    == that_.hand    &&
         board   == that_.board   &&
-        history == that_.history &&
-        pot     == that_.pot     &&
-        raises  == that_.raises;
+        history == that_.history;
   }
   else {
     return false;
@@ -387,12 +384,9 @@ bool leduc_poker_t::infoset_t::is_equal(const infoset_t::concept_t &that) const 
 
 size_t leduc_poker_t::infoset_t::hash() const {
   size_t seed = 0;
-  hash_combine(seed, player);
   hash_combine(seed, hand);
+  hash_combine(seed, board);
   for (const auto &a : history) { hash_combine(seed, a); }
-  hash_combine(seed, pot[0]);
-  hash_combine(seed, pot[1]);
-  hash_combine(seed, raises);
   return seed;
 }
 
