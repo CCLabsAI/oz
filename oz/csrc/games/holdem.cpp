@@ -159,8 +159,24 @@ bool holdem_poker_t::is_terminal() const {
   return phase_ == phase_t::FINISHED;
 }
 
-int holdem_poker_t::hand_rank(const hand_t& hand, const board_t& board) {
-  throw std::logic_error("not implemented");
+unsigned int holdem_poker_t::hand_rank(const hand_t& hand, const board_t& board) {
+  using namespace ace;
+
+  Card h[ACEHAND];
+
+  if (hand[0] != CARD_NA) {
+    ACE_addcard(h, ACE_makecard(hand[0]));
+  }
+
+  if (hand[1] != CARD_NA) {
+    ACE_addcard(h, ACE_makecard(hand[1]));
+  }
+
+  for (holdem_poker_t::card_t c : board) {
+    ACE_addcard(h, ACE_makecard(c));
+  }
+
+  return ACE_evaluate(h);
 }
 
 auto holdem_poker_t::utility(player_t player) const -> value_t {

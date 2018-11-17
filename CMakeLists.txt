@@ -32,6 +32,7 @@ find_package(PyTorch 0.4.0 REQUIRED)
 
 include_directories(SYSTEM "lib/gsl-lite/include")
 include_directories(SYSTEM "lib/boost/include")
+include_directories(SYSTEM "lib/ACE_Eval/include")
 
 include_directories("oz/csrc")
 
@@ -86,6 +87,11 @@ set_property(TARGET boost_container PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 # NB prevents the boost internal allocator DLMalloc from using sbrk
 target_compile_options(boost_container PRIVATE "-DHAVE_MORECORE=0")
+
+add_library(ACE_Eval STATIC "lib/ACE_Eval/ace_eval.cpp")
+set_property(TARGET ACE_Eval PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_source_files_properties("lib/ACE_Eval/ace_eval.cpp" PROPERTIES COMPILE_FLAGS
+    "-Wno-parentheses -Wno-shift-op-parentheses")
 
 add_executable(solve_leduc
         "oz/csrc/solve_leduc.cpp"
@@ -152,7 +158,7 @@ target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
   #set_property(TARGET solve_goofspiel2 PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 #endif()
 
-target_link_libraries(tests PRIVATE boost_container)
+target_link_libraries(tests PRIVATE boost_container ACE_Eval)
 target_link_libraries(solve_leduc PRIVATE boost_container)
 target_link_libraries(solve_leduc_mcts PRIVATE boost_container)
 target_link_libraries(solve_goofspiel2 PRIVATE boost_container)

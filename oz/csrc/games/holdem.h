@@ -147,12 +147,12 @@ class holdem_poker_t final : public game_t {
   bool deal_hole_card(player_t player, card_t card);
   void start_next_round();
 
-  static int hand_rank(const hand_t& hand, const board_t& board);
   static bool is_deal_action(action_t a);
   static card_t card_for_deal_action(action_t action);
   static action_t deal_action_for_card(card_t card);
 
   bool can_raise() const;
+  static unsigned int hand_rank(const hand_t& hand, const board_t& board);
 
  public:
   hand_t hand(player_t p) const { return hand_[player_idx(p)]; }
