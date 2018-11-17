@@ -36,6 +36,9 @@ class holdem_poker_t final : public game_t {
   static constexpr card_t CARD_MIN = _2c;
   static constexpr card_t CARD_MAX = _As;
 
+  static const std::string CARD_RANKS;
+  static const std::string CARD_SUITS;
+
   static_assert(CARD_MAX == N_CARDS-1, "card index enum is incorrect size");
 
   static constexpr int DEAL_OFFSET = 10;
@@ -49,7 +52,6 @@ class holdem_poker_t final : public game_t {
     Deal = DEAL_OFFSET, // N.B. action = Deal + card_idx
     DealMax = DEAL_OFFSET + N_CARDS
   };
-
 
   static constexpr int N_PLAYERS = 2;
   static constexpr int MAX_ACTIONS = 20;
@@ -68,13 +70,14 @@ class holdem_poker_t final : public game_t {
   using board_t = static_vector<card_t, MAX_BOARD_CARDS>;
   using action_vector_t = static_vector<action_t, MAX_ACTIONS>;
 
+
   struct infoset_t : public oz::infoset_t::concept_t {
-    const player_t player;
+    const player_t player;               // derived from history
     const hand_t hand;
     const board_t board;
     const action_vector_t history;
-    const array<int, N_PLAYERS> pot;
-    const bool can_raise;
+    const array<int, N_PLAYERS> pot;     // derived from history
+    const bool can_raise;                // derived from history
 
     infoset_t(player_t player, hand_t hand, board_t board,
               action_vector_t history, array<int, N_PLAYERS> pot,
@@ -142,7 +145,9 @@ class holdem_poker_t final : public game_t {
 
   void dealer_act(action_t a);
   bool deal_hole_card(player_t player, card_t card);
+  void start_next_round();
 
+  static int hand_rank(const hand_t& hand, const board_t& board);
   static bool is_deal_action(action_t a);
   static card_t card_for_deal_action(action_t action);
   static action_t deal_action_for_card(card_t card);
