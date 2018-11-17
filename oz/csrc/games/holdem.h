@@ -20,30 +20,49 @@ using boost::container::static_vector;
 class holdem_poker_t final : public game_t {
  public:
 
+  using card_t = int;
+
+  enum card_idx {
+    _2c, _3c, _4c, _5c, _6c, _7c, _8c, _9c, _Tc, _Jc, _Qc, _Kc, _Ac,
+    _2h, _3h, _4h, _5h, _6h, _7h, _8h, _9h, _Th, _Jh, _Qh, _Kh, _Ah,
+    _2d, _3d, _4d, _5d, _6d, _7d, _8d, _9d, _Td, _Jd, _Qd, _Kd, _Ad,
+    _2s, _3s, _4s, _5s, _6s, _7s, _8s, _9s, _Ts, _Js, _Qs, _Ks, _As,
+  };
+
+  static constexpr int CARD_NA = -1;
+  static constexpr card_t N_RANKS = 13;
+  static constexpr card_t N_SUITS = 4;
+  static constexpr card_t N_CARDS = 52;
+  static constexpr card_t CARD_MIN = _2c;
+  static constexpr card_t CARD_MAX = _As;
+
+  static_assert(CARD_MAX == N_CARDS-1, "card index enum is incorrect size");
+
+  static constexpr int DEAL_OFFSET = 10;
+
   enum class action_t {
     Raise = 1,
     Call,
     Fold,
 
     NextRound = -10,
-    Deal = 100
+    Deal = DEAL_OFFSET, // N.B. action = Deal + card_idx
+    DealMax = DEAL_OFFSET + N_CARDS
   };
 
-  using card_t = int;
-  static constexpr int CARD_NA = -1;
 
   static constexpr int N_PLAYERS = 2;
-  static constexpr int MAX_ACTIONS = 10; // FIXME
+  static constexpr int MAX_ACTIONS = 20;
   static constexpr int N_ROUNDS = 4;
   static constexpr int BIG_BLIND = 10;
   static constexpr int SMALL_BLIND = 5;
   static constexpr int RAISE_SIZE[N_ROUNDS] = { 10, 10, 20, 20 };
-  static constexpr int FIRST_PLAYER[N_ROUNDS] = { 2, 1, 1, 1 };
+  static constexpr player_t FIRST_PLAYER[N_ROUNDS] = { P2, P1, P1, P1 };
   static constexpr int RAISE_PER_ROUND[N_ROUNDS] = { 2, 4 };
   static constexpr int MAX_RAISES[N_ROUNDS] = { 3, 4, 4, 4 };
   static constexpr int N_HOLE_CARDS = 2;
   static constexpr int MAX_BOARD_CARDS = 5;
-  static constexpr int N_BOARD_CARDS[N_ROUNDS] = { 0, 3, 1, 1 };
+  static constexpr int N_BOARD_CARDS[N_ROUNDS] = { 0, 3, 4, 5 };
 
   using hand_t = array<card_t, N_HOLE_CARDS>;
   using board_t = static_vector<card_t, MAX_BOARD_CARDS>;
@@ -55,12 +74,13 @@ class holdem_poker_t final : public game_t {
     const board_t board;
     const action_vector_t history;
     const array<int, N_PLAYERS> pot;
-    const int raises;
+    const bool can_raise;
 
     infoset_t(player_t player, hand_t hand, board_t board,
-              action_vector_t history, array<int, N_PLAYERS> pot, int raises):
+              action_vector_t history, array<int, N_PLAYERS> pot,
+              bool can_raise):
         player(player), hand(hand), board(move(board)),
-        history(move(history)), pot(pot), raises(raises) { }
+        history(move(history)), pot(pot), can_raise(can_raise) { }
 
     actions_list_t actions() const override;
     string str() const override;
@@ -87,9 +107,18 @@ class holdem_poker_t final : public game_t {
   std::string str() const override;
 
  private:
+  enum class phase_t {
+    DEAL_HOLE_P1,
+    DEAL_HOLE_P2,
+    DEAL_BOARD,
+    BET,
+    FINISHED
+  };
+
+  phase_t phase_ = phase_t::DEAL_HOLE_P1;
   player_t player_ = CHANCE;
   array<hand_t, N_PLAYERS> hand_ {{ {{CARD_NA, CARD_NA}}, {{CARD_NA, CARD_NA}} }};
-  board_t board_ {{ CARD_NA, CARD_NA, CARD_NA, CARD_NA }};
+  board_t board_;
   array<int, N_PLAYERS> pot_ {{ BIG_BLIND, SMALL_BLIND }};
   int round_ = 0;
   bool checked_ = false;
@@ -107,14 +136,18 @@ class holdem_poker_t final : public game_t {
     switch (p) {
       case P1: return 0;
       case P2: return 1;
-      default: return 0; // should not be reachable
+      default: return 0; // NB not reachable
     }
   }
 
-  void deal_hand(action_t a);
-  void start_next_round();
+  void dealer_act(action_t a);
+  bool deal_hole_card(player_t player, card_t card);
 
-  static int hand_rank(card_t card, card_t board);
+  static bool is_deal_action(action_t a);
+  static card_t card_for_deal_action(action_t action);
+  static action_t deal_action_for_card(card_t card);
+
+  bool can_raise() const;
 
  public:
   hand_t hand(player_t p) const { return hand_[player_idx(p)]; }
@@ -130,6 +163,7 @@ class holdem_poker_t final : public game_t {
 
   int round() const { return round_; }
   const board_t &board() const { return board_; }
+  board_t &board() { return board_; }
 };
 
 } // namespace oz
