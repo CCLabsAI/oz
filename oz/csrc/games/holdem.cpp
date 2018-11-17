@@ -2,15 +2,17 @@
 
 #include "hash.h"
 
+#include "ace_eval.h"
+
 #include <sstream>
 
 namespace oz {
 
 using namespace std;
 
+constexpr int holdem_poker_t::CARD_NA;
 constexpr int holdem_poker_t::RAISE_SIZE[];
 constexpr player_t holdem_poker_t::FIRST_PLAYER[];
-constexpr int holdem_poker_t::RAISE_PER_ROUND[];
 constexpr int holdem_poker_t::MAX_RAISES[];
 constexpr int holdem_poker_t::N_BOARD_CARDS[];
 
@@ -69,7 +71,7 @@ void holdem_poker_t::act_(action_t a) {
       }
 
       int other_pot = pot(other_player());
-      pot(player_) = other_pot + RAISE_PER_ROUND[round_];
+      pot(player_) = other_pot + RAISE_SIZE[round_];
       raises_ += 1;
       player_ = other_player();
     }
@@ -277,10 +279,6 @@ auto holdem_poker_t::infoset(oz::infoset_t::allocator_t alloc) const
                 history_, pot_, can_raise());
 }
 
-auto holdem_poker_t::str() const -> std::string {
-  throw std::logic_error("not implemented");
-};
-
 // TODO prevent fold at start of round
 auto holdem_poker_t::infoset_t::actions() const -> actions_list_t {
   static const actions_list_t raise_call_fold {
@@ -306,8 +304,7 @@ auto holdem_poker_t::infoset_t::actions() const -> actions_list_t {
 using std::stringstream;
 
 static std::ostream& print_card(std::ostream& os,
-                                holdem_poker_t::card_t card,
-                                const string &unk = "")
+                                holdem_poker_t::card_t card)
 {
   if (card == holdem_poker_t::CARD_NA) {
     os << '?';
@@ -325,8 +322,17 @@ static std::ostream& print_card(std::ostream& os,
   return os;
 }
 
+static std::ostream& print_hand(std::ostream& os,
+                                const holdem_poker_t::hand_t& hand)
+{
+  print_card(os, hand[0]);
+  print_card(os, hand[1]);
+
+  return os;
+}
+
 static std::ostream& operator <<(std::ostream& os,
-                                 const holdem_poker_t::action_t &action)
+                                 const holdem_poker_t::action_t& action)
 {
   using action_t = holdem_poker_t::action_t;
 
@@ -341,20 +347,40 @@ static std::ostream& operator <<(std::ostream& os,
   return os;
 }
 
+auto holdem_poker_t::str() const -> std::string {
+  stringstream ss;
+
+  print_hand(ss, hand(P1));
+  ss << '|';
+  print_hand(ss, hand(P2));
+
+  if (!board().empty()) ss << '/';
+
+  for (auto c : board()) {
+    print_card(ss, c);
+  }
+
+  if (!history_.empty()) ss << '/';
+
+  for (const auto& a : history_) {
+    ss << a;
+  }
+
+  return ss.str();
+};
 
 auto holdem_poker_t::infoset_t::str() const -> std::string {
   stringstream ss;
 
-  print_card(ss, hand[0]);
-  print_card(ss, hand[1]);
+  print_hand(ss, hand);
+
+  if (!board.empty()) ss << '/';
 
   for (auto c : board) {
     print_card(ss, c);
   }
 
-  if (!history.empty()) {
-    ss << "/";
-  }
+  if (!history.empty()) ss << '/';
 
   for (const auto& a : history) {
     ss << a;
