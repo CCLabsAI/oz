@@ -40,7 +40,7 @@ class holdem_poker_t final : public game_t {
   static const std::string CARD_RANKS;
   static const std::string CARD_SUITS;
 
-  static_assert(CARD_MAX == N_CARDS-1, "card index enum is incorrect size");
+  static_assert(CARD_MAX-CARD_MIN == N_CARDS-1, "card index enum is incorrect size");
 
   static constexpr int DEAL_OFFSET = 10;
 
