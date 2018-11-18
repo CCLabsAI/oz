@@ -1,5 +1,5 @@
-#ifndef OZ_LEDUK_TARGET_H
-#define OZ_LEDUK_TARGET_H
+#ifndef OZ_LEDUC_TARGET_H
+#define OZ_LEDUC_TARGET_H
 
 #include <set>
 
@@ -16,4 +16,4 @@ class leduc_target_t final : public target_t::concept_t {
 
 } // namespace oz
 
-#endif // OZ_LEDUK_TARGET_H
+#endif // OZ_LEDUC_TARGET_H

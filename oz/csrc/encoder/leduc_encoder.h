@@ -1,5 +1,5 @@
-#ifndef OZ_LEDUK_ENCODER_H
-#define OZ_LEDUK_ENCODER_H
+#ifndef OZ_LEDUC_ENCODER_H
+#define OZ_LEDUC_ENCODER_H
 
 #include <ATen/ATen.h>
 
@@ -49,4 +49,4 @@ class leduc_encoder_t final : public encoder_t {
 
 };
 
-#endif // OZ_LEDUK_ENCODER_H
+#endif // OZ_LEDUC_ENCODER_H

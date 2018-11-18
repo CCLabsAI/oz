@@ -1,5 +1,5 @@
-#ifndef OZ_LEDUK_H
-#define OZ_LEDUK_H
+#ifndef OZ_LEDUC_H
+#define OZ_LEDUC_H
 
 #include "game.h"
 
@@ -143,4 +143,4 @@ class leduc_poker_t final : public game_t {
 
 } // namespace oz
 
-#endif // OZ_LEDUK_H
+#endif // OZ_LEDUC_H
