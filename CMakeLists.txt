@@ -62,11 +62,11 @@ add_executable(tests
 
         "oz/csrc/tests/test_holdem.cpp"
         "oz/csrc/games/holdem.cpp"
+        "oz/csrc/target/holdem_target.cpp"
 
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduc_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
-        "oz/csrc/target/holdem_target.cpp"
 
         "oz/csrc/tests/test_mcts.cpp"
         "oz/csrc/mcts.cpp"
@@ -148,6 +148,10 @@ pybind11_add_module(_ext
         "oz/csrc/games/goofspiel2.cpp"
         "oz/csrc/encoder/goofspiel2_encoder.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
+
+        "oz/csrc/games/holdem.cpp"
+        "oz/csrc/encoder/holdem_encoder.cpp"
+        "oz/csrc/target/holdem_target.cpp"
         )
 
 target_include_directories(_ext SYSTEM PRIVATE "${PYTORCH_INCLUDE_DIR}")
