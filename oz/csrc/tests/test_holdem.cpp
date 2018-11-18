@@ -10,6 +10,9 @@ using oz::CHANCE;
 using oz::P1;
 using oz::P2;
 
+using std::begin;
+using std::end;
+
 using card_t = holdem_poker_t::card_t;
 using action_t = holdem_poker_t::action_t;
 using hand_t = holdem_poker_t::hand_t;
@@ -44,6 +47,7 @@ static inline void deal_hand(holdem_poker_t& game, const oz::player_t player, co
 
 static inline void deal_board(holdem_poker_t& game, const board_t& board) {
   CHECK(game.player() == CHANCE);
+  board_t b = game.board();
 
   for (const auto c : board) {
     auto a = make_action(holdem_poker_t::deal_action_for_card(c));
@@ -52,7 +56,8 @@ static inline void deal_board(holdem_poker_t& game, const board_t& board) {
     game.act(a);
   }
 
-  CHECK(game.board() == board);
+  b.insert(end(b), begin(board), end(board));
+  CHECK(game.board() == b);
 }
 
 TEST_CASE("holdem poker basic actions", "[holdem]") {
@@ -62,6 +67,8 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
 
   CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_HOLE_P1);
   deal_hand(game, P1, {{_Td, _As}});
+  CHECK(game.chance_actions().size() == 50);
+
   CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_HOLE_P2);
   deal_hand(game, P2, {{_3c, _8d}});
   CHECK(game.phase() == holdem_poker_t::phase_t::BET);
@@ -85,7 +92,7 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
   CHECK(game.player() == CHANCE);
   CHECK(game.round() == 1);
 
-  CHECK(game.board().size() == 0);
+  CHECK(game.board().empty());
 
   deal_board(game, {_6h, _3h, _9s});
 
@@ -95,9 +102,33 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
   game.act(make_action(action_t::Raise));
   game.act(make_action(action_t::Raise));
 
+  CHECK(game.infoset().actions().size() == 2); // can't raise
+
   game.act(make_action(action_t::Call));
   CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_BOARD);
   CHECK(game.player() == CHANCE);
+
+  CHECK(game.str() == "TdAs|3c8d/6h3h9s:crrc/rrrrc/");
+
+  deal_board(game, {_Ah});
+  CHECK(game.phase() == holdem_poker_t::phase_t::BET);
+  CHECK(game.player() == P1);
+
+  CHECK(game.infoset().str() == "TdAs/6h3h9sAh:crrc/rrrrc/");
+
+  game.act(make_action(action_t::Call));
+  game.act(make_action(action_t::Call));
+
+  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_BOARD);
+  deal_board(game, {_5c});
+
+  game.act(make_action(action_t::Raise));
+  game.act(make_action(action_t::Call));
+
+  CHECK(game.is_terminal());
+  CHECK(game.phase() == holdem_poker_t::phase_t::FINISHED);
+
+  CHECK(game.utility(P1) == 90);
 }
 
 static inline void check_hand(int a, int b, int c, int d, int e, int f, int g, ace::Card rank)

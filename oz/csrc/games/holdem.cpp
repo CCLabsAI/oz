@@ -301,8 +301,6 @@ auto holdem_poker_t::infoset_t::actions() const -> actions_list_t {
 }
 
 
-using std::stringstream;
-
 static std::ostream& print_card(std::ostream& os,
                                 holdem_poker_t::card_t card)
 {
@@ -348,7 +346,7 @@ static std::ostream& operator <<(std::ostream& os,
 }
 
 auto holdem_poker_t::str() const -> std::string {
-  stringstream ss;
+  std::stringstream ss;
 
   print_hand(ss, hand(P1));
   ss << '|';
@@ -360,7 +358,7 @@ auto holdem_poker_t::str() const -> std::string {
     print_card(ss, c);
   }
 
-  if (!history_.empty()) ss << '/';
+  if (!history_.empty()) ss << ':';
 
   for (const auto& a : history_) {
     ss << a;
@@ -370,7 +368,7 @@ auto holdem_poker_t::str() const -> std::string {
 };
 
 auto holdem_poker_t::infoset_t::str() const -> std::string {
-  stringstream ss;
+  std::stringstream ss;
 
   print_hand(ss, hand);
 
@@ -380,7 +378,7 @@ auto holdem_poker_t::infoset_t::str() const -> std::string {
     print_card(ss, c);
   }
 
-  if (!history.empty()) ss << '/';
+  if (!history.empty()) ss << ':';
 
   for (const auto& a : history) {
     ss << a;
