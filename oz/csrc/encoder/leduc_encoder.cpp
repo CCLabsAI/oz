@@ -114,7 +114,7 @@ void leduc_encoder_t::encode_sigma(infoset_t infoset, sigma_t sigma, Tensor x) {
   const auto actions = infoset.actions();
   auto x_a = x.accessor<nn_real_t, 1>();
 
-  // NB don't zero the action probabilites, but leave them unchanged
+  // NB don't zero the action probabilities, but leave them unchanged
   // allowing the caller to, place NaN there for illegal actions
   // x.zero_();
   for (const auto &action : actions) {
