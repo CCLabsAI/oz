@@ -12,6 +12,8 @@ using oz::P2;
 
 using card_t = holdem_poker_t::card_t;
 using action_t = holdem_poker_t::action_t;
+using hand_t = holdem_poker_t::hand_t;
+using board_t = holdem_poker_t::board_t;
 
 
 TEST_CASE("holdem poker deal utilities", "[holdem]") {
@@ -27,22 +29,42 @@ TEST_CASE("holdem poker deal utilities", "[holdem]") {
   CHECK(!holdem_poker_t::is_deal_action(action_t::Fold));
 }
 
-TEST_CASE("holdem poker basic actions", "[holdem]") {
-  auto game = holdem_poker_t();
+static inline void deal_hand(holdem_poker_t& game, const oz::player_t player, const hand_t& hand) {
+  CHECK(game.player() == CHANCE);
 
-  while (game.player() == CHANCE) {
+  for (const auto c : hand) {
+    auto a = make_action(holdem_poker_t::deal_action_for_card(c));
     auto action_probs = game.chance_actions();
-    auto ap = *begin(action_probs);
-    auto a = ap.first;
-
+    CHECK(action_probs.find(a)->second > 0);
     game.act(a);
   }
 
-  CHECK(game.hand(P1)[0] != holdem_poker_t::CARD_NA);
-  CHECK(game.hand(P1)[1] != holdem_poker_t::CARD_NA);
+  CHECK(game.hand(player) == hand);
+}
 
-  CHECK(game.hand(P2)[0] != holdem_poker_t::CARD_NA);
-  CHECK(game.hand(P2)[1] != holdem_poker_t::CARD_NA);
+static inline void deal_board(holdem_poker_t& game, const board_t& board) {
+  CHECK(game.player() == CHANCE);
+
+  for (const auto c : board) {
+    auto a = make_action(holdem_poker_t::deal_action_for_card(c));
+    auto action_probs = game.chance_actions();
+    CHECK(action_probs.find(a)->second > 0);
+    game.act(a);
+  }
+
+  CHECK(game.board() == board);
+}
+
+TEST_CASE("holdem poker basic actions", "[holdem]") {
+  using namespace oz::poker_cards;
+
+  auto game = holdem_poker_t();
+
+  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_HOLE_P1);
+  deal_hand(game, P1, {{_Td, _As}});
+  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_HOLE_P2);
+  deal_hand(game, P2, {{_3c, _8d}});
+  CHECK(game.phase() == holdem_poker_t::phase_t::BET);
 
   CHECK(game.player() == P2);
   CHECK(game.pot(P1) == 10);
@@ -59,20 +81,23 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
 
   CHECK(game.player() == P1);
   game.act(make_action(action_t::Call));
+  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_BOARD);
   CHECK(game.player() == CHANCE);
   CHECK(game.round() == 1);
 
   CHECK(game.board().size() == 0);
 
-  while (game.player() == CHANCE) {
-    auto action_probs = game.chance_actions();
-    auto ap = *begin(action_probs);
-    auto a = ap.first;
-
-    game.act(a);
-  }
+  deal_board(game, {_6h, _3h, _9s});
 
   CHECK(game.board().size() == 3);
+  game.act(make_action(action_t::Raise));
+  game.act(make_action(action_t::Raise));
+  game.act(make_action(action_t::Raise));
+  game.act(make_action(action_t::Raise));
+
+  game.act(make_action(action_t::Call));
+  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_BOARD);
+  CHECK(game.player() == CHANCE);
 }
 
 static inline void check_hand(int a, int b, int c, int d, int e, int f, int g, ace::Card rank)

@@ -66,6 +66,14 @@ class holdem_poker_t final : public game_t {
   static constexpr int MAX_BOARD_CARDS = 5;
   static constexpr int N_BOARD_CARDS[N_ROUNDS] = { 0, 3, 4, 5 };
 
+  enum class phase_t {
+    DEAL_HOLE_P1,
+    DEAL_HOLE_P2,
+    DEAL_BOARD,
+    BET,
+    FINISHED
+  };
+
   using hand_t = array<card_t, N_HOLE_CARDS>;
   using board_t = static_vector<card_t, MAX_BOARD_CARDS>;
   using action_vector_t = static_vector<action_t, MAX_ACTIONS>;
@@ -110,14 +118,6 @@ class holdem_poker_t final : public game_t {
   std::string str() const override;
 
  private:
-  enum class phase_t {
-    DEAL_HOLE_P1,
-    DEAL_HOLE_P2,
-    DEAL_BOARD,
-    BET,
-    FINISHED
-  };
-
   phase_t phase_ = phase_t::DEAL_HOLE_P1;
   player_t player_ = CHANCE;
   array<hand_t, N_PLAYERS> hand_ {{ {{CARD_NA, CARD_NA}}, {{CARD_NA, CARD_NA}} }};
@@ -170,6 +170,8 @@ class holdem_poker_t final : public game_t {
   int round() const { return round_; }
   const board_t &board() const { return board_; }
   board_t &board() { return board_; }
+
+  phase_t phase() const { return phase_; }
 };
 
 } // namespace oz
