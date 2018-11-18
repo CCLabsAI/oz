@@ -17,24 +17,25 @@ using std::vector;
 
 using boost::container::static_vector;
 
-class holdem_poker_t final : public game_t {
- public:
-
-  using card_t = int;
-
-  enum card_idx {
-    _2c, _3c, _4c, _5c, _6c, _7c, _8c, _9c, _Tc, _Jc, _Qc, _Kc, _Ac,
+namespace poker_cards {
+  enum card_names {
     _2h, _3h, _4h, _5h, _6h, _7h, _8h, _9h, _Th, _Jh, _Qh, _Kh, _Ah,
+    _2c, _3c, _4c, _5c, _6c, _7c, _8c, _9c, _Tc, _Jc, _Qc, _Kc, _Ac,
     _2d, _3d, _4d, _5d, _6d, _7d, _8d, _9d, _Td, _Jd, _Qd, _Kd, _Ad,
     _2s, _3s, _4s, _5s, _6s, _7s, _8s, _9s, _Ts, _Js, _Qs, _Ks, _As,
   };
+}
+
+class holdem_poker_t final : public game_t {
+ public:
+  using card_t = int;
 
   static constexpr int CARD_NA = -1;
   static constexpr card_t N_RANKS = 13;
   static constexpr card_t N_SUITS = 4;
   static constexpr card_t N_CARDS = 52;
-  static constexpr card_t CARD_MIN = _2c;
-  static constexpr card_t CARD_MAX = _As;
+  static constexpr card_t CARD_MIN = poker_cards::_2h;
+  static constexpr card_t CARD_MAX = poker_cards::_As;
 
   static const std::string CARD_RANKS;
   static const std::string CARD_SUITS;

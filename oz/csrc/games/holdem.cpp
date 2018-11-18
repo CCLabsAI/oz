@@ -17,7 +17,7 @@ constexpr int holdem_poker_t::MAX_RAISES[];
 constexpr int holdem_poker_t::N_BOARD_CARDS[];
 
 const std::string holdem_poker_t::CARD_RANKS = "23456789TJQKA";
-const std::string holdem_poker_t::CARD_SUITS = "chds";
+const std::string holdem_poker_t::CARD_SUITS = "hcds";
 
 
 bool holdem_poker_t::is_deal_action(action_t a) {
