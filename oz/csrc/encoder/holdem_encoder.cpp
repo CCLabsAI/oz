@@ -100,7 +100,7 @@ static int action_to_idx(holdem_poker_t::action_t action) {
     case action_t::Fold:
       return 2;
     default:
-      Ensures(false);
+      assert(false);
       return 0;
   }
 }

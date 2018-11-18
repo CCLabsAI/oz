@@ -21,6 +21,9 @@
 #include "games/goofspiel2.h"
 #include "target/goofspiel2_target.h"
 #include "encoder/goofspiel2_encoder.h"
+#include "games/holdem.h"
+#include "encoder/holdem_encoder.h"
+#include "target/holdem_target.h"
 
 auto sigmoid_add(at::Tensor x, at::Tensor y) -> at::Tensor {
   return at::sigmoid(x + y);
@@ -132,6 +135,8 @@ void bind_oz(py::module &m) {
       auto v = self.wins();
       return vector<player_t>(begin(v), end(v));
     });
+
+  py::class_<holdem_poker_t>(m, "HoldemPoker", py_Game);
 
   py::class_<history_t>(m, "History")
       .def("act", &history_t::act)
@@ -266,6 +271,9 @@ void bind_oz(py::module &m) {
   py::class_<goofspiel2_encoder_t,
              std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder);
 
+  py::class_<holdem_encoder_t,
+             std::shared_ptr<holdem_encoder_t>>(m, "HoldemPokerEncoder", py_Encoder);
+
   py::class_<batch_search_t>(m, "BatchSearch")
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>, target_t,
@@ -363,4 +371,15 @@ void bind_oz(py::module &m) {
     return std::make_shared<goofspiel2_encoder_t>(n);
   });
 
+  m.def("make_holdem_history", []() {
+    return make_history<holdem_poker_t>();
+  });
+
+  m.def("make_holdem_target", []() {
+    return make_target<holdem_target_t>();
+  });
+
+  m.def("make_holdem_encoder", []() {
+    return std::make_shared<holdem_encoder_t>();
+  });
 }
