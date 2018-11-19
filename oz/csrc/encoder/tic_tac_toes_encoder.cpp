@@ -93,8 +93,6 @@ namespace oz {
     
     
     const auto &game_infoset = cast_infoset(infoset);
-    const auto &pieces_P1 = game_infoset.pieces_P1;
-    const auto &pieces_P2 = game_infoset.pieces_P2;
     
     bool player_1 = game_infoset.player == P1;
     auto x_a = x.accessor<nn_real_t, 1>();
