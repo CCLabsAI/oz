@@ -22,11 +22,8 @@ static auto cast_infoset(const infoset_t &infoset)
   using action_t = tic_tac_toes_t::action_t;
 
   const auto &target_infoset_base = cast_infoset(target_infoset);
-  /*const auto &current_game = cast_history(current_history);
-
- 
- 
-
+  const auto &current_game = cast_history(current_history);
+  
   const auto &current_actions = current_game.history();
   const auto &target_actions = target_infoset_base.history;
   const auto next_ply_n = current_actions.size();
@@ -34,9 +31,10 @@ static auto cast_infoset(const infoset_t &infoset)
   if (current_actions.size() < target_actions.size()) {
     const auto target = target_actions[next_ply_n];
 
-    
+    Ensures(target != action_t::NextRound);
+
     Ensures(
-        target == action_t::fill_1  ||
+        target == action_t::fill_1 ||
         target == action_t::fill_2  ||
         target == action_t::fill_3  ||
         target == action_t::fill_4  ||
@@ -44,13 +42,13 @@ static auto cast_infoset(const infoset_t &infoset)
         target == action_t::fill_6  ||
         target == action_t::fill_7  ||
         target == action_t::fill_8  ||
-        target == action_t::fill_9  );
+        target == action_t::fill_9);
 
     return { make_action(target) };
   }
-  else {*/
+  else {
     return { };
-  //}
+  }
 }
 
 } // namespace oz
