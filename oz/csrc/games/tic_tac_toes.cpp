@@ -149,11 +149,11 @@ namespace oz {
     }
       
     if (show_move == 1){
-        cout << "Result " << u <<endl;
+        cout << "Result " << relative_utility(player, u) <<endl;
         getchar();
         }
       
-    return u;
+    return relative_utility(player, u);;
       
   }
 
