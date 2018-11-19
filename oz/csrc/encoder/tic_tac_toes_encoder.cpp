@@ -12,10 +12,7 @@ namespace oz {
   using namespace std;
   using namespace at;
 
-  static auto cast_infoset(const infoset_t &infoset)
-  -> const tic_tac_toes_t::infoset_t &
-  {
-    // TODO this whole thing is still somewhat distressing
+  static auto cast_infoset(const infoset_t &infoset) -> const tic_tac_toes_t::infoset_t & {
     return infoset.cast<tic_tac_toes_t::infoset_t>();
   }
 
@@ -41,16 +38,15 @@ namespace oz {
               return 7;
           case tic_tac_toes_t::action_t::fill_9 :
               return 8;
-          default: Ensures(false);
+          default: assert(false);
               return -1;
           
           }
     }
     
   void tic_tac_toes_encoder_t::action_one_hot(action_t action, ta_t &x_a, int i) {
-    x_a[i + action_to_idx(action)] = 1.0;
+    x_a[action_to_idx(action)] = 1.0;
     
-   
   }
     
     
