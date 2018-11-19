@@ -48,15 +48,14 @@ namespace oz {
     x_a[action_to_idx(action)] = 1.0;
     
   }
-    
-    
    
 
-    void tic_tac_toes_encoder_t::rounds_one_hot(const tic_tac_toes_t::action_vector_t &actions, ta_t &x_a, int i){
-        int round_n = 0, action_n = 0;
-        tic_tac_toes_t::action_vector_t round_actions;
+  void tic_tac_toes_encoder_t::rounds_one_hot(const tic_tac_toes_t::action_vector_t &actions, ta_t &x_a, int i){
         
-        for (const auto &a : actions) {
+      int round_n = 0, action_n = 0;
+      tic_tac_toes_t::action_vector_t round_actions;
+        
+      for (const auto &a : actions) {
             switch (a) {
                 case action_t::fill_1:
                 case action_t::fill_2:
@@ -83,11 +82,9 @@ namespace oz {
                     assert (false);
             }
 
-            if (round_n > N_ROUNDS) {
-              break;
-            }
+            assert (round_n <= N_ROUNDS);
         }
-    }
+  }
     
     
   void tic_tac_toes_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
@@ -98,8 +95,6 @@ namespace oz {
     const auto &game_infoset = cast_infoset(infoset);
     const auto &pieces_P1 = game_infoset.pieces_P1;
     const auto &pieces_P2 = game_infoset.pieces_P2;
-    const auto &action_number = game_infoset.action_number;
-    const auto category_pos = MAX_ACTIONS * MAX_ACTIONS;
     
     bool player_1 = game_infoset.player == P1;
     auto x_a = x.accessor<nn_real_t, 1>();
@@ -115,9 +110,7 @@ namespace oz {
     else {
           rounds_one_hot(game_infoset.pieces_P2, x_a, pos);
     }
-    
-    
-
+   
   }
 
 
@@ -127,6 +120,7 @@ namespace oz {
     const auto actions = infoset.actions();
     
     auto x_a = x.accessor<nn_real_t, 1>();
+      
     for (const auto &action : actions) {
       const auto a_tic_tac_toes = action.cast<tic_tac_toes_encoder_t::action_t>();
       int i = action_to_idx(a_tic_tac_toes);
