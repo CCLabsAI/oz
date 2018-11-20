@@ -48,10 +48,12 @@ PYBIND11_MODULE(_ext, m) {
   bind_oz(m);
 }
 
+namespace pybind11 { namespace detail {
 // Look at this handsome template instantiation right here...
 template <typename Key, typename Value, typename Compare, typename Alloc>
-struct pybind11::detail::type_caster<boost::container::flat_map<Key, Value, Compare, Alloc>>
+struct type_caster<boost::container::flat_map<Key, Value, Compare, Alloc>>
   : map_caster<boost::container::flat_map<Key, Value, Compare, Alloc>, Key, Value> { };
+}}
 
 void bind_oz(py::module &m) {
   using namespace oz;
