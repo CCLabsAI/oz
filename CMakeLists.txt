@@ -58,6 +58,9 @@ add_executable(tests
 
         "oz/csrc/tests/test_goofspiel2.cpp"
         "oz/csrc/games/goofspiel2.cpp"
+        
+        "oz/csrc/tests/test_tic_tac_toe.cpp"
+        "oz/csrc/games/tic_tac_toes.cpp"
 
         "oz/csrc/tests/test_target.cpp"
         "oz/csrc/target/leduk_target.cpp"
