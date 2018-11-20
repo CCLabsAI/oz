@@ -68,7 +68,7 @@ matrix:
     env: PYTHON=2.7 CPP=14 CLANG CMAKE=1
   - os: osx
     osx_image: xcode9
-    env: PYTHON=3.6 CPP=14 CLANG DEBUG=1
+    env: PYTHON=3.7 CPP=14 CLANG DEBUG=1
   # Test a PyPy 2.7 build
   - os: linux
     env: PYPY=5.8 PYTHON=2.7 CPP=11 GCC=4.8
@@ -108,7 +108,7 @@ before_install:
       export CXX=g++-$GCC CC=gcc-$GCC
     fi
     if [ "$GCC" = "6" ]; then DOCKER=${ARCH:+$ARCH/}debian:stretch
-    elif [ "$GCC" = "7" ]; then DOCKER=debian:buster EXTRA_PACKAGES+=" catch" DOWNLOAD_CATCH=OFF
+    elif [ "$GCC" = "7" ]; then DOCKER=debian:buster EXTRA_PACKAGES+=" catch python3-distutils" DOWNLOAD_CATCH=OFF
     fi
   elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     export CXX=clang++ CC=clang;
@@ -138,7 +138,7 @@ before_install:
       PY_CMD=python$PYTHON
       if [ "$TRAVIS_OS_NAME" = "osx" ]; then
         if [ "$PY" = "3" ]; then
-          brew update && brew install python$PY;
+          brew install python$PY;
         else
           curl -fsSL https://bootstrap.pypa.io/get-pip.py | $PY_CMD - --user
         fi
@@ -193,10 +193,9 @@ install:
         ${PYPY:+--extra-index-url https://imaginary.ca/trusty-pypi}
     echo "done."
 
-    mkdir eigen
-    curl -fsSL https://bitbucket.org/eigen/eigen/get/3.3.4.tar.bz2 | \
-        tar --extract -j --directory=eigen --strip-components=1
-    export CMAKE_INCLUDE_PATH="${CMAKE_INCLUDE_PATH:+$CMAKE_INCLUDE_PATH:}$PWD/eigen"
+    wget -q -O eigen.tar.gz https://bitbucket.org/eigen/eigen/get/3.3.3.tar.gz
+    tar xzf eigen.tar.gz
+    export CMAKE_INCLUDE_PATH="${CMAKE_INCLUDE_PATH:+$CMAKE_INCLUDE_PATH:}$PWD/eigen-eigen-67e894c6cd8f"
   fi
   set +e
 script:
