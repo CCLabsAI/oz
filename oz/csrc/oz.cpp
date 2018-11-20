@@ -146,6 +146,9 @@ void bind_oz(py::module &m) {
       .def_property_readonly("player", &history_t::player)
       .def("is_terminal", &history_t::is_terminal)
       .def("utility", &history_t::utility)
+      .def("chance_actions",
+        (history_t::action_prob_map_t (history_t::*)() const)
+        &history_t::chance_actions)
       .def("sample_chance", &history_t::sample_chance)
       .def_property_readonly("game", // TODO figure out if there is a better way
         [](const history_t &self) -> const game_t& {
