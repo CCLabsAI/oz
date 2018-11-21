@@ -54,17 +54,17 @@ class holdem_poker_t final : public game_t {
     DealMax = DEAL_OFFSET + N_CARDS
   };
 
-  static constexpr int N_PLAYERS = 2;
-  static constexpr int MAX_ACTIONS = 20;
-  static constexpr int N_ROUNDS = 4;
-  static constexpr int BIG_BLIND = 10;
-  static constexpr int SMALL_BLIND = 5;
-  static constexpr int RAISE_SIZE[N_ROUNDS] = { 10, 10, 20, 20 };
+  static constexpr unsigned int N_PLAYERS = 2;
+  static constexpr unsigned int MAX_ACTIONS = 20;
+  static constexpr unsigned int N_ROUNDS = 4;
+  static constexpr unsigned int BIG_BLIND = 10;
+  static constexpr unsigned int SMALL_BLIND = 5;
+  static constexpr unsigned int RAISE_SIZE[N_ROUNDS] = { 10, 10, 20, 20 };
   static constexpr player_t FIRST_PLAYER[N_ROUNDS] = { P2, P1, P1, P1 };
-  static constexpr int MAX_RAISES[N_ROUNDS] = { 3, 4, 4, 4 };
-  static constexpr int N_HOLE_CARDS = 2;
-  static constexpr int MAX_BOARD_CARDS = 5;
-  static constexpr int N_BOARD_CARDS[N_ROUNDS] = { 0, 3, 4, 5 };
+  static constexpr unsigned int MAX_RAISES[N_ROUNDS] = { 3, 4, 4, 4 };
+  static constexpr unsigned int N_HOLE_CARDS = 2;
+  static constexpr unsigned int MAX_BOARD_CARDS = 5;
+  static constexpr unsigned int N_BOARD_CARDS[N_ROUNDS] = { 0, 3, 4, 5 };
 
   enum class phase_t {
     DEAL_HOLE_P1,
@@ -123,9 +123,9 @@ class holdem_poker_t final : public game_t {
   array<hand_t, N_PLAYERS> hand_ {{ {{CARD_NA, CARD_NA}}, {{CARD_NA, CARD_NA}} }};
   board_t board_;
   array<int, N_PLAYERS> pot_ {{ BIG_BLIND, SMALL_BLIND }};
-  int round_ = 0;
+  unsigned int round_ = 0;
   bool checked_ = false;
-  int raises_ = 0;
+  unsigned int raises_ = 0;
   action_vector_t history_;
   array<bool, N_PLAYERS> folded_ {{ false, false }};
 

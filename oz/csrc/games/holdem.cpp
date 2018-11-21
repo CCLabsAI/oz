@@ -11,10 +11,10 @@ namespace oz {
 using namespace std;
 
 constexpr int holdem_poker_t::CARD_NA;
-constexpr int holdem_poker_t::RAISE_SIZE[];
+constexpr unsigned int holdem_poker_t::RAISE_SIZE[];
 constexpr player_t holdem_poker_t::FIRST_PLAYER[];
-constexpr int holdem_poker_t::MAX_RAISES[];
-constexpr int holdem_poker_t::N_BOARD_CARDS[];
+constexpr unsigned int holdem_poker_t::MAX_RAISES[];
+constexpr unsigned int holdem_poker_t::N_BOARD_CARDS[];
 
 const std::string holdem_poker_t::CARD_RANKS = "23456789TJQKA";
 const std::string holdem_poker_t::CARD_SUITS = "hcds";
