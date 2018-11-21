@@ -180,7 +180,7 @@ auto goofspiel2_target_t::target_actions(const infoset_t &infoset,
 
       auto actions = set<action_t> { };
 
-      for(int n = 0; n < n_cards; n++) {
+      for(unsigned int n = 0; n < n_cards; n++) {
         if(var[n]) actions.insert(make_action(n));
       }
 

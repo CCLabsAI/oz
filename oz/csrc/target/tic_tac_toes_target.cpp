@@ -1,5 +1,7 @@
 #include "oos.h"
 
+#include "util.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -12,6 +14,7 @@ namespace oz {
     
     using namespace std;
     using var_t = int[9];
+    
     
     
     
@@ -196,26 +199,70 @@ namespace oz {
         
         if (player == P1){
             
-            is_legal_move(var, moves_P1);
-            is_winning_move(var, moves_P1);
+            //is_legal_move(var, moves_P1);
+            //is_winning_move(var, moves_P1);
             
         }
         else {
             
-            is_legal_move(var, moves_P2);
-            is_winning_move(var, moves_P2);
+            //is_legal_move(var, moves_P2);
+            //is_winning_move(var, moves_P2);
         }
-        opponent_discovery_constraint(var, turn_number, player, moves_P1, moves_P2);
+        //opponent_discovery_constraint(var, turn_number, player, moves_P1, moves_P2);
+        
+        for (unsigned int i = 0; i < 9; i++)
+            x[i] = var[i];
     
         
         
     }
     
     
+    
+    /*tic_tac_toes_t::action_t from_idx_to_action(int index){
+        using action_t = tic_tac_toes_t::action_t;
+        
+        
+        switch(index){
+            case 1 :
+                return action_t::fill_1;
+                break;
+            case 2 :
+                return action_t::fill_2;
+                break;
+            case 3 :
+                return action_t::fill_3;
+                break;
+            case 4 :
+                return action_t::fill_4;
+                break;
+            case 5 :
+                return action_t::fill_5;
+                break;
+            case 6 :
+                return action_t::fill_6;
+                break;
+            case 7 :
+                return action_t::fill_7;
+                break;
+            case 8 :
+                return action_t::fill_8;
+                break;
+            case 9 :
+                return action_t::fill_9;
+                break;
+            default :
+                assert(false);
+                break;
+        }
+    }*/
+    
+    
     auto tic_tac_toes_target_t::target_actions(const infoset_t &target_infoset,const history_t &current_history) const
   -> set<action_t>{
         
-        using action_t = tic_tac_toes_t::action_t;
+        //using action_t = tic_tac_toes_t::action_t;
+    
 
         const auto &target_infoset_base = cast_infoset(target_infoset);
         const auto &target_player = target_infoset_base.player;
@@ -229,36 +276,105 @@ namespace oz {
         const auto &target_actions = target_infoset_base.history;
         const auto next_ply_n = current_actions.size();
         unsigned int turn_number = 0;
+        unsigned int number_current_target_player_moves = 0;
+        
+        
         
         // calculate the turn number
         if (current_game.player() == P1){
             for (unsigned int i = 0; i < moves_P1.size(); i++)
-                if (action_index(moves_P1[i]) == -1)
+                if (action_index(moves_P1[i]) == -1){
                     turn_number++;
+                    
+                }
             
         }
         else {
             for (unsigned int i = 0; i < moves_P1.size(); i++)
-                if (action_index(moves_P1[i]) == -1)
+                if (action_index(moves_P1[i]) == -1){
                     turn_number++;
+                }
         }
         
         int x[9];
+        /*cout << "Pre " << endl;
+        for (unsigned int i=0; i < current_actions.size(); i++)
+            cout << action_index(current_actions[i]);
+        cout << endl;
+        
+        cout << "Sizes : " << current_actions.size() <<  " " << target_actions.size() << endl;
+        cout << "target actions " << endl;
+        for(unsigned int i=0; i< target_actions.size(); i++)
+            cout << action_index(target_actions[i]) << endl;*/
+        
+        
+        
         
         if (current_actions.size() < target_actions.size()) {
+            /*if (current_game.player() == P1)
+                cout << "P1 current player" << endl;
+            else
+                cout << "P2 current player " << endl;
+            if (target_player == P1)
+                cout << "P1 target player" << endl;
+            else
+                cout << "P2 target player " << endl;*/
+            
+            
+            // Same player
             if (current_game.player() == target_player) {
-                const auto target = target_actions[next_ply_n];
-                //Ensures(target != action_t::NextRound);
-                return { make_action(target) };
+                
+                if (target_player == P1){
+                    //cout << "new action " << endl;
+                    //cout << "index P1 " << number_current_target_player_moves << endl;
+                    const auto target = moves_P1[number_current_target_player_moves];
+                    Ensures(target != tic_tac_toes_t::action_t::NextRound);
+                    
+                    //cout << action_index(target) << endl;
+                    
+                    number_current_target_player_moves++;
+                    return { make_action(target) };
+                }
+                else {
+                    const auto target = moves_P2[number_current_target_player_moves];
+                    Ensures(target != tic_tac_toes_t::action_t::NextRound);
+                    
+                    //cout << "new action " << endl;
+                    //cout << action_index(target) << endl;
+                    
+                    number_current_target_player_moves++;
+                    return { make_action(target) };
+                }
+                    
+                
+                
+                
+                
+                
+                
             }
             else {
+                number_current_target_player_moves++;
+                //cout << "different players " << endl;
                 playable(current_game.player(), moves_P1, moves_P2, x, turn_number);
-                return { };
+
+                auto actions_set = set<action_t> { };
+                //cout << "new possible action " << endl;
+                for(unsigned int n = 0; n < 9; n++) {
+                    if(x[n]) {
+                        actions_set.insert(make_action(n));
+                        //cout << n << endl;
+                
+                    }
+                        
+                }
+
+                Ensures(!actions_set.empty());
+                return actions_set;
+                
             }
-        }
-        else {
-            return { };
-        }
+       }
+       return {};
     }
 
 } // namespace oz
