@@ -21,6 +21,6 @@ nohup nice $PYTHON $SRC_DIR/script/train.py \
 	--search_batch_size=20 \
 	--reservoir_size=$[1000*13*32] \
 	--reservoir_beta_ratio=2.0 \
-	--simulation_iter=2000 \
+	--simulation_iter=10000 \
 	--progress \
 	>>$LOG_PATH 2>&1 <&- &
