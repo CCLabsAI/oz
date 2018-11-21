@@ -19,14 +19,14 @@ class Net(nn.Module):
 
 rng = oz.Random(1)
 
-h = oz.make_leduk_history()
-enc = oz.LedukEncoder()
+h = oz.make_leduc_history()
+enc = oz.make_leduc_encoder()
 
 bs = oz.BatchSearch(12, h, enc)
 batch = bs.generate_batch()
 
 while len(batch) == 0:
-    bs.step(torch.zeros(0), torch.zeros(0), rng)
+    bs.step(torch.zeros(0), rng)
     batch = bs.generate_batch()
 
 batch.requires_grad = False

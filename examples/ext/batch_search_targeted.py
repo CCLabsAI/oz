@@ -24,9 +24,9 @@ history = oz.make_goofspiel2_history(n_cards)
 encoder = oz.make_goofspiel2_encoder(n_cards)
 target  = oz.make_goofspiel2_target()
 
-# history = oz.make_leduk_history()
-# encoder = oz.make_leduk_encoder()
-# target  = oz.make_leduk_target()
+# history = oz.make_leduc_history()
+# encoder = oz.make_leduc_encoder()
+# target  = oz.make_leduc_target()
 
 model = Net(input_size=encoder.encoding_size(),
             hidden_size=25,
