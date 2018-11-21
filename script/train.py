@@ -155,7 +155,8 @@ def run(args, checkpoint_data=None):
     print(vars(args))
 
     game = args.game
-    if game == 'leduk' or game == 'leduk_poker':
+    if game == 'leduc' or game == 'leduc_poker' or \
+       game == 'leduk' or game == 'leduk_poker':
         history = oz.make_leduk_history()
         encoder = oz.make_leduk_encoder()
         target  = oz.make_leduk_target()
@@ -164,6 +165,12 @@ def run(args, checkpoint_data=None):
         history = oz.make_goofspiel2_history(n_cards)
         encoder = oz.make_goofspiel2_encoder(n_cards)
         target  = oz.make_goofspiel2_target()
+    elif game == 'holdem' or game == 'holdem_poker':
+        history = oz.make_holdem_history()
+        encoder = oz.make_holdem_encoder()
+        target  = oz.make_holdem_target()
+    else:
+        raise "unknown game: {}".format(args.game)
 
     rng = oz.Random()
 
