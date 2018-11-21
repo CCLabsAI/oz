@@ -82,7 +82,7 @@ static auto count_needs_eval(const search_list_t &searches_) {
 auto batch_search_t::generate_batch() -> Tensor {
   const auto N = count_needs_eval(searches_);
   const auto D = encoder_->encoding_size();
-  Tensor d = zeros(torch::CPU(kFloat), { N, D });
+  Tensor d = zeros({ N, D });
 
   int i = 0;
   for (const auto &search : searches_) {
