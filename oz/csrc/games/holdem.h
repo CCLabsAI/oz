@@ -55,7 +55,7 @@ class holdem_poker_t final : public game_t {
   };
 
   static constexpr unsigned int N_PLAYERS = 2;
-  static constexpr unsigned int MAX_ACTIONS = 20;
+  static constexpr unsigned int MAX_ACTIONS = 28; // NB. ('crrrrc/') 7 * 4
   static constexpr unsigned int N_ROUNDS = 4;
   static constexpr unsigned int BIG_BLIND = 10;
   static constexpr unsigned int SMALL_BLIND = 5;
