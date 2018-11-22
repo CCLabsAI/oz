@@ -66,6 +66,21 @@ TEST_CASE("tic_tac_toe utility P1 wins", "[tic_tac_toe]") {
   CHECK(game.utility(P1) == 1);
 }
 
+TEST_CASE("tic_tac_toe utility P1 wins2", "[tic_tac_toe]") {
+  auto game = tic_tac_toes_t();
+  
+  game.act(make_action(3));
+  game.act(make_action(7));
+  
+  game.act(make_action(5));
+  game.act(make_action(1));
+  
+  game.act(make_action(2));
+  
+  CHECK(game.is_terminal());
+  CHECK(game.utility(P1) == 1);
+}
+
 TEST_CASE("tic_tac_toe utility P2 wins", "[tic_tac_toe]") {
   auto game = tic_tac_toes_t();
 

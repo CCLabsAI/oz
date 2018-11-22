@@ -61,13 +61,16 @@ namespace oz {
     }
     
     
-    void is_legal_move(int var[9], tic_tac_toes_t::action_vector_t previous_moves){
+    void is_legal_move(int var[9], tic_tac_toes_t::action_vector_t previous_moves, int tot_turn){
         
         unsigned int i;
-        for(i = 0; i < previous_moves.size(); ++i){
+        unsigned player_turn = tot_turn / 2;
+        for(i = 0; i < player_turn; ++i){
             if (action_index(previous_moves[i]) >= 0)
                 var[action_index(previous_moves[i])] = 0;
         }
+      
+      
         
     }
     
@@ -160,8 +163,7 @@ namespace oz {
         
         unsigned int past_legal_moves[9] = {0,0,0,0,0,0,0,0,0};
         unsigned int i;
-        unsigned int end_of_the_game = 0;
-        
+      
         for(i = 0; i < previous_moves.size(); ++i){
             
             // case NextRound
@@ -192,21 +194,48 @@ namespace oz {
         
     }
     
-    void playable(const player_t player, tic_tac_toes_t::action_vector_t moves_P1, 
+  void playable(tic_tac_toes_t::action_vector_t current_actions, player_t player, tic_tac_toes_t::action_vector_t moves_P1,
                          tic_tac_toes_t::action_vector_t moves_P2, int x[9], int turn_number) {
         
         int var[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-        
+    
+        int turn_number_current_action = 0;
+        // calculate the turn number of the current actions
+        for (unsigned int i = 0; i < current_actions.size(); i++){
+          if (action_index(current_actions[i]) == -1){
+            turn_number_current_action++;
+          }
+        }
+      
         if (player == P1){
             
-            //is_legal_move(var, moves_P1);
-            //is_winning_move(var, moves_P1);
+            is_legal_move(var, moves_P1, turn_number_current_action);
+          cout << " after legal move " << endl;
+            for (unsigned int i=0; i< 9; i++)
+              cout <<  var[i] ;
+            cout << endl;
+            is_winning_move(var, moves_P1);
+          cout << " after is winning move " << endl;
+            for (unsigned int i=0; i< 9; i++)
+              cout <<  var[i] ;
+            cout << endl;
+          
             
         }
         else {
             
-            //is_legal_move(var, moves_P2);
-            //is_winning_move(var, moves_P2);
+            is_legal_move(var, moves_P2, turn_number_current_action);
+          cout << " after legal move " << endl;
+            for (unsigned int i=0; i< 9; i++)
+              cout <<  var[i] ;
+            cout << endl;
+          
+          
+            is_winning_move(var, moves_P2);
+          cout << " after is winning move " << endl;
+            for (unsigned int i=0; i< 9; i++)
+              cout <<  var[i] ;
+            cout << endl;
         }
         //opponent_discovery_constraint(var, turn_number, player, moves_P1, moves_P2);
         
@@ -280,7 +309,7 @@ namespace oz {
         
         
         
-        // calculate the turn number
+        // calculate the turn number of the target action
         if (current_game.player() == P1){
             for (unsigned int i = 0; i < moves_P1.size(); i++)
                 if (action_index(moves_P1[i]) == -1){
@@ -295,9 +324,12 @@ namespace oz {
                     turn_number++;
                 }
         }
-        
+    
+    
+    
+    
         int x[9];
-        /*cout << "Pre " << endl;
+        cout << "Pre " << endl;
         for (unsigned int i=0; i < current_actions.size(); i++)
             cout << action_index(current_actions[i]);
         cout << endl;
@@ -305,32 +337,32 @@ namespace oz {
         cout << "Sizes : " << current_actions.size() <<  " " << target_actions.size() << endl;
         cout << "target actions " << endl;
         for(unsigned int i=0; i< target_actions.size(); i++)
-            cout << action_index(target_actions[i]) << endl;*/
+            cout << action_index(target_actions[i]) << endl;
         
         
         
         
         if (current_actions.size() < target_actions.size()) {
-            /*if (current_game.player() == P1)
+            if (current_game.player() == P1)
                 cout << "P1 current player" << endl;
             else
                 cout << "P2 current player " << endl;
             if (target_player == P1)
                 cout << "P1 target player" << endl;
             else
-                cout << "P2 target player " << endl;*/
+                cout << "P2 target player " << endl;
             
             
             // Same player
             if (current_game.player() == target_player) {
                 
                 if (target_player == P1){
-                    //cout << "new action " << endl;
-                    //cout << "index P1 " << number_current_target_player_moves << endl;
+                    cout << "new action " << endl;
+                    cout << "index P1 " << number_current_target_player_moves << endl;
                     const auto target = moves_P1[number_current_target_player_moves];
                     Ensures(target != tic_tac_toes_t::action_t::NextRound);
                     
-                    //cout << action_index(target) << endl;
+                    cout << action_index(target) << endl;
                     
                     number_current_target_player_moves++;
                     return { make_action(target) };
@@ -339,8 +371,8 @@ namespace oz {
                     const auto target = moves_P2[number_current_target_player_moves];
                     Ensures(target != tic_tac_toes_t::action_t::NextRound);
                     
-                    //cout << "new action " << endl;
-                    //cout << action_index(target) << endl;
+                    cout << "new action " << endl;
+                    cout << action_index(target) << endl;
                     
                     number_current_target_player_moves++;
                     return { make_action(target) };
@@ -355,15 +387,15 @@ namespace oz {
             }
             else {
                 number_current_target_player_moves++;
-                //cout << "different players " << endl;
-                playable(current_game.player(), moves_P1, moves_P2, x, turn_number);
+                cout << "different players " << endl;
+                playable(current_actions, current_game.player(), moves_P1, moves_P2, x, turn_number);
 
                 auto actions_set = set<action_t> { };
-                //cout << "new possible action " << endl;
+                cout << "new possible action " << endl;
                 for(unsigned int n = 0; n < 9; n++) {
                     if(x[n]) {
                         actions_set.insert(make_action(n));
-                        //cout << n << endl;
+                        cout << n << endl;
                 
                     }
                         
