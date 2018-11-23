@@ -172,6 +172,8 @@ class holdem_poker_t final : public game_t {
   board_t &board() { return board_; }
 
   phase_t phase() const { return phase_; }
+
+  void read_history_str(std::string s);
 };
 
 } // namespace oz

@@ -305,7 +305,7 @@ static std::ostream& print_card(std::ostream& os,
                                 holdem_poker_t::card_t card)
 {
   if (card == holdem_poker_t::CARD_NA) {
-    os << '?';
+    os << "??";
     return os;
   }
 
@@ -407,6 +407,119 @@ size_t holdem_poker_t::infoset_t::hash() const {
   for (const auto &c : board) { hash_combine(seed, c); }
   for (const auto &a : history) { hash_combine(seed, a); }
   return seed;
+}
+
+static holdem_poker_t::card_t card_for_rank_suit(int rank, int suit) {
+  Expects(rank < holdem_poker_t::N_RANKS);
+  Expects(suit < holdem_poker_t::N_SUITS);
+  auto c = rank + holdem_poker_t::N_RANKS*suit;
+  Ensures(holdem_poker_t::CARD_MIN <= c && c <= holdem_poker_t::CARD_MAX);
+  return c;
+}
+
+static holdem_poker_t::card_t read_card(string s, size_t& pos) {
+  char rank_char = std::toupper(s[pos++]);
+  size_t rank = holdem_poker_t::CARD_RANKS.find_first_of(rank_char);
+  if (rank == string::npos) {
+    throw std::invalid_argument("invalid card rank");
+  }
+
+  char suit_char = std::tolower(s[pos++]);
+  size_t suit = holdem_poker_t::CARD_SUITS.find_first_of(suit_char);
+  if (suit == string::npos) {
+    throw std::invalid_argument("invalid card suit");
+  }
+
+  return card_for_rank_suit(rank, suit);
+}
+
+static holdem_poker_t::action_t read_action(const string& s, size_t& pos) {
+  auto a_char = s[pos++];
+  switch (a_char) {
+    case 'b':
+    case 'r': return holdem_poker_t::action_t::Raise;
+    case 'c': return holdem_poker_t::action_t::Call;
+    case 'f': return holdem_poker_t::action_t::Fold;
+    default:
+      throw std::invalid_argument("invalid action");
+  }
+}
+
+static void read_round(holdem_poker_t& g, const string& s, size_t& pos) {
+  while (pos < s.size()) {
+    if (s[pos] == '/') {
+      pos++;
+      break;
+    }
+
+    auto a = read_action(s, pos);
+    g.act_(a);
+  }
+}
+
+static const std::string UNKNOWN_HAND = "????";
+
+static void read_hand(holdem_poker_t& g, const string& s, size_t& pos) {
+  if (s.compare(pos, UNKNOWN_HAND.size(), UNKNOWN_HAND) == 0) {
+    pos += UNKNOWN_HAND.size();
+    return;
+  }
+
+  auto c1 = read_card(s, pos);
+  g.act_(holdem_poker_t::deal_action_for_card(c1));
+
+  auto c2 = read_card(s, pos);
+  g.act_(holdem_poker_t::deal_action_for_card(c2));
+}
+
+void holdem_poker_t::read_history_str(string s) {
+  if (!history_.empty()) {
+    throw std::logic_error("cannot read history into game in progress");
+  }
+
+  size_t pos = 0;
+  read_hand(*this, s, pos);
+
+  if (s[pos] == '|') {
+    pos++;
+    read_hand(*this, s, pos);
+  }
+  else {
+    if (pos == s.size()) {
+      return;
+    } else {
+      throw std::invalid_argument("format error: expected P2 cards");
+    }
+  }
+
+  board_t board;
+  if (s[pos] == '/') {
+    pos++;
+    while (pos < s.size() && s[pos] != ':') {
+      auto c = read_card(s, pos);
+      board.push_back(c);
+    }
+  }
+
+  auto board_it = begin(board);
+  if (s[pos] == ':') {
+    pos++;
+    while (pos < s.size()) {
+      read_round(*this, s, pos);
+
+      while (phase() == phase_t::DEAL_BOARD && board_it != end(board)) {
+        this->act_(deal_action_for_card(*board_it));
+        ++board_it;
+      }
+    }
+  }
+  else {
+    if (pos == s.size()) {
+      return;
+    } else {
+      throw std::invalid_argument("format error: expected rounds");
+    }
+  }
 }
 
 } // namespace oz

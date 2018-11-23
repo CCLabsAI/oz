@@ -17,7 +17,7 @@ using card_t = holdem_poker_t::card_t;
 using action_t = holdem_poker_t::action_t;
 using hand_t = holdem_poker_t::hand_t;
 using board_t = holdem_poker_t::board_t;
-
+using phase_t = holdem_poker_t::phase_t;
 
 TEST_CASE("holdem poker deal utilities", "[holdem]") {
   for (card_t c1 = holdem_poker_t::CARD_MIN; c1 < holdem_poker_t::N_CARDS; c1++) {
@@ -205,4 +205,28 @@ TEST_CASE("holdem poker hand rank", "[holdem]") {
   check_hand(_Ah,_2h,_3h,_4h,_5h,_9d,_Td, 9<<28|0x0008<<13|0x0000);
   check_hand(_Ad,_2h,_3h,_Jd,_Kd,_Qd,_Td, 9<<28|0x1000<<13|0x0000);
   check_hand(_9d,_7d,_8d,_Jd,_Kd,_Qd,_Td, 9<<28|0x0800<<13|0x0000);
+}
+
+static holdem_poker_t check_read_print(std::string s) {
+  holdem_poker_t game;
+  game.read_history_str(s);
+  CHECK(game.str() == s);
+  return game;
+}
+
+TEST_CASE("holdem poker history reader", "[holdem]") {
+  using namespace oz::poker_cards;
+
+  check_read_print("TdAs|????");
+  check_read_print("TdAs|3c8d");
+  check_read_print("TdAs|3c8d:crr");
+  check_read_print("TdAs|3c8d/6h3h9s:crrc/");
+
+  auto game = check_read_print("TdAs|3c8d/6h3h9s2d:crrc/rrrrc/");
+  CHECK(game.hand(P1) == hand_t {{ _Td, _As }});
+  CHECK(game.hand(P2) == hand_t {{ _3c, _8d }});
+  CHECK(game.phase() == phase_t::BET);
+  CHECK(game.board() == board_t { _6h, _3h, _9s, _2d });
+
+  check_read_print("TdAs|3c8d/6h3h9sTs2d:crrc/crrrrc/crrrrc/crrrrc/");
 }
