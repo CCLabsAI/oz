@@ -65,13 +65,13 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
 
   auto game = holdem_poker_t();
 
-  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_HOLE_P1);
+  CHECK(game.phase() == phase_t::DEAL_HOLE_P1);
   deal_hand(game, P1, {{_Td, _As}});
   CHECK(game.chance_actions().size() == 50);
 
-  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_HOLE_P2);
+  CHECK(game.phase() == phase_t::DEAL_HOLE_P2);
   deal_hand(game, P2, {{_3c, _8d}});
-  CHECK(game.phase() == holdem_poker_t::phase_t::BET);
+  CHECK(game.phase() == phase_t::BET);
 
   CHECK(game.player() == P2);
   CHECK(game.pot(P1) == 10);
@@ -88,7 +88,7 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
 
   CHECK(game.player() == P1);
   game.act(make_action(action_t::Call));
-  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_BOARD);
+  CHECK(game.phase() == phase_t::DEAL_BOARD);
   CHECK(game.player() == CHANCE);
   CHECK(game.round() == 1);
 
@@ -105,13 +105,14 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
   CHECK(game.infoset().actions().size() == 2); // can't raise
 
   game.act(make_action(action_t::Call));
-  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_BOARD);
+  CHECK(game.phase() == phase_t::DEAL_BOARD);
   CHECK(game.player() == CHANCE);
 
   CHECK(game.str() == "TdAs|3c8d/6h3h9s:crrc/rrrrc/");
 
   deal_board(game, {_Ah});
-  CHECK(game.phase() == holdem_poker_t::phase_t::BET);
+  CHECK(game.phase() == phase_t::BET);
+  CHECK(game.board() == board_t { _6h, _3h, _9s, _Ah });
   CHECK(game.player() == P1);
 
   CHECK(game.infoset().str() == "TdAs/6h3h9sAh:crrc/rrrrc/");
@@ -119,14 +120,14 @@ TEST_CASE("holdem poker basic actions", "[holdem]") {
   game.act(make_action(action_t::Call));
   game.act(make_action(action_t::Call));
 
-  CHECK(game.phase() == holdem_poker_t::phase_t::DEAL_BOARD);
+  CHECK(game.phase() == phase_t::DEAL_BOARD);
   deal_board(game, {_5c});
 
   game.act(make_action(action_t::Raise));
   game.act(make_action(action_t::Call));
 
   CHECK(game.is_terminal());
-  CHECK(game.phase() == holdem_poker_t::phase_t::FINISHED);
+  CHECK(game.phase() == phase_t::FINISHED);
 
   CHECK(game.utility(P1) == 90);
 }
