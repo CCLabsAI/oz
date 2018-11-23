@@ -61,16 +61,26 @@ namespace oz {
     }
     
     
-    void is_legal_move(int var[9], tic_tac_toes_t::action_vector_t previous_moves, int tot_turn){
+    void is_legal_move(int var[9], tic_tac_toes_t::action_vector_t previous_moves, tic_tac_toes_t::action_vector_t target_player_moves, int tot_turn){
         
+        
+        // check that it is not one of the previously taken move
         unsigned int i;
         unsigned player_turn = tot_turn / 2;
         for(i = 0; i < player_turn; ++i){
             if (action_index(previous_moves[i]) >= 0)
                 var[action_index(previous_moves[i])] = 0;
         }
-      
-      
+        
+        
+        // check that it is not one of the move that the target player has done in its game
+        // for example if the history is 4/2/7/48/ and P1 is the target player
+        // make sure that the current game does not end up in a situation like 4/8/
+        cout << " opponent move : " << endl;
+        for (i = 0; i < target_player_moves.size(); ++i){
+            cout << action_index(previous_moves[i]) << endl;
+            
+        }
         
     }
     
@@ -159,12 +169,12 @@ namespace oz {
     
     
     
-    void is_winning_move(int var[9], tic_tac_toes_t::action_vector_t previous_moves){
+    void is_winning_move(int var[9], tic_tac_toes_t::action_vector_t previous_moves, unsigned int turn){
         
         unsigned int past_legal_moves[9] = {0,0,0,0,0,0,0,0,0};
         unsigned int i;
       
-        for(i = 0; i < previous_moves.size(); ++i){
+        for(i = 0; i < turn; ++i){
             
             // case NextRound
             if (action_index(previous_moves[i]) == -1)
@@ -207,14 +217,15 @@ namespace oz {
           }
         }
       
+        // player is current_player
         if (player == P1){
-            
-            is_legal_move(var, moves_P1, turn_number_current_action);
+            cout << "For legal move the opponent is P2" << endl;
+            is_legal_move(var, moves_P1, moves_P2, turn_number_current_action);
           cout << " after legal move " << endl;
             for (unsigned int i=0; i< 9; i++)
               cout <<  var[i] ;
             cout << endl;
-            is_winning_move(var, moves_P1);
+            is_winning_move(var, moves_P1, turn_number_current_action);
           cout << " after is winning move " << endl;
             for (unsigned int i=0; i< 9; i++)
               cout <<  var[i] ;
@@ -223,15 +234,16 @@ namespace oz {
             
         }
         else {
+            cout << "For legal move the opponent is P1" << endl;
             
-            is_legal_move(var, moves_P2, turn_number_current_action);
-          cout << " after legal move " << endl;
+            is_legal_move(var, moves_P2, moves_P1, turn_number_current_action);
+            cout << " after legal move " << endl;
             for (unsigned int i=0; i< 9; i++)
               cout <<  var[i] ;
             cout << endl;
           
           
-            is_winning_move(var, moves_P2);
+            is_winning_move(var, moves_P2, turn_number_current_action);
           cout << " after is winning move " << endl;
             for (unsigned int i=0; i< 9; i++)
               cout <<  var[i] ;
@@ -375,14 +387,10 @@ namespace oz {
                     cout << action_index(target) << endl;
                     
                     number_current_target_player_moves++;
+                    
+            
                     return { make_action(target) };
                 }
-                    
-                
-                
-                
-                
-                
                 
             }
             else {
@@ -402,9 +410,12 @@ namespace oz {
                 }
 
                 Ensures(!actions_set.empty());
+                if (target_actions.size() > 4 and target_player == P1 )
+                getchar();
                 return actions_set;
                 
             }
+            
        }
        return {};
     }
