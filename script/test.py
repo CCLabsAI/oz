@@ -47,7 +47,7 @@ class TargetedOOSPlayer(OOSPlayer):
 # TODO move me
 import oz.nn
 import torch
-import torch.nn.functional
+import torch.nn.functional as F
 import argparse
 
 
@@ -62,7 +62,7 @@ class NeuralNetPlayer:
         infoset_encoded = torch.zeros(self.encoding_size)
         encoder.encode(infoset, infoset_encoded)
         logits = self.model.forward(infoset_encoded.unsqueeze(0))
-        probs = logits.exp()
+        probs = F.softmax(logits, dim=1)
         ap = encoder.decode_and_sample(infoset, probs[0], rng)
         return ap.a
 
@@ -112,7 +112,7 @@ class NeuralOOSPlayer:
             else:
                 with torch.no_grad():
                     logits = self.model.forward(batch)
-                    probs = torch.nn.functional.softmax(logits, dim=1)
+                    probs = F.softmax(logits, dim=1)
                 search.step(probs, rng)
 
 
