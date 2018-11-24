@@ -264,7 +264,8 @@ auto holdem_poker_t::chance_actions() const -> action_prob_map_t {
 }
 
 auto holdem_poker_t::infoset() const -> oz::infoset_t {
-  Expects(player() != CHANCE);
+  if (player() == CHANCE) throw logic_error("cannot get infoset for chance player");
+
   return make_infoset<infoset_t>(player_, hand(player_), board_,
                                  history_, pot_, can_raise());
 };
@@ -272,7 +273,8 @@ auto holdem_poker_t::infoset() const -> oz::infoset_t {
 auto holdem_poker_t::infoset(oz::infoset_t::allocator_t alloc) const
   -> oz::infoset_t
 {
-  Expects(player() != CHANCE);
+  if (player() == CHANCE) throw logic_error("cannot get infoset for chance player");
+
   return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
                (alloc,
                 player_, hand(player_), board_,
