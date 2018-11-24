@@ -22,7 +22,7 @@ class DeepFullyConnected(nn.Module):
     def __init__(self, input_size, hidden_sizes, output_size):
         super().__init__()
         last_size = input_size
-        self.fc = []
+        self.fc = nn.ModuleList()
         for size in hidden_sizes:
             self.fc.append(nn.Linear(last_size, size))
             last_size = size
