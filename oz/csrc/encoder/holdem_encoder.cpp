@@ -19,7 +19,13 @@ void holdem_encoder_t::card_one_hot(card_t card, ta_t &x_a, int i) {
   if (card != holdem_poker_t::CARD_NA) {
     Expects(holdem_poker_t::CARD_MIN <= card && card <= holdem_poker_t::CARD_MAX);
     auto j = card - holdem_poker_t::CARD_MIN;
-    x_a[i+j] = 1.0;
+    auto d = std::div(j, holdem_poker_t::N_RANKS);
+
+    int rank = d.rem;
+    int suit = d.quot;
+
+    x_a[i+rank] = 1.0;
+    x_a[i+holdem_poker_t::N_RANKS+suit] = 1.0;
   }
 }
 
