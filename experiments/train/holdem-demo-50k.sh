@@ -1,9 +1,9 @@
 EXPERIMENT=holdem-demo-50k
 
-SRC_DIR=$HOME/src/oz
-PYTHON=$HOME/anaconda3/bin/python
-CHECKPOINT_DIR=$HOME/data/exp/$EXPERIMENT
-LOG_PATH=$HOME/data/exp/${EXPERIMENT}.txt
+SRC_DIR=/mnt/src/oz
+PYTHON=/mnt/miniconda3/bin/python
+CHECKPOINT_DIR=/mnt/exp/$EXPERIMENT
+LOG_PATH=/mnt/exp/${EXPERIMENT}.txt
 
 OMP_NUM_THREADS=1 \
 PYTHONPATH=$SRC_DIR \
