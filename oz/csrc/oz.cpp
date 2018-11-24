@@ -138,7 +138,9 @@ void bind_oz(py::module &m) {
       return vector<player_t>(begin(v), end(v));
     });
 
-  py::class_<holdem_poker_t>(m, "HoldemPoker", py_Game);
+  py::class_<holdem_poker_t>(m, "HoldemPoker", py_Game)
+      .def("read_history_str", &holdem_poker_t::read_history_str);
+
 
   py::class_<history_t>(m, "History")
       .def("act", &history_t::act)
