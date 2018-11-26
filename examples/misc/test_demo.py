@@ -3,10 +3,13 @@ import random
 import time
 from copy import copy
 import argparse
-import subprocess
-import os
-
+# TODO move me
 import oz
+import oz.nn
+import torch
+import torch.nn.functional
+
+
 
 class OOSPlayer:
     def __init__(self, history_root, n_iter, eps, delta, gamma, beta):
@@ -44,12 +47,24 @@ class TargetedOOSPlayer(OOSPlayer):
             self.target, infoset,
             eps=self.eps, delta=self.eps, gamma=self.gamma)
 
-# TODO move me
-import oz.nn
-import torch
-import torch.nn.functional
-import argparse
 
+class NeuralNetPlayer:
+  def __init__(self, model, encoder):
+    self.model = model
+    self.encoder = encoder
+    self.encoding_size = encoder.encoding_size()
+    
+  def sample_action(self, infoset, rng):
+      encoder = self.encoder
+      infoset_encoded = torch.zeros(self.encoding_size)
+      encoder.encode(infoset, infoset_encoded)
+      logits = self.model.forward(infoset_encoded.unsqueeze(0))
+      probs = logits.exp()
+      ap = encoder.decode_and_sample(infoset, probs[0], rng)
+      return ap.a
+    
+  def think(self, infoset, rng):
+      pass
 
 class NeuralOOSPlayer:
     def __init__(self, model, encoder, target, history_root,
@@ -87,15 +102,14 @@ class NeuralOOSPlayer:
         search.target(infoset)
         for i in range(self.simulation_iter):
             batch = search.generate_batch()
-            print(batch.size())
-
+            
             if len(batch) == 0:
                 search.step(rng)
             else:
                 with torch.no_grad():
                     logits = self.model.forward(batch)
-                    '''probs = torch.nn.functional.softmax(logits, dim=1)
-                search.step(probs, rng)'''
+                    probs = torch.nn.functional.softmax(logits, dim=1)
+                search.step(probs, rng)
 
 
 def load_checkpoint_model(encoder, checkpoint_path):
@@ -113,35 +127,6 @@ def load_checkpoint_model(encoder, checkpoint_path):
 
 
 
-
-
-def play_match(h, player1, player2, rng):
-    h = copy(h)
-    while not h.is_terminal():
-        if h.player == oz.Chance:
-            ap = h.sample_chance(rng)
-            h.act(ap.a)
-
-        else:
-            if h.player == oz.P1:
-                player = player1
-            else:
-                player = player2
-
-            infoset = h.infoset()
-            player.think(infoset, rng)
-            a = player.sample_action(infoset, rng)
-
-            if h.player == oz.P1:
-                print(a.index, end='-', flush=True)
-            else:
-                print(a.index, end='/', flush=True)
-
-            h.act(a)
-
-    print()
-    print(h)
-    return h.utility(oz.P1)
 
 
 
@@ -175,10 +160,10 @@ def main():
     target = None
     number_of_cards = 6
 
-    history = oz.make_goofspiel2_history(number_of_cards)
+    h = oz.make_goofspiel2_history(number_of_cards)
     encoder = oz.make_goofspiel2_encoder(number_of_cards)
     target  = oz.make_goofspiel2_target()
-    h = copy(history)
+
     n_iter = 10000
     search_batch_size = 20
 
@@ -187,7 +172,7 @@ def main():
         print('error: missing checkpoint path', file=sys.stderr)
         exit(1)
       model = load_checkpoint_model(encoder, checkpoint_path)
-      return NeuralOOSPlayer(model=model, encoder=encoder,           target=target, history_root=history, simulation_iter=n_iter, search_batch_size=args.search_batch_size, eps=args.eps, delta=args.delta, gamma=args.gamma, beta=args.beta)
+      return NeuralNetPlayer(model=model, encoder=encoder)
     
     rng = oz.Random()
     
@@ -195,19 +180,30 @@ def main():
     player_1 = make_player(args.checkpoint_path)
     # Replay all the actions in the history
     
+    # action_indexes = [a.index for a in actions]
     for i in range(len(args.history_string)) :
       infoset = h.infoset()
       actions = infoset.actions
-      action_indexes = [a.index for a in actions]
-
-      print(action_indexes)
       
-      print(i)
+      if (i % 4 == 0):
+        h.act(actions[int(args.history_string[i])])
+        
+        print ('past actions : ', args.history_string[i])
 
+    infoset = h.infoset()
+    actions = infoset.actions
+    action_indexes = [a.index for a in actions]
+    
+    print(action_indexes)
+    
+    start = time.time()
     player_1.think(infoset, rng)
-    '''a = player_1.sample_action(infoset, rng)
+    end = time.time()
+    print(end - start)
+
+    a = player_1.sample_action(infoset, rng)
     print(a.index)
-    h.act(a)'''
+    h.act(a)
 
 
 
