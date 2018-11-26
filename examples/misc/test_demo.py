@@ -51,8 +51,6 @@ import torch.nn.functional
 import argparse
 
 
-
-
 class NeuralOOSPlayer:
     def __init__(self, model, encoder, target, history_root,
                  simulation_iter, search_batch_size,
@@ -89,14 +87,15 @@ class NeuralOOSPlayer:
         search.target(infoset)
         for i in range(self.simulation_iter):
             batch = search.generate_batch()
+            print(batch.size())
 
             if len(batch) == 0:
                 search.step(rng)
             else:
                 with torch.no_grad():
                     logits = self.model.forward(batch)
-                    probs = torch.nn.functional.softmax(logits, dim=1)
-                search.step(probs, rng)
+                    '''probs = torch.nn.functional.softmax(logits, dim=1)
+                search.step(probs, rng)'''
 
 
 def load_checkpoint_model(encoder, checkpoint_path):
@@ -148,7 +147,6 @@ def play_match(h, player1, player2, rng):
 
 def main():
 
-    t0 = int(round(time.time() * 1000))
     parser = argparse.ArgumentParser(description = "calculate next action ")
     parser.add_argument("--history_string", help = "history of the game", required = True)
     parser.add_argument("--checkpoint_path",
@@ -191,7 +189,7 @@ def main():
       model = load_checkpoint_model(encoder, checkpoint_path)
       return NeuralOOSPlayer(model=model, encoder=encoder,           target=target, history_root=history, simulation_iter=n_iter, search_batch_size=args.search_batch_size, eps=args.eps, delta=args.delta, gamma=args.gamma, beta=args.beta)
     
-    rng = oz.Random(1)
+    rng = oz.Random()
     
     print("History : ", args.history_string)
     player_1 = make_player(args.checkpoint_path)
@@ -205,10 +203,11 @@ def main():
       print(action_indexes)
       
       print(i)
+
     player_1.think(infoset, rng)
-    a = player_1.sample_action(infoset, rng)
+    '''a = player_1.sample_action(infoset, rng)
     print(a.index)
-    h.act(a)
+    h.act(a)'''
 
 
 
