@@ -1,6 +1,5 @@
 import sys
 import random
-import time
 from copy import copy
 import argparse
 # TODO move me
@@ -130,6 +129,12 @@ def load_checkpoint_model(encoder, checkpoint_path):
 
 
 
+# It takes two parameters as input : the history string and the path to the checkpoint to be loaded
+# The numbers of cards (actions) received by the front end are 1 - 6
+# It will return an action in the range 1 - 6 (next_action)
+
+# Example python examples/misc/test_demo.py --history "2<4/1<3/3<5/4<6/" --checkpoint_path 25nov-10k-checkpoint-002500.pth
+
 def main():
 
     parser = argparse.ArgumentParser(description = "calculate next action ")
@@ -172,38 +177,42 @@ def main():
         print('error: missing checkpoint path', file=sys.stderr)
         exit(1)
       model = load_checkpoint_model(encoder, checkpoint_path)
-      return NeuralNetPlayer(model=model, encoder=encoder)
+      return NeuralNetPlayer(model = model, encoder = encoder)
     
     rng = oz.Random()
-    
-    print("History : ", args.history_string)
+
+    # Load player_1 from the checkpoint file
+
     player_1 = make_player(args.checkpoint_path)
+
+
     # Replay all the actions in the history
+
+    infoset = h.infoset()
+    original_actions = infoset.actions
     
-    # action_indexes = [a.index for a in actions]
     for i in range(len(args.history_string)) :
       infoset = h.infoset()
       actions = infoset.actions
       
       if (i % 4 == 0):
-        h.act(actions[int(args.history_string[i])])
+
+        #Previous action of P1
+        h.act(original_actions[int(args.history_string[i]) - 1])
+        #Previous action of P2
+        h.act(original_actions[int(args.history_string[i + 2]) - 1])
         
-        print ('past actions : ', args.history_string[i])
+        #print ('past actions of player_1 : ', args.history_string[i])
 
     infoset = h.infoset()
-    actions = infoset.actions
-    action_indexes = [a.index for a in actions]
     
-    print(action_indexes)
-    
-    start = time.time()
     player_1.think(infoset, rng)
-    end = time.time()
-    print(end - start)
+    
+    next_action = player_1.sample_action(infoset, rng)
+    next_action_idx = next_action.index + 1
 
-    a = player_1.sample_action(infoset, rng)
-    print(a.index)
-    h.act(a)
+    print('Next action : ', next_action_idx)
+    #h.act(next_action)
 
 
 
