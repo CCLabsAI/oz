@@ -1,6 +1,6 @@
-namespace ace {
-
 #include <cstdint>
+
+namespace ace {
 
 typedef uint32_t Card;
 
