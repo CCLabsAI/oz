@@ -25,7 +25,7 @@ app = Bottle()
 
 encoder = oz.make_goofspiel2_encoder(6)
 
-ob = torch.load(os.path.expanduser('~/data/goof6-b-10k/checkpoint-000300.pth'))
+ob = torch.load(os.path.expanduser('~/data/exp/goof6-b-10k/checkpoint-000300.pth'))
 args = argparse.Namespace(**ob['args'])
 state_dict = ob['model_state']
 
@@ -48,26 +48,38 @@ rng = oz.Random(1)
 @app.route('/api/goofspiel/prediction', method='POST')
 def index():
     print(request.json)
+    json = request.json
+    history_str = json['seq']
 
+    h = oz.make_goofspiel2_history(6)
 
-    # h = oz.make_holdem_history()
-    # g = h.game
-    # g.read_history_str(hist_str)
-    # tensor = torch.zeros(encoder.encoding_size())
-    # infoset = h.infoset()
-    # encoder.encode(infoset, tensor)
-    # logits = model.forward(tensor)
-    # probs = F.softmax(logits, dim=0)
-    # ap = encoder.decode_and_sample(infoset, probs, rng)
-    # action_name = OZ_ACTION_NAMES[ap.a.index]
+    history_parts = history_str.split('/')
+    for part in history_parts:
+        if part:
+            action_strs = re.split('[<=>? ]', part)
+            for action_str in action_strs:
+                infoset = h.infoset()
+                legal_actions = infoset.actions
+                action_index = int(action_str) - 1
+                action = next((a for a in legal_actions if a.index == action_index), None)
+                if not action:
+                    raise "illegal action"
+                h.act(action)
 
+    tensor = torch.zeros(encoder.encoding_size())
+    infoset = h.infoset()
+    encoder.encode(infoset, tensor)
+    with torch.no_grad():
+        logits = model.forward(tensor)
+        probs = F.softmax(logits, dim=0)
+    ap = encoder.decode_and_sample(infoset, probs, rng)
+    action_index = ap.a.index + 1
+
+    print(logits)
+    print(probs)
 
     ret_json = {
-        'action': action_name,
-        'bluff': 50,
-        'possibleHands': TEST_POSIBLE_HANDS,
-        'moneyProspection': v,
-        'winner': None
+        'action': action_index,
     }
 
     print(ret_json)
@@ -82,6 +94,7 @@ def live_debugger(callback):
             return body
         except:
             type, value, tb = sys.exc_info()
+            traceback.print_exception(type, value, tb)
             if type is not KeyboardInterrupt:
                 pdb.post_mortem(tb)
     return wrapper
