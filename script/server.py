@@ -30,7 +30,7 @@ def assert_loaded(model, load_state):
 
 encoder = oz.make_holdem_encoder()
 
-ob = torch.load(os.path.expanduser('~/data/misc/checkpoint-000005.pth'))
+ob = torch.load(os.path.expanduser('~/data/exp.old/holdem-demo-10k-partial/checkpoint-000005.pth'))
 args = argparse.Namespace(**ob['args'])
 state_dict = ob['model_state']
 
@@ -157,6 +157,7 @@ def live_debugger(callback):
             return body
         except:
             type, value, tb = sys.exc_info()
+            traceback.print_exception(type, value, tb)
             if type is not KeyboardInterrupt:
                 pdb.post_mortem(tb)
     return wrapper
