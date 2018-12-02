@@ -4,17 +4,18 @@ from copy import copy
 import oz
 
 # import oz.game.flipguess
-# import oz.game.kuhn
-# import oz.game.leduk
-
 # g = oz.game.flipguess.FlipGuess()
-# g = oz.game.kuhn.KuhnPoker()
+
+import oz.game.kuhn
+g = oz.game.kuhn.KuhnPoker()
+
+# import oz.game.leduk
 # g = oz.game.leduk.LedukPoker()
 
-g = oz.make_kuhn()
+# g = oz.make_kuhn()
 
-infoset_style = 'cluster'
-# infoset_style = 'edge'
+# infoset_style = 'cluster'
+infoset_style = 'edge'
 
 infoset_nodes = {}
 n_nodes = 0
@@ -62,8 +63,8 @@ def print_dot(g, d, node=gen_node(), h=[]):
             node_a = gen_node()
             g_a = copy(g)
             g_a.act(a)
-            # label = a.name
-            label = "action" # FIXME
+            label = a.name
+            # label = "action" # FIXME
             props = 'headport=_ tailport=c label="{}" len=1.5'.format(label)
             if not g_a.is_terminal():
                 props += ' weight=4'
