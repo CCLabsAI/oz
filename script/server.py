@@ -15,8 +15,11 @@ import oz.nn
 import log2vector
 import train_utility
 import train_actions
+import train_better_hand
+import train_opponent_hand
 
 TEST_POSIBLE_HANDS=[[['AC', '2H', '3S', '4D', '5C']], [['AC', 'AH'],['5C', '5D']], [['AC', 'AD'],['5C', '5D', '5S']], [['5C', '5H', '5S']], [['JH', 'JC']]]
+TOP_K = 10
 
 app = Bottle()
 
@@ -28,54 +31,70 @@ def assert_loaded(model, load_state):
         assert torch.equal(new_state[k].cpu(), load_state[k].cpu()), "{} not equal".format(k)
 
 
-encoder = oz.make_holdem_encoder()
+def load_model(model, path):
+    path = os.path.expanduser(path)
+    state_dict = torch.load(path, map_location='cpu')
 
-ob = torch.load(os.path.expanduser('~/data/exp.old/holdem-demo-10k-partial/checkpoint-000005.pth'))
-args = argparse.Namespace(**ob['args'])
-state_dict = ob['model_state']
+    model.load_state_dict(state_dict)
+    assert_loaded(model, state_dict)
+    model.eval()
 
-print(args)
-
-model = oz.nn.model_with_args(args,
-            input_size=encoder.encoding_size(),
-            output_size=encoder.max_actions())
-
-model.load_state_dict(state_dict)
-assert_loaded(model, state_dict)
-model.eval()
-
-utility_model = train_utility.build_model()
-
-path = os.path.expanduser("~/src/poker-predict/models/poker_utility_model_demo1.pth")
-state_dict = torch.load(path, map_location='cpu')
-
-utility_model.load_state_dict(state_dict)
-assert_loaded(utility_model, state_dict)
-utility_model.eval()
-
-print(utility_model)
+    print(path)
+    print(model)
+    return model
 
 
-action_model = train_actions.build_model()
+def load_oz_model():
+    encoder = oz.make_holdem_encoder()
 
-path = os.path.expanduser("~/src/poker-predict/models/poker_action_model_demo1.pth")
-state_dict = torch.load(path, map_location='cpu')
+    ob = torch.load(os.path.expanduser('~/data/exp.old/holdem-demo-10k-partial/checkpoint-000005.pth'))
+    args = argparse.Namespace(**ob['args'])
+    state_dict = ob['model_state']
 
-action_model.load_state_dict(state_dict)
-assert_loaded(action_model, state_dict)
-action_model.eval()
+    print(args)
 
-print(action_model)
+    model = oz.nn.model_with_args(args,
+                input_size=encoder.encoding_size(),
+                output_size=encoder.max_actions())
+
+    model.load_state_dict(state_dict)
+    assert_loaded(model, state_dict)
+    model.eval()
+
+    print(model)
+    return model
+
+
+utility_model = load_model(train_utility.build_model(),
+    "~/src/poker-predict/models/poker_utility_model_demo1.pth")
+
+action_model = load_model(train_actions.build_model(),
+    "~/src/poker-predict/models/poker_action_model_demo1.pth")
+
+better_hand_model = load_model(train_better_hand.build_model(),
+    "~/src/poker-predict/models/poker_better_hand_model_demo1.pth")
+
+opponent_hand_model = load_model(train_opponent_hand.build_model(),
+    "~/src/poker-predict/models/poker_opponent_hand_model_demo1.pth")
 
 
 rng = oz.Random(1)
 
 OZ_ACTION_NAMES = [None, 'raise', 'call', 'fold']
-ACTION_NAMES0 = ['raise', 'call', 'fold']
+ACTION_NAMES = ['raise', 'call', 'fold']
 
 def lower_suit(card):
     r, s = card
     return r + s.lower()
+
+RANKS="23456789TJQKA"
+SUITS="hcds"
+
+def card_idx_str(card_idx):
+    rank = card_idx % log2vector.N_RANKS
+    suit = card_idx // log2vector.N_RANKS
+    return RANKS[rank] + SUITS[suit]
+
 
 @app.route('/api/prediction')
 @app.route('/api/prediction', method='POST')
@@ -122,25 +141,43 @@ def index():
                     board=log.board,
                     utility=None,
                     current_player=p,
-                    chosen_action=None)
+                    chosen_action=None,
+                    opponent_hand=None,
+                    better_hand=None)
 
     print(state)
 
     state_vector = log2vector.state_to_vector(state)
     state_tensor = torch.from_numpy(state_vector.astype(np.float32))
 
-    a_logits = action_model.forward(state_tensor)
-    dist = torch.distributions.Categorical(logits=a_logits)
-    a = dist.sample().item()
-    action_name = ACTION_NAMES0[a]
+    with torch.no_grad():
+        a_logits = action_model.forward(state_tensor)
+        dist = torch.distributions.Categorical(logits=a_logits)
+        a = dist.sample().item()
+        action_name = ACTION_NAMES[a]
 
-    v = utility_model.forward(state_tensor).item()
-    v *= train_utility.UTILITY_SCALE
+    with torch.no_grad():
+        v = utility_model.forward(state_tensor).item()
+        v *= train_utility.UTILITY_SCALE
+
+    with torch.no_grad():
+        better_hand_logits = better_hand_model.forward(state_tensor)
+        better_hand_prob = F.softmax(better_hand_logits)[0].item()
+        better_hand_percent = np.round(100 * better_hand_prob)
+
+    with torch.no_grad():
+        opponent_hand_logits = opponent_hand_model.forward(state_tensor)
+        opponent_hand_probs = F.softmax(opponent_hand_logits)
+        oh_sorted, oh_indices = opponent_hand_probs.sort(descending=True)
+        top_k = oh_indices[:TOP_K]
+        top_k_hands = [log2vector.class_to_cards(i.item())
+                        for i in top_k]
+        hand_predictions = [[[card_idx_str(i) for i in h]] for h in top_k_hands]
 
     ret_json = {
         'action': action_name,
-        'bluff': 50,
-        'possibleHands': TEST_POSIBLE_HANDS,
+        'bluff': better_hand_percent,
+        'possibleHands': hand_predictions,
         'moneyProspection': v,
         'winner': None
     }
@@ -164,5 +201,5 @@ def live_debugger(callback):
 
 
 if __name__ == '__main__':
-    # app.install(live_debugger)
+    app.install(live_debugger)
     app.run(host='localhost', port=8080, debug=True)
