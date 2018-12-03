@@ -42,20 +42,37 @@ void holdem_encoder_t::action_one_hot(action_t action, ta_t &x_a, int i) {
   }
 }
 
-void holdem_encoder_t::rounds_one_hot(const holdem_poker_t::action_vector_t &actions,
+inline static int player_idx(const player_t p) {
+  Expects(p == P1 || p == P2);
+  switch (p) {
+    case P1: return 0;
+    case P2: return 1;
+    default: return 0; // NB not reachable
+  }
+}
+
+void holdem_encoder_t::rounds_one_hot(player_t player, const holdem_poker_t::action_vector_t &actions,
                                      ta_t &x_a, int i)
 {
+  static constexpr int PLAYER_STRIDE = N_ROUNDS*MAX_ROUND_ACTIONS*ACTION_SIZE;
+  static constexpr int ROUNDE_STRIDE = MAX_ROUND_ACTIONS*ACTION_SIZE;
+  static constexpr int ACTION_STRIDE = ACTION_SIZE;
+
+  int p = player_idx(holdem_poker_t::FIRST_PLAYER[0]), player_relative;
   int round_n = 0, action_n = 0;
   for (const auto &a : actions) {
     switch (a) {
       case action_t::Raise:
       case action_t::Call:
-        action_one_hot(a, x_a, i + round_n*ROUND_SIZE + action_n*ACTION_SIZE);
+        player_relative = (p + player_idx(player)) % 2;
+        action_one_hot(a, x_a, i + player_relative*PLAYER_STRIDE + round_n*ROUNDE_STRIDE + action_n*ACTION_STRIDE);
         action_n++;
+        p = (p + 1) % 2;
         break;
       case action_t::NextRound:
         round_n++;
         action_n = 0;
+        p = player_idx(holdem_poker_t::FIRST_PLAYER[round_n]);
         break;
       case action_t::Fold:
       default:
@@ -90,7 +107,7 @@ void holdem_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
   }
 
   pos = MAX_CARDS*CARD_SIZE; // start of round encoding
-  rounds_one_hot(game_infoset.history, x_a, pos);
+  rounds_one_hot(game_infoset.player, game_infoset.history, x_a, pos);
 }
 
 // TODO remove duplication

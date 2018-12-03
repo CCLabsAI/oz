@@ -35,8 +35,9 @@ class holdem_encoder_t final : public encoder_t {
 
   static void card_one_hot(card_t card, ta_t &x_a, int i);
   static void action_one_hot(action_t action, ta_t &x_a, int i);
-  static void rounds_one_hot(const holdem_poker_t::action_vector_t &actions, ta_t &x_a, int i);
+  static void rounds_one_hot(player_t player, const holdem_poker_t::action_vector_t &actions, ta_t &x_a, int i);
 
+  static constexpr int N_PLAYERS = holdem_poker_t::N_PLAYERS;
   static constexpr int N_ROUNDS = holdem_poker_t::N_ROUNDS;
   static constexpr int N_RANKS = holdem_poker_t::N_RANKS;
   static constexpr int N_SUITS = holdem_poker_t::N_SUITS;
@@ -45,10 +46,11 @@ class holdem_encoder_t final : public encoder_t {
 
   static constexpr int CARD_SIZE = N_RANKS + N_SUITS;
   static constexpr int ACTION_SIZE = 2;
-  static constexpr int ROUND_SIZE = 6*ACTION_SIZE; // 4 raises + 2 calls
+  static constexpr int MAX_ROUND_ACTIONS = 6; // 4 raises + 2 calls (crrrrc)
   static constexpr int MAX_CARDS = N_HOLE_CARDS + MAX_BOARD_CARDS;
 
-  static constexpr int ENCODING_SIZE = MAX_CARDS*CARD_SIZE + N_ROUNDS*ROUND_SIZE;
+  static constexpr int ENCODING_SIZE =
+    MAX_CARDS*CARD_SIZE + N_PLAYERS*N_ROUNDS*MAX_ROUND_ACTIONS*ACTION_SIZE;
   static constexpr int MAX_ACTIONS = 3;
 };
 
