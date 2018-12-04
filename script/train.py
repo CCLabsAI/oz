@@ -111,6 +111,8 @@ def main():
     parser.add_argument("--train_iter", type=int,
                         help="nn training iterations",
                         default=1000)
+    parser.add_argument("--pretrained_model",
+                        help="holdem pretrained checkpoint to load")
 
     args = parser.parse_args()
 
@@ -177,6 +179,11 @@ def run(args, checkpoint_data=None):
     model = oz.nn.model_with_args(args,
                 input_size=encoder.encoding_size(),
                 output_size=encoder.max_actions())
+
+    if args.pretrained_model and not checkpoint_data:
+        print('loading pretrained model: {}...'.format(args.pretrained_model))
+        state_dict = torch.load(args.pretrained_model)
+        model.load_state_dict(state_dict)
 
     def make_batch_search():
         return oz.BatchSearch(batch_size=args.search_batch_size,

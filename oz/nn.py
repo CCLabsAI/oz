@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import Sequential, Linear, ReLU, Dropout
 
 import oz
 
@@ -35,6 +36,23 @@ class DeepFullyConnected(nn.Module):
         return x
 
 
+def build_holdem_demo_model():
+    return torch.nn.Sequential(
+        Dropout(p=0.1),
+        Linear(in_features=(2+5)*(13+4)+(2*4*6*2), out_features=1024),
+        ReLU(),
+        Linear(in_features=1024, out_features=512),
+        ReLU(),
+        Dropout(p=0.5),
+        Linear(in_features=512, out_features=1024),
+        ReLU(),
+        Linear(in_features=1024, out_features=512),
+        ReLU(),
+        Dropout(p=0.5),
+        Linear(in_features=512, out_features=3)
+    )
+
+
 def model_with_args(args, input_size, output_size):
     nn_arch = args.nn_arch
 
@@ -49,5 +67,7 @@ def model_with_args(args, input_size, output_size):
         return DeepFullyConnected(input_size=input_size,
                                   hidden_sizes=hidden_sizes,
                                   output_size=output_size)
+    elif nn_arch == 'holdem_demo':
+        return build_demo_model()
     else:
         raise 'unknown NN architecture'
