@@ -18,7 +18,6 @@ import train_actions
 import train_better_hand
 import train_opponent_hand
 
-TEST_POSIBLE_HANDS=[[['AC', '2H', '3S', '4D', '5C']], [['AC', 'AH'],['5C', '5D']], [['AC', 'AD'],['5C', '5D', '5S']], [['5C', '5H', '5S']], [['JH', 'JC']]]
 TOP_K = 10
 
 app = Bottle()
@@ -87,8 +86,8 @@ def lower_suit(card):
     r, s = card
     return r + s.lower()
 
-RANKS="23456789TJQKA"
-SUITS="hcds"
+RANKS='23456789TJQKA'
+SUITS='hcds'
 
 def card_idx_str(card_idx):
     rank = card_idx % log2vector.N_RANKS
@@ -127,24 +126,7 @@ def index():
     # ap = encoder.decode_and_sample(infoset, probs, rng)
     # action_name = OZ_ACTION_NAMES[ap.a.index]
 
-    def player_for_log(log):
-        fp = log2vector.FIRST_PLAYER[len(log.history)-1]
-        p = (fp + len(log.history[-1])) % 2
-        return p
-
-    log = log2vector.parse_history(bytes(hist_str, 'ASCII'))
-    p = player_for_log(log)
-
-    state = log2vector.State(
-                    history=log.history,
-                    hole=log.hole[p],
-                    board=log.board,
-                    utility=None,
-                    current_player=p,
-                    chosen_action=None,
-                    opponent_hand=None,
-                    better_hand=None)
-
+    state = log2vector.parse_state(bytes(hist_str, 'ASCII'))
     print(state)
 
     state_vector = log2vector.state_to_vector(state)
@@ -157,8 +139,8 @@ def index():
         action_name = ACTION_NAMES[a]
 
     with torch.no_grad():
-        v = utility_model.forward(state_tensor).item()
-        v *= train_utility.UTILITY_SCALE
+        expected_value = utility_model.forward(state_tensor).item()
+        expected_value *= train_utility.UTILITY_SCALE
 
     with torch.no_grad():
         better_hand_logits = better_hand_model.forward(state_tensor)
@@ -178,7 +160,7 @@ def index():
         'action': action_name,
         'bluff': better_hand_percent,
         'possibleHands': hand_predictions,
-        'moneyProspection': v,
+        'moneyProspection': expected_value,
         'winner': None
     }
 
