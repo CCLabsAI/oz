@@ -44,7 +44,7 @@ def main():
 
     parser.add_argument("--nn_arch",
                         help="nn architecture",
-                        choices=["mlp", "deep"],
+                        choices=["mlp", "deep", "holdem_demo"],
                         default="mlp")
     # parser.add_argument("--opt",
     #                     help="optimizer to use",
@@ -182,7 +182,7 @@ def run(args, checkpoint_data=None):
 
     if args.pretrained_model and not checkpoint_data:
         print('loading pretrained model: {}...'.format(args.pretrained_model))
-        state_dict = torch.load(args.pretrained_model)
+        state_dict = torch.load(args.pretrained_model, map_location='cpu')
         model.load_state_dict(state_dict)
 
     def make_batch_search():

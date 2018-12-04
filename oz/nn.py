@@ -68,6 +68,6 @@ def model_with_args(args, input_size, output_size):
                                   hidden_sizes=hidden_sizes,
                                   output_size=output_size)
     elif nn_arch == 'holdem_demo':
-        return build_demo_model()
+        return build_holdem_demo_model()
     else:
         raise 'unknown NN architecture'
