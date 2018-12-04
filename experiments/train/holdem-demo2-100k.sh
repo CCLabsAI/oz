@@ -15,10 +15,10 @@ nohup nice $PYTHON $SRC_DIR/script/train.py \
 	--checkpoint_interval=1 \
 	--train_iter=5000 \
 	--train_game_ply=16 \
-	--train_batch_size=$[16*32] \
-	--train_steps=8 \
+	--train_batch_size=256 \
+	--train_steps=2 \
 	--nn_arch=holdem_demo \
-	--search_batch_size=20 \
+	--search_batch_size=1 \
 	--reservoir_size=$[2*22] \
 	--reservoir_beta_ratio=2.0 \
 	--simulation_iter=100000 \
