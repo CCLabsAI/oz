@@ -52,7 +52,7 @@ inline static int player_idx(const player_t p) {
 }
 
 void holdem_encoder_t::rounds_one_hot(player_t player, const holdem_poker_t::action_vector_t &actions,
-                                     ta_t &x_a, int i)
+                                      ta_t &x_a, int i)
 {
   static constexpr int PLAYER_STRIDE = N_ROUNDS*MAX_ROUND_ACTIONS*ACTION_SIZE;
   static constexpr int ROUNDE_STRIDE = MAX_ROUND_ACTIONS*ACTION_SIZE;
