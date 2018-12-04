@@ -43,10 +43,11 @@ def load_model(model, path):
     return model
 
 
-def load_oz_model():
-    encoder = oz.make_holdem_encoder()
-
-    ob = torch.load(os.path.expanduser('~/data/exp.old/holdem-demo-10k-partial/checkpoint-000005.pth'))
+def load_oz_model(path, encoder):
+    chk_dir = os.path.expanduser(path)
+    files = sorted([f for f in os.listdir(chk_dir)])
+    chk_latest = os.path.join(chk_dir, files[-1])
+    ob = torch.load(chk_latest)
     args = argparse.Namespace(**ob['args'])
     state_dict = ob['model_state']
 
@@ -61,20 +62,24 @@ def load_oz_model():
     model.eval()
 
     print(model)
+    print("loaded checkpoint {}...".format(chk_latest))
     return model
 
 
 utility_model = load_model(train_utility.build_model(),
     "~/src/poker-predict/models/poker_utility_model_demo1.pth")
 
-action_model = load_model(train_actions.build_model(),
-    "~/src/poker-predict/models/poker_action_model_demo1.pth")
+# action_model = load_model(train_actions.build_model(),
+#     "~/src/poker-predict/models/poker_action_model_demo1.pth")
 
 better_hand_model = load_model(train_better_hand.build_model(),
     "~/src/poker-predict/models/poker_better_hand_model_demo1.pth")
 
 opponent_hand_model = load_model(train_opponent_hand.build_model(),
     "~/src/poker-predict/models/poker_opponent_hand_model_demo1.pth")
+
+encoder = oz.make_holdem_encoder()
+model = load_oz_model('~/data/exp.demo2/holdem-demo2-100k/', encoder)
 
 
 rng = oz.Random(1)
@@ -115,16 +120,16 @@ def index():
 
     print(hist_str)
 
-    # h = oz.make_holdem_history()
-    # g = h.game
-    # g.read_history_str(hist_str)
-    # tensor = torch.zeros(encoder.encoding_size())
-    # infoset = h.infoset()
-    # encoder.encode(infoset, tensor)
-    # logits = model.forward(tensor)
-    # probs = F.softmax(logits, dim=0)
-    # ap = encoder.decode_and_sample(infoset, probs, rng)
-    # action_name = OZ_ACTION_NAMES[ap.a.index]
+    h = oz.make_holdem_history()
+    g = h.game
+    g.read_history_str(hist_str)
+    tensor = torch.zeros(encoder.encoding_size())
+    infoset = h.infoset()
+    encoder.encode(infoset, tensor)
+    logits = model.forward(tensor)
+    probs = F.softmax(logits, dim=0)
+    ap = encoder.decode_and_sample(infoset, probs, rng)
+    action_name = OZ_ACTION_NAMES[ap.a.index]
 
     state = log2vector.parse_state(bytes(hist_str, 'ASCII'))
     print(state)
@@ -132,11 +137,11 @@ def index():
     state_vector = log2vector.state_to_vector(state)
     state_tensor = torch.from_numpy(state_vector.astype(np.float32))
 
-    with torch.no_grad():
-        a_logits = action_model.forward(state_tensor)
-        dist = torch.distributions.Categorical(logits=a_logits)
-        a = dist.sample().item()
-        action_name = ACTION_NAMES[a]
+    # with torch.no_grad():
+    #     a_logits = action_model.forward(state_tensor)
+    #     dist = torch.distributions.Categorical(logits=a_logits)
+    #     a = dist.sample().item()
+    #     action_name = ACTION_NAMES[a]
 
     with torch.no_grad():
         expected_value = utility_model.forward(state_tensor).item()
