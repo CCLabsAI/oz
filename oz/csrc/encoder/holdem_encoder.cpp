@@ -58,14 +58,13 @@ void holdem_encoder_t::rounds_one_hot(player_t player, const holdem_poker_t::act
   static constexpr int ROUNDE_STRIDE = MAX_ROUND_ACTIONS*ACTION_SIZE;
   static constexpr int ACTION_STRIDE = ACTION_SIZE;
 
-  int p = player_idx(holdem_poker_t::FIRST_PLAYER[0]), player_relative;
+  int p = player_idx(holdem_poker_t::FIRST_PLAYER[0]);
   int round_n = 0, action_n = 0;
   for (const auto &a : actions) {
     switch (a) {
       case action_t::Raise:
       case action_t::Call:
-        player_relative = (p + player_idx(player)) % 2;
-        action_one_hot(a, x_a, i + player_relative*PLAYER_STRIDE + round_n*ROUNDE_STRIDE + action_n*ACTION_STRIDE);
+        action_one_hot(a, x_a, i + p*PLAYER_STRIDE + round_n*ROUNDE_STRIDE + action_n*ACTION_STRIDE);
         action_n++;
         p = (p + 1) % 2;
         break;
