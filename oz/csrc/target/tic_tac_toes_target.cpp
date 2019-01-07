@@ -61,26 +61,45 @@ namespace oz {
     }
     
     
-    void is_legal_move(int var[9], tic_tac_toes_t::action_vector_t previous_moves, tic_tac_toes_t::action_vector_t target_player_moves, int tot_turn){
+    void is_legal_move(tic_tac_toes_t::action_vector_t current_actions, int var[9], tic_tac_toes_t::action_vector_t previous_moves, tic_tac_toes_t::action_vector_t target_player_moves, int tot_turn){
+      
+      unsigned int i;
+      unsigned player_turn = tot_turn / 2;
+      
+      
+      // from current actions extract the previous actions taken by the current player
+      if (current_actions.size() > 0) {
+        tic_tac_toes_t::action_vector_t previous_current_actions;
+        
+        if (current_actions.size() % 2 == 0){
+          for (unsigned int j = 0; j < current_actions.size(); j+=2)
+            previous_current_actions.push_back(current_actions[j]);
+          
+        }
+        else{
+          for (unsigned int j = 1; j < current_actions.size(); j+=2)
+            previous_current_actions.push_back(current_actions[j]);
+        }
         
         
         // check that it is not one of the previously taken move
-        unsigned int i;
-        unsigned player_turn = tot_turn / 2;
         for(i = 0; i < player_turn; ++i){
-            if (action_index(previous_moves[i]) >= 0)
-                var[action_index(previous_moves[i])] = 0;
+          if (action_index(previous_current_actions[i]) >= 0)
+            var[action_index(previous_current_actions[i])] = 0;
         }
+      }
         
         
-        // check that it is not one of the move that the target player has done in its game
-        // for example if the history is 4/2/7/48/ and P1 is the target player
-        // make sure that the current game does not end up in a situation like 4/8/
+      // check that it is not one of the move that the target player has done in its game
+      // for example if the history is 4/2/7/48/ and P1 is the target player
+      // make sure that the current game does not end up in a situation like 4/8/
+      if (current_actions.size() > 1) {
+        
         cout << " opponent move : " << endl;
         for (i = 0; i < target_player_moves.size(); ++i){
-            cout << action_index(previous_moves[i]) << endl;
-            
+            cout << action_index(target_player_moves[i]) << endl;
         }
+      }
         
     }
     
@@ -196,9 +215,12 @@ namespace oz {
     
     void opponent_discovery_constraint(int var[9], unsigned int turn_number, const player_t player, tic_tac_toes_t::action_vector_t moves_P1, tic_tac_toes_t::action_vector_t moves_P2){
         
-        /*if (player == P1){
+      cout << "turn number " << turn_number << endl;
+      if (player == P1){
             cout << "P1" << endl;
-        }*/
+      }
+      if (turn_number > 4)
+      getchar();
         
         
         
@@ -219,14 +241,13 @@ namespace oz {
       
         // player is current_player
         if (player == P1){
-            cout << "For legal move the opponent is P2" << endl;
-            is_legal_move(var, moves_P1, moves_P2, turn_number_current_action);
-          cout << " after legal move " << endl;
+            is_legal_move(current_actions, var, moves_P1, moves_P2, turn_number_current_action);
+            cout << " after legal move " << endl;
             for (unsigned int i=0; i< 9; i++)
               cout <<  var[i] ;
             cout << endl;
             is_winning_move(var, moves_P1, turn_number_current_action);
-          cout << " after is winning move " << endl;
+            cout << " after is winning move " << endl;
             for (unsigned int i=0; i< 9; i++)
               cout <<  var[i] ;
             cout << endl;
@@ -236,7 +257,7 @@ namespace oz {
         else {
             cout << "For legal move the opponent is P1" << endl;
             
-            is_legal_move(var, moves_P2, moves_P1, turn_number_current_action);
+            is_legal_move(current_actions, var, moves_P2, moves_P1, turn_number_current_action);
             cout << " after legal move " << endl;
             for (unsigned int i=0; i< 9; i++)
               cout <<  var[i] ;
@@ -249,6 +270,7 @@ namespace oz {
               cout <<  var[i] ;
             cout << endl;
         }
+    
         //opponent_discovery_constraint(var, turn_number, player, moves_P1, moves_P2);
         
         for (unsigned int i = 0; i < 9; i++)
@@ -257,54 +279,15 @@ namespace oz {
         
         
     }
-    
-    
-    
-    /*tic_tac_toes_t::action_t from_idx_to_action(int index){
-        using action_t = tic_tac_toes_t::action_t;
-        
-        
-        switch(index){
-            case 1 :
-                return action_t::fill_1;
-                break;
-            case 2 :
-                return action_t::fill_2;
-                break;
-            case 3 :
-                return action_t::fill_3;
-                break;
-            case 4 :
-                return action_t::fill_4;
-                break;
-            case 5 :
-                return action_t::fill_5;
-                break;
-            case 6 :
-                return action_t::fill_6;
-                break;
-            case 7 :
-                return action_t::fill_7;
-                break;
-            case 8 :
-                return action_t::fill_8;
-                break;
-            case 9 :
-                return action_t::fill_9;
-                break;
-            default :
-                assert(false);
-                break;
-        }
-    }*/
+  
     
     
     auto tic_tac_toes_target_t::target_actions(const infoset_t &target_infoset,const history_t &current_history) const
   -> set<action_t>{
         
-        //using action_t = tic_tac_toes_t::action_t;
     
 
+    cout << "----------" << endl;
         const auto &target_infoset_base = cast_infoset(target_infoset);
         const auto &target_player = target_infoset_base.player;
 
@@ -384,6 +367,7 @@ namespace oz {
                     Ensures(target != tic_tac_toes_t::action_t::NextRound);
                     
                     cout << "new action " << endl;
+                  cout << "number_current_target_player_moves" << number_current_target_player_moves << endl;
                     cout << action_index(target) << endl;
                     
                     number_current_target_player_moves++;
@@ -399,18 +383,16 @@ namespace oz {
                 playable(current_actions, current_game.player(), moves_P1, moves_P2, x, turn_number);
 
                 auto actions_set = set<action_t> { };
-                cout << "new possible action " << endl;
                 for(unsigned int n = 0; n < 9; n++) {
                     if(x[n]) {
                         actions_set.insert(make_action(n));
-                        cout << n << endl;
                 
                     }
                         
                 }
 
                 Ensures(!actions_set.empty());
-                if (target_actions.size() > 4 and target_player == P1 )
+                if (target_actions.size() > 4 and target_player == P2 )
                 getchar();
                 return actions_set;
                 
