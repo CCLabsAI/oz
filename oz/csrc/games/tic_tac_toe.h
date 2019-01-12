@@ -17,7 +17,7 @@ namespace oz {
   
   using boost::container::static_vector;
 
-  class tic_tac_toes_t final : public game_t {
+  class tic_tac_toe_t final : public game_t {
     public:
 
       static constexpr int MAX_SQUARES = 9;
@@ -84,7 +84,7 @@ namespace oz {
     
 
     std::unique_ptr<game_t> clone() const override {
-      return std::make_unique<tic_tac_toes_t>(*this);
+      return std::make_unique<tic_tac_toe_t>(*this);
     }
 
     action_prob_map_t chance_actions(action_prob_allocator_t alloc) const override;

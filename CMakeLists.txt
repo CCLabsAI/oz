@@ -61,7 +61,7 @@ add_executable(tests
         "oz/csrc/games/goofspiel2.cpp"
         
         "oz/csrc/tests/test_tic_tac_toe.cpp"
-        "oz/csrc/games/tic_tac_toes.cpp"
+        "oz/csrc/games/tic_tac_toe.cpp"
 
         "oz/csrc/tests/test_holdem.cpp"
         "oz/csrc/games/holdem.cpp"
@@ -71,10 +71,10 @@ add_executable(tests
         "oz/csrc/target/leduc_target.cpp"
         "oz/csrc/target/goofspiel2_target.cpp"
 	"oz/csrc/target/liars_dice_target.cpp"
-	"oz/csrc/target/tic_tac_toes_target.cpp"
+	"oz/csrc/target/tic_tac_toe_target.cpp"
 	
         "oz/csrc/games/liars_dice.cpp"
-	"oz/csrc/games/tic_tac_toes.cpp"
+	"oz/csrc/games/tic_tac_toe.cpp"
 	"oz/csrc/tests/test_mcts.cpp"
         "oz/csrc/mcts.cpp"
 
@@ -145,9 +145,9 @@ add_executable(solve_liars_dice
         "oz/csrc/tree.cpp"
         )
 
-add_executable(solve_tic_tac_toes
-        "oz/csrc/solve_tic_tac_toes.cpp"
-        "oz/csrc/games/tic_tac_toes.cpp"
+add_executable(solve_tic_tac_toe
+        "oz/csrc/solve_tic_tac_toe.cpp"
+        "oz/csrc/games/tic_tac_toe.cpp"
         "oz/csrc/best_response.cpp"
         "oz/csrc/oos.cpp"
         "oz/csrc/history.cpp"
@@ -186,9 +186,9 @@ pybind11_add_module(_ext
         "oz/csrc/encoder/liars_dice_encoder.cpp"
 	"oz/csrc/target/liars_dice_target.cpp"
 
-	"oz/csrc/games/tic_tac_toes.cpp"
-        "oz/csrc/encoder/tic_tac_toes_encoder.cpp"
-	"oz/csrc/target/tic_tac_toes_target.cpp"
+	"oz/csrc/games/tic_tac_toe.cpp"
+        "oz/csrc/encoder/tic_tac_toe_encoder.cpp"
+	"oz/csrc/target/tic_tac_toe_target.cpp"
 
         "oz/csrc/games/holdem.cpp"
         "oz/csrc/encoder/holdem_encoder.cpp"
@@ -209,5 +209,5 @@ target_link_libraries(solve_leduc PRIVATE boost_container)
 target_link_libraries(solve_leduc_mcts PRIVATE boost_container)
 target_link_libraries(solve_goofspiel2 PRIVATE boost_container)
 target_link_libraries(solve_liars_dice PRIVATE boost_container)
-target_link_libraries(solve_tic_tac_toes PRIVATE boost_container)
+target_link_libraries(solve_tic_tac_toe PRIVATE boost_container)
 target_link_libraries(_ext PRIVATE boost_container ACE_Eval)
