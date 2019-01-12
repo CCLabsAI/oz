@@ -1,7 +1,7 @@
 #include <catch.hpp>
 
 #include "target.h"
-#include "target/leduk_target.h"
+#include "target/leduc_target.h"
 #include "target/goofspiel2_target.h"
 
 #include "oos.h"
@@ -10,13 +10,13 @@
 using namespace std;
 using namespace oz;
 
-TEST_CASE("targeting leduk histories", "[target]") {
-  using action_t = leduk_poker_t::action_t;
+TEST_CASE("targeting leduc histories", "[target]") {
+  using action_t = leduc_poker_t::action_t;
 
-  auto targeter = make_target<leduk_target_t>();
+  auto targeter = make_target<leduc_target_t>();
 
-  auto h = make_history<leduk_poker_t>();
-  auto h_target = make_history<leduk_poker_t>();
+  auto h = make_history<leduc_poker_t>();
+  auto h_target = make_history<leduc_poker_t>();
 
   h.act(make_action(action_t::J1));
   h.act(make_action(action_t::J2));
@@ -32,7 +32,7 @@ TEST_CASE("targeting leduk histories", "[target]") {
   const auto targets2 = targeter.target_actions(h_target.infoset(), h);
 
   CHECK(targets2.size() == 1);
-  CHECK(*begin(targets2) == make_action(leduk_poker_t::action_t::Raise));
+  CHECK(*begin(targets2) == make_action(leduc_poker_t::action_t::Raise));
 
   h.act(make_action(action_t::Raise));
   h_target.act(make_action(action_t::Call));
@@ -41,14 +41,14 @@ TEST_CASE("targeting leduk histories", "[target]") {
   const auto targets3 = targeter.target_actions(h_target.infoset(), h);
 
   CHECK(targets3.size() == 1);
-  CHECK(*begin(targets3) == make_action(leduk_poker_t::action_t::Call));
+  CHECK(*begin(targets3) == make_action(leduc_poker_t::action_t::Call));
 
   h.act(make_action(action_t::Call));
 
   const auto targets4 = targeter.target_actions(h_target.infoset(), h);
 
   CHECK(targets4.size() == 1);
-  CHECK(*begin(targets4) == make_action(leduk_poker_t::action_t::K));
+  CHECK(*begin(targets4) == make_action(leduc_poker_t::action_t::K));
 }
 
 TEST_CASE("targeting goofspiel2 histories", "[target]") {
@@ -116,11 +116,11 @@ TEST_CASE("targeting goofspiel2 regression 1", "[target]") {
 }
 
 TEST_CASE("targeting oos search", "[target]") {
-  using action_t = leduk_poker_t::action_t;
+  using action_t = leduc_poker_t::action_t;
 
-  auto h = make_history<leduk_poker_t>();
-  auto h_target = make_history<leduk_poker_t>();
-  target_t target = make_target<leduk_target_t>();
+  auto h = make_history<leduc_poker_t>();
+  auto h_target = make_history<leduc_poker_t>();
+  target_t target = make_target<leduc_target_t>();
 
   oos_t s;
   tree_t tree_targeted;

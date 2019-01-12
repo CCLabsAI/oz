@@ -27,7 +27,7 @@ void py_sigma_batch_t::walk_infosets(history_t history) {
 Tensor py_sigma_batch_t::generate_batch(encoder_ptr_t encoder) {
   const long N = lookup_table_.size();
   const long D = encoder->encoding_size();
-  Tensor t = zeros(torch::CPU(kFloat), { N, D });
+  Tensor t = zeros({ N, D }, at::kFloat);
 
   int i = 0;
   for (const auto &p : lookup_table_) {

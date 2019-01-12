@@ -44,7 +44,7 @@ def main():
 
     parser.add_argument("--nn_arch",
                         help="nn architecture",
-                        choices=["mlp", "deep"],
+                        choices=["mlp", "deep", "holdem_demo"],
                         default="mlp")
     # parser.add_argument("--opt",
     #                     help="optimizer to use",
@@ -111,6 +111,8 @@ def main():
     parser.add_argument("--train_iter", type=int,
                         help="nn training iterations",
                         default=1000)
+    parser.add_argument("--pretrained_model",
+                        help="holdem pretrained checkpoint to load")
 
     args = parser.parse_args()
 
@@ -155,7 +157,8 @@ def run(args, checkpoint_data=None):
     print(vars(args))
 
     game = args.game
-    if game == 'leduk' or game == 'leduk_poker':
+    if game == 'leduc' or game == 'leduc_poker' or \
+       game == 'leduk' or game == 'leduk_poker':
         history = oz.make_leduk_history()
         encoder = oz.make_leduk_encoder()
         target  = oz.make_leduk_target()
@@ -172,12 +175,23 @@ def run(args, checkpoint_data=None):
         history = oz.make_tic_tac_toes_history()
         encoder = oz.make_tic_tac_toes_encoder()
         target  = oz.make_tic_tac_toes_target()
+    elif game == 'holdem' or game == 'holdem_poker':
+        history = oz.make_holdem_history()
+        encoder = oz.make_holdem_encoder()
+        target  = oz.make_holdem_target()
+    else:
+        raise "unknown game: {}".format(args.game)
 
     rng = oz.Random()
     model = oz.nn.model_with_args(args,
                 input_size=encoder.encoding_size(),
                 output_size=encoder.max_actions())
-    
+
+    if args.pretrained_model and not checkpoint_data:
+        print('loading pretrained model: {}...'.format(args.pretrained_model))
+        state_dict = torch.load(args.pretrained_model, map_location='cpu')
+        model.load_state_dict(state_dict)
+
     def make_batch_search():
         return oz.BatchSearch(batch_size=args.search_batch_size,
                               history=history,

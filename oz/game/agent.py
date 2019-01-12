@@ -1,6 +1,6 @@
 import random
 
-from . import leduk
+from . import leduc
 
 
 class RandomAgent():
@@ -10,18 +10,18 @@ class RandomAgent():
 
 class CallAgent():
     def choose_action(self, g):
-        return leduk.Action.Call
+        return leduc.Action.Call
 
 
 class BiasedRandomAgent():
     def choose_action(self, g):
         r = random.random()
         if r < 0.1:
-            return leduk.Action.Fold
+            return leduc.Action.Fold
         elif r < 0.55:
-            if leduk.Action.Raise in g.legal_actions():
-                return leduk.Action.Raise
+            if leduc.Action.Raise in g.legal_actions():
+                return leduc.Action.Raise
             else:
-                return leduk.Action.Call
+                return leduc.Action.Call
         else:
-            return leduk.Action.Call
+            return leduc.Action.Call

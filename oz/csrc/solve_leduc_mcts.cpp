@@ -1,6 +1,6 @@
 #include "mcts.h"
 #include "best_response.h"
-#include "games/leduk.h"
+#include "games/leduc.h"
 
 #include <limits>
 #include <iostream>
@@ -10,7 +10,7 @@ using namespace oz;
 using namespace std;
 
 int main(int argc, char **argv) {
-  history_t h = make_history<leduk_poker_t>();
+  history_t h = make_history<leduc_poker_t>();
   mcts::tree_t tree;
   rng_t rng(1);
   value_t ex;

@@ -1,14 +1,14 @@
-#ifndef OZ_LEDUK_TARGET_H
-#define OZ_LEDUK_TARGET_H
+#ifndef OZ_HOLDEM_TARGET_H
+#define OZ_HOLDEM_TARGET_H
 
 #include <set>
 
 #include "target.h"
-#include "games/leduk.h"
+#include "games/holdem.h"
 
 namespace oz {
 
-class leduk_target_t final : public target_t::concept_t {
+class holdem_target_t final : public target_t::concept_t {
  public:
   set<action_t> target_actions(const infoset_t &target_infoset,
                                const history_t &current_history) const override;
@@ -16,4 +16,4 @@ class leduk_target_t final : public target_t::concept_t {
 
 } // namespace oz
 
-#endif // OZ_LEDUK_TARGET_H
+#endif // OZ_HOLDEM_TARGET_H

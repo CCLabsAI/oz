@@ -27,15 +27,16 @@
 #  endif
 #endif
 
-#if !defined(_MSC_VER) && !defined(__INTEL_COMPILER)
+#if !(defined(_MSC_VER) && __cplusplus == 199711L) && !defined(__INTEL_COMPILER)
 #  if __cplusplus >= 201402L
 #    define PYBIND11_CPP14
-#    if __cplusplus > 201402L /* Temporary: should be updated to >= the final C++17 value once known */
+#    if __cplusplus >= 201703L
 #      define PYBIND11_CPP17
 #    endif
 #  endif
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && __cplusplus == 199711L
 // MSVC sets _MSVC_LANG rather than __cplusplus (supposedly until the standard is fully implemented)
+// Unless you use the /Zc:__cplusplus flag on Visual Studio 2017 15.7 Preview 3 or newer
 #  if _MSVC_LANG >= 201402L
 #    define PYBIND11_CPP14
 #    if _MSVC_LANG > 201402L && _MSC_VER >= 1910
@@ -46,8 +47,8 @@
 
 // Compiler version assertions
 #if defined(__INTEL_COMPILER)
-#  if __INTEL_COMPILER < 1500
-#    error pybind11 requires Intel C++ compiler v15 or newer
+#  if __INTEL_COMPILER < 1700
+#    error pybind11 requires Intel C++ compiler v17 or newer
 #  endif
 #elif defined(__clang__) && !defined(__apple_build_version__)
 #  if __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ < 3)
@@ -92,8 +93,8 @@
 #endif
 
 #define PYBIND11_VERSION_MAJOR 2
-#define PYBIND11_VERSION_MINOR 3
-#define PYBIND11_VERSION_PATCH dev0
+#define PYBIND11_VERSION_MINOR 2
+#define PYBIND11_VERSION_PATCH 4
 
 /// Include Python header, disable linking to pythonX_d.lib on Windows in debug mode
 #if defined(_MSC_VER)
@@ -158,8 +159,6 @@
 #define PYBIND11_BYTES_SIZE PyBytes_Size
 #define PYBIND11_LONG_CHECK(o) PyLong_Check(o)
 #define PYBIND11_LONG_AS_LONGLONG(o) PyLong_AsLongLong(o)
-#define PYBIND11_LONG_FROM_SIGNED(o) PyLong_FromSsize_t((ssize_t) o)
-#define PYBIND11_LONG_FROM_UNSIGNED(o) PyLong_FromSize_t((size_t) o)
 #define PYBIND11_BYTES_NAME "bytes"
 #define PYBIND11_STRING_NAME "str"
 #define PYBIND11_SLICE_OBJECT PyObject
@@ -182,8 +181,6 @@
 #define PYBIND11_BYTES_SIZE PyString_Size
 #define PYBIND11_LONG_CHECK(o) (PyInt_Check(o) || PyLong_Check(o))
 #define PYBIND11_LONG_AS_LONGLONG(o) (PyInt_Check(o) ? (long long) PyLong_AsLong(o) : PyLong_AsLongLong(o))
-#define PYBIND11_LONG_FROM_SIGNED(o) PyInt_FromSsize_t((ssize_t) o) // Returns long if needed.
-#define PYBIND11_LONG_FROM_UNSIGNED(o) PyInt_FromSize_t((size_t) o) // Returns long if needed.
 #define PYBIND11_BYTES_NAME "str"
 #define PYBIND11_STRING_NAME "unicode"
 #define PYBIND11_SLICE_OBJECT PySliceObject
@@ -394,7 +391,7 @@ struct instance {
         void *simple_value_holder[1 + instance_simple_holder_in_ptrs()];
         nonsimple_values_and_holders nonsimple;
     };
-    /// Weak references
+    /// Weak references (needed for keep alive):
     PyObject *weakrefs;
     /// If true, the pointer is owned which means we're free to manage it with a holder.
     bool owned : 1;
@@ -411,10 +408,10 @@ struct instance {
      * (which is typically the size of two pointers), or when multiple inheritance is used on the
      * python side.  Non-simple layout allocates the required amount of memory to have multiple
      * bound C++ classes as parents.  Under this layout, `nonsimple.values_and_holders` is set to a
-     * pointer to allocated space of the required space to hold a sequence of value pointers and
+     * pointer to allocated space of the required space to hold a a sequence of value pointers and
      * holders followed `status`, a set of bit flags (1 byte each), i.e.
      * [val1*][holder1][val2*][holder2]...[bb...]  where each [block] is rounded up to a multiple of
-     * `sizeof(void *)`.  `nonsimple.status` is, for convenience, a pointer to the
+     * `sizeof(void *)`.  `nonsimple.holder_constructed` is, for convenience, a pointer to the
      * beginning of the [bb...] block (but not independently allocated).
      *
      * Status bits indicate whether the associated holder is constructed (&
@@ -485,7 +482,7 @@ template <typename...> struct void_t_impl { using type = void; };
 template <typename... Ts> using void_t = typename void_t_impl<Ts...>::type;
 
 /// Compile-time all/any/none of that check the boolean value of all template types
-#ifdef __cpp_fold_expressions
+#if defined(__cpp_fold_expressions) && !(defined(_MSC_VER) && (_MSC_VER < 1916))
 template <class... Ts> using all_of = bool_constant<(Ts::value && ...)>;
 template <class... Ts> using any_of = bool_constant<(Ts::value || ...)>;
 #elif !defined(_MSC_VER)
@@ -586,11 +583,6 @@ template <typename T, typename... Us> using deferred_t = typename deferred_type<
 /// unlike `std::is_base_of`)
 template <typename Base, typename Derived> using is_strict_base_of = bool_constant<
     std::is_base_of<Base, Derived>::value && !std::is_same<Base, Derived>::value>;
-
-/// Like is_base_of, but also requires that the base type is accessible (i.e. that a Derived pointer
-/// can be converted to a Base pointer)
-template <typename Base, typename Derived> using is_accessible_base_of = bool_constant<
-    std::is_base_of<Base, Derived>::value && std::is_convertible<Derived *, Base *>::value>;
 
 template <template<typename...> class Base>
 struct is_template_base_of_impl {
@@ -710,12 +702,8 @@ template <typename T> struct format_descriptor<T, detail::enable_if_t<std::is_ar
     static std::string format() { return std::string(1, c); }
 };
 
-#if !defined(PYBIND11_CPP17)
-
 template <typename T> constexpr const char format_descriptor<
     T, detail::enable_if_t<std::is_arithmetic<T>::value>>::value[2];
-
-#endif
 
 /// RAII wrapper that temporarily clears any Python error state
 struct error_scope {
