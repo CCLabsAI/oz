@@ -75,7 +75,7 @@ TEST_CASE("tic_tac_toe utility P1 wins2", "[tic_tac_toe]") {
   game.act(make_action(5));
   game.act(make_action(1));
   
-  game.act(make_action(2));
+  game.act(make_action(4));
   
   CHECK(game.is_terminal());
   CHECK(game.utility(P1) == 1);
