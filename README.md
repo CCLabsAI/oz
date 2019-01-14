@@ -12,4 +12,4 @@ $ python setup.py build --debug develop
 
 # Dependencies:
 
-You will need to install pytorch >0.4.0
+You will need to install a recent pytorch.
