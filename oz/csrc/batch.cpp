@@ -113,7 +113,9 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
       case state_t::CREATE:
         {
           Expects(search_needs_eval(search));
-          const int n = i++;
+          i++; // NB remove this when uncommenting the code below
+
+          // const int n = i++;
           // const auto infoset = search.infoset();
 
           // const auto average_strategy = encoder_->decode(infoset, probs[n]);

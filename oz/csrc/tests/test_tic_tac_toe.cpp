@@ -124,9 +124,6 @@ TEST_CASE("tic_tac_toe utility draw", "[tic_tac_toe]") {
 
 
 TEST_CASE("tic tac toe pieces_P1 and pieces_P2 first element", "[tic tac toe]") {
-  
-  using action_vector_t = tic_tac_toe_t::action_vector_t;
-
   auto game = tic_tac_toe_t();
   game.act(make_action(1));
   
@@ -135,15 +132,10 @@ TEST_CASE("tic tac toe pieces_P1 and pieces_P2 first element", "[tic tac toe]") 
   
   game.act(make_action(2));
   CHECK(game.pieces_P2()[0] == tic_tac_toe_t::action_t::fill_3);
-  
-  
 }
 
 
 TEST_CASE("tic tac toe pieces_P1 and pieces_P2", "[tic tac toe]") {
-  
-  using action_vector_t = tic_tac_toe_t::action_vector_t;
-
   auto game = tic_tac_toe_t();
 
   CHECK(game.pieces_P1().size() == 0);
