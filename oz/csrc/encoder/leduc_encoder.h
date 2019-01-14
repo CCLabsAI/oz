@@ -1,5 +1,5 @@
-#ifndef OZ_LEDUK_ENCODER_H
-#define OZ_LEDUK_ENCODER_H
+#ifndef OZ_LEDUC_ENCODER_H
+#define OZ_LEDUC_ENCODER_H
 
 #include <ATen/ATen.h>
 
@@ -8,7 +8,7 @@
 #include "game.h"
 #include "oos.h"
 
-#include "games/leduk.h"
+#include "games/leduc.h"
 
 namespace oz {
 
@@ -17,10 +17,10 @@ using std::map;
 
 using at::Tensor;
 
-class leduk_encoder_t final : public encoder_t {
+class leduc_encoder_t final : public encoder_t {
  public:
-  using card_t = leduk_poker_t::card_t;
-  using action_t = leduk_poker_t::action_t;
+  using card_t = leduc_poker_t::card_t;
+  using action_t = leduc_poker_t::action_t;
 
   int encoding_size() override { return ENCODING_SIZE; };
   int max_actions() override { return MAX_ACTIONS; };
@@ -35,9 +35,9 @@ class leduk_encoder_t final : public encoder_t {
 
   static void card_one_hot(card_t card, ta_t &x_a, int i);
   static void action_one_hot(action_t action, ta_t &x_a, int i);
-  static void rounds_one_hot(const leduk_poker_t::action_vector_t &actions, ta_t &x_a, int i);
+  static void rounds_one_hot(const leduc_poker_t::action_vector_t &actions, ta_t &x_a, int i);
 
-  static constexpr int N_ROUNDS = leduk_poker_t::N_ROUNDS;
+  static constexpr int N_ROUNDS = leduc_poker_t::N_ROUNDS;
 
   static constexpr int CARD_SIZE = 3;
   static constexpr int ACTION_SIZE = 2;
@@ -49,4 +49,4 @@ class leduk_encoder_t final : public encoder_t {
 
 };
 
-#endif // OZ_LEDUK_ENCODER_H
+#endif // OZ_LEDUC_ENCODER_H

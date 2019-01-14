@@ -1,6 +1,6 @@
-from oz.game.leduk import LedukPoker, Action
+from oz.game.leduc import LeducPoker, Action
 
-g = LedukPoker()
+g = LeducPoker()
 
 def input_action(legal_actions):
     while True:

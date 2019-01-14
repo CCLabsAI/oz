@@ -6,7 +6,7 @@
 #include "game.h"
 #include "sigma.h"
 
-#include "games/leduk.h"
+#include "games/leduc.h"
 
 namespace oz {
 

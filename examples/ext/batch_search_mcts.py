@@ -19,8 +19,8 @@ class Net(nn.Module):
 
 rng = oz.Random(1)
 
-history = oz.make_leduk_history()
-enc = oz.make_leduk_encoder()
+history = oz.make_leduc_history()
+enc = oz.make_leduc_encoder()
 
 params = oz.MCTSParams()
 

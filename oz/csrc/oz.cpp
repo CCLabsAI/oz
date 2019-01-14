@@ -15,18 +15,21 @@
 #include "py_sigma_batch.h"
 #include "games/flipguess.h"
 #include "games/kuhn.h"
-#include "games/leduk.h"
-#include "encoder/leduk_encoder.h"
-#include "target/leduk_target.h"
+#include "games/leduc.h"
+#include "encoder/leduc_encoder.h"
+#include "target/leduc_target.h"
 #include "games/liars_dice.h"
 #include "encoder/liars_dice_encoder.h"
 #include "target/liars_dice_target.h"
-#include "games/tic_tac_toes.h"
-#include "encoder/tic_tac_toes_encoder.h"
-#include "target/tic_tac_toes_target.h"
+#include "games/tic_tac_toe.h"
+#include "encoder/tic_tac_toe_encoder.h"
+#include "target/tic_tac_toe_target.h"
 #include "games/goofspiel2.h"
 #include "target/goofspiel2_target.h"
 #include "encoder/goofspiel2_encoder.h"
+#include "games/holdem.h"
+#include "encoder/holdem_encoder.h"
+#include "target/holdem_target.h"
 
 auto sigmoid_add(at::Tensor x, at::Tensor y) -> at::Tensor {
   return at::sigmoid(x + y);
@@ -51,10 +54,12 @@ PYBIND11_MODULE(_ext, m) {
   bind_oz(m);
 }
 
+namespace pybind11 { namespace detail {
 // Look at this handsome template instantiation right here...
 template <typename Key, typename Value, typename Compare, typename Alloc>
-struct pybind11::detail::type_caster<boost::container::flat_map<Key, Value, Compare, Alloc>>
+struct type_caster<boost::container::flat_map<Key, Value, Compare, Alloc>>
   : map_caster<boost::container::flat_map<Key, Value, Compare, Alloc>, Key, Value> { };
+}}
 
 void bind_oz(py::module &m) {
   using namespace oz;
@@ -105,7 +110,18 @@ void bind_oz(py::module &m) {
 
   py::class_<kuhn_poker_t>(m, "KuhnPoker", py_Game);
 
-  
+  auto py_LeducPoker =
+    py::class_<leduc_poker_t>(m, "LeducPoker", py_Game)
+        .def("hand", (leduc_poker_t::card_t (leduc_poker_t::*)(player_t) const) &leduc_poker_t::hand)
+        .def("board", &leduc_poker_t::board)
+        .def("pot", (int (leduc_poker_t::*)(player_t) const) &leduc_poker_t::pot)
+        .def("folded", (bool (leduc_poker_t::*)(player_t) const) &leduc_poker_t::folded);
+
+  py::enum_<leduc_poker_t::card_t>(py_LeducPoker, "Card")
+      .value("NA", leduc_poker_t::card_t::NA)
+      .value("Jack", leduc_poker_t::card_t::Jack)
+      .value("Queen", leduc_poker_t::card_t::Queen)
+      .value("King", leduc_poker_t::card_t::King);
   auto py_LiarsDice =
   py::class_<liars_dice_t>(m, "LiarsDice", py_Game)
   .def("face1", (liars_dice_t::dice_face_t (liars_dice_t::*)(player_t) const) &liars_dice_t::face1)
@@ -123,37 +139,19 @@ void bind_oz(py::module &m) {
   .value("star", liars_dice_t::dice_face_t::face_star);
   
   auto py_TicTacToes =
-  py::class_<tic_tac_toes_t>(m, "TicTacToes", py_Game);
+  py::class_<tic_tac_toe_t>(m, "TicTacToes", py_Game);
   
-  py::enum_<tic_tac_toes_t::action_t>(py_TicTacToes, "ActionNumber")
-  .value("1", tic_tac_toes_t::action_t::fill_1)
-  .value("2", tic_tac_toes_t::action_t::fill_2)
-  .value("3", tic_tac_toes_t::action_t::fill_3)
-  .value("4", tic_tac_toes_t::action_t::fill_4)
-  .value("5", tic_tac_toes_t::action_t::fill_5)
-  .value("6", tic_tac_toes_t::action_t::fill_6)
-  .value("7", tic_tac_toes_t::action_t::fill_7)
-  .value("8", tic_tac_toes_t::action_t::fill_8)
-  .value("9", tic_tac_toes_t::action_t::fill_9);
+  py::enum_<tic_tac_toe_t::action_t>(py_TicTacToes, "ActionNumber")
+  .value("1", tic_tac_toe_t::action_t::fill_1)
+  .value("2", tic_tac_toe_t::action_t::fill_2)
+  .value("3", tic_tac_toe_t::action_t::fill_3)
+  .value("4", tic_tac_toe_t::action_t::fill_4)
+  .value("5", tic_tac_toe_t::action_t::fill_5)
+  .value("6", tic_tac_toe_t::action_t::fill_6)
+  .value("7", tic_tac_toe_t::action_t::fill_7)
+  .value("8", tic_tac_toe_t::action_t::fill_8)
+  .value("9", tic_tac_toe_t::action_t::fill_9);
   
-  
-  
-  auto py_LedukPoker =
-    py::class_<leduk_poker_t>(m, "LedukPoker", py_Game)
-        .def("hand", (leduk_poker_t::card_t (leduk_poker_t::*)(player_t) const) &leduk_poker_t::hand)
-        .def("board", &leduk_poker_t::board)
-        .def("pot", (int (leduk_poker_t::*)(player_t) const) &leduk_poker_t::pot)
-        .def("folded", (bool (leduk_poker_t::*)(player_t) const) &leduk_poker_t::folded);
-
-  py::enum_<leduk_poker_t::card_t>(py_LedukPoker, "Card")
-      .value("NA", leduk_poker_t::card_t::NA)
-      .value("Jack", leduk_poker_t::card_t::Jack)
-      .value("Queen", leduk_poker_t::card_t::Queen)
-      .value("King", leduk_poker_t::card_t::King);
-  
-  
-  
-
   py::class_<goofspiel2_t>(m, "Goofspiel2", py_Game)
     .def("score", (int (goofspiel2_t::*)(player_t p) const) &goofspiel2_t::score)
     .def_property_readonly("turn", &goofspiel2_t::turn)
@@ -175,12 +173,19 @@ void bind_oz(py::module &m) {
       return vector<player_t>(begin(v), end(v));
     });
 
+  py::class_<holdem_poker_t>(m, "HoldemPoker", py_Game)
+      .def("read_history_str", &holdem_poker_t::read_history_str);
+
+
   py::class_<history_t>(m, "History")
       .def("act", &history_t::act)
       .def("infoset", (infoset_t (history_t::*)() const) &history_t::infoset)
       .def_property_readonly("player", &history_t::player)
       .def("is_terminal", &history_t::is_terminal)
       .def("utility", &history_t::utility)
+      .def("chance_actions",
+        (history_t::action_prob_map_t (history_t::*)() const)
+        &history_t::chance_actions)
       .def("sample_chance", &history_t::sample_chance)
       .def_property_readonly("game", // TODO figure out if there is a better way
         [](const history_t &self) -> const game_t& {
@@ -302,15 +307,18 @@ void bind_oz(py::module &m) {
           .def("decode", &encoder_t::decode)
           .def("decode_and_sample", &encoder_t::decode_and_sample);
 
-  py::class_<leduk_encoder_t,
-             std::shared_ptr<leduk_encoder_t>>(m, "LedukEncoder", py_Encoder);
+  py::class_<leduc_encoder_t,
+             std::shared_ptr<leduc_encoder_t>>(m, "LeducEncoder", py_Encoder);
 
   py::class_<goofspiel2_encoder_t,
              std::shared_ptr<goofspiel2_encoder_t>>(m, "Goofspiel2Encoder", py_Encoder);
   py::class_<liars_dice_encoder_t,
       std::shared_ptr<liars_dice_encoder_t>>(m, "LiarsDiceEncoder", py_Encoder);
-  py::class_<tic_tac_toes_encoder_t,
-  std::shared_ptr<tic_tac_toes_encoder_t>>(m, "TicTacToesEncoder", py_Encoder);
+  py::class_<tic_tac_toe_encoder_t,
+  std::shared_ptr<tic_tac_toe_encoder_t>>(m, "TicTacToesEncoder", py_Encoder);
+
+  py::class_<holdem_encoder_t,
+             std::shared_ptr<holdem_encoder_t>>(m, "HoldemPokerEncoder", py_Encoder);
 
   py::class_<batch_search_t>(m, "BatchSearch")
       .def(py::init<int, history_t, std::shared_ptr<encoder_t>>())
@@ -377,20 +385,20 @@ void bind_oz(py::module &m) {
     return make_history<kuhn_poker_t>();
   });
 
-  m.def("make_leduk", []() {
-    return leduk_poker_t();
+  m.def("make_leduc", []() {
+    return leduc_poker_t();
   });
 
-  m.def("make_leduk_history", []() {
-    return make_history<leduk_poker_t>();
+  m.def("make_leduc_history", []() {
+    return make_history<leduc_poker_t>();
   });
 
-  m.def("make_leduk_encoder", []() {
-    return std::make_shared<leduk_encoder_t>();
+  m.def("make_leduc_encoder", []() {
+    return std::make_shared<leduc_encoder_t>();
   });
 
-  m.def("make_leduk_target", []() {
-    return make_target<leduk_target_t>();
+  m.def("make_leduc_target", []() {
+    return make_target<leduc_target_t>();
   });
 
   m.def("make_goofspiel2", [](int n) {
@@ -411,8 +419,8 @@ void bind_oz(py::module &m) {
   m.def("make_liars_dice", []() {
     return liars_dice_t();
   });
-  m.def("make_tic_tac_toes", []() {
-    return tic_tac_toes_t();
+  m.def("make_tic_tac_toe", []() {
+    return tic_tac_toe_t();
   });
 
   m.def("make_liars_dice_history", []() {
@@ -426,16 +434,27 @@ void bind_oz(py::module &m) {
     return make_target<liars_dice_target_t>();
   });
   
-  m.def("make_tic_tac_toes_history", []() {
-    return make_history<tic_tac_toes_t>();
+  m.def("make_tic_tac_toe_history", []() {
+    return make_history<tic_tac_toe_t>();
   });
   
-  m.def("make_tic_tac_toes_encoder", []() {
-    return std::make_shared<tic_tac_toes_encoder_t>();
+  m.def("make_tic_tac_toe_encoder", []() {
+    return std::make_shared<tic_tac_toe_encoder_t>();
   });
-  m.def("make_tic_tac_toes_target", []() {
-    return make_target<tic_tac_toes_target_t>();
+  m.def("make_tic_tac_toe_target", []() {
+    return make_target<tic_tac_toe_target_t>();
   });
 
 
+  m.def("make_holdem_history", []() {
+    return make_history<holdem_poker_t>();
+  });
+
+  m.def("make_holdem_target", []() {
+    return make_target<holdem_target_t>();
+  });
+
+  m.def("make_holdem_encoder", []() {
+    return std::make_shared<holdem_encoder_t>();
+  });
 }

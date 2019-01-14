@@ -1,4 +1,4 @@
-#include "tic_tac_toes.h"
+#include "tic_tac_toe.h"
 #include "hash.h"
 
 #include <cassert>
@@ -14,27 +14,27 @@ namespace oz {
   using namespace std;
     
     
-   int actions_to_idx(const tic_tac_toes_t::action_t a){
+   int actions_to_idx(const tic_tac_toe_t::action_t a){
       switch(a){
-          case tic_tac_toes_t::action_t::fill_1 :
+          case tic_tac_toe_t::action_t::fill_1 :
               return 0;
-          case tic_tac_toes_t::action_t::fill_2 :
+          case tic_tac_toe_t::action_t::fill_2 :
               return 1;
-          case tic_tac_toes_t::action_t::fill_3 :
+          case tic_tac_toe_t::action_t::fill_3 :
               return 2;
-          case tic_tac_toes_t::action_t::fill_4 :
+          case tic_tac_toe_t::action_t::fill_4 :
               return 3;
-          case tic_tac_toes_t::action_t::fill_5 :
+          case tic_tac_toe_t::action_t::fill_5 :
               return 4;
-          case tic_tac_toes_t::action_t::fill_6 :
+          case tic_tac_toe_t::action_t::fill_6 :
               return 5;
-          case tic_tac_toes_t::action_t::fill_7 :
+          case tic_tac_toe_t::action_t::fill_7 :
               return 6;
-          case tic_tac_toes_t::action_t::fill_8 :
+          case tic_tac_toe_t::action_t::fill_8 :
               return 7;
-          case tic_tac_toes_t::action_t::fill_9 :
+          case tic_tac_toe_t::action_t::fill_9 :
               return 8;
-          case tic_tac_toes_t::action_t::NextRound :
+          case tic_tac_toe_t::action_t::NextRound :
               return -1;
           default: assert(false); 
               
@@ -42,7 +42,7 @@ namespace oz {
   }
     
   
-  void tic_tac_toes_t::act_(action_t a) {
+  void tic_tac_toe_t::act_(action_t a) {
     
     if (action_number > MAX_SQUARES ) {
       throw std::invalid_argument("maximum number of moves reached");
@@ -131,7 +131,7 @@ namespace oz {
 
 
   
-  auto tic_tac_toes_t::utility(player_t player) const -> value_t {
+  auto tic_tac_toe_t::utility(player_t player) const -> value_t {
       
     assert (is_terminal());
 
@@ -160,7 +160,7 @@ namespace oz {
   
       
   // Function that calculate is the last action put a piece in the board that lead to a victory
-  auto tic_tac_toes_t::is_winning_move_vector(action_vector_t moves) -> int{
+  auto tic_tac_toe_t::is_winning_move_vector(action_vector_t moves) -> int{
     
     unsigned int moves_size = moves.size();
     unsigned int end_of_the_game = 0;
@@ -258,12 +258,12 @@ namespace oz {
     
     
     
-    auto tic_tac_toes_t::infoset() const -> oz::infoset_t {
+    auto tic_tac_toe_t::infoset() const -> oz::infoset_t {
         return make_infoset<infoset_t>(player_, pieces_P1_, pieces_P2_, history_, action_number, is_terminal_flag);
     }
   
 
-    auto tic_tac_toes_t::infoset(oz::infoset_t::allocator_t alloc) const -> oz::infoset_t {
+    auto tic_tac_toe_t::infoset(oz::infoset_t::allocator_t alloc) const -> oz::infoset_t {
         return allocate_infoset<infoset_t, oz::infoset_t::allocator_t>
             (alloc,
              player_, pieces_P1_, pieces_P2_, history_,
@@ -271,12 +271,12 @@ namespace oz {
     }
 
     // Is terminal will return 0 fi the game is not finished, 2 if the game finished with a draw, 1 otherwise
-    auto tic_tac_toes_t::is_terminal() const -> bool {
+    auto tic_tac_toe_t::is_terminal() const -> bool {
         return is_terminal_flag;
     }
   
 
-    auto tic_tac_toes_t::infoset_t::actions() const -> actions_list_t {
+    auto tic_tac_toe_t::infoset_t::actions() const -> actions_list_t {
     
         actions_list_t actions;
         int past_actions[MAX_SQUARES] = {0,0,0,0,0,0,0,0,0};
@@ -325,19 +325,19 @@ namespace oz {
 
 
 
-    auto tic_tac_toes_t::chance_actions(action_prob_allocator_t alloc) const -> action_prob_map_t {
+    auto tic_tac_toe_t::chance_actions(action_prob_allocator_t alloc) const -> action_prob_map_t {
         Expects(false);
         return { };
     }
 
-    auto tic_tac_toes_t::chance_actions() const -> action_prob_map_t {
-        return tic_tac_toes_t::chance_actions({ });
+    auto tic_tac_toe_t::chance_actions() const -> action_prob_map_t {
+        return tic_tac_toe_t::chance_actions({ });
     }
 
   
-    static std::ostream& operator << (std::ostream& os, const tic_tac_toes_t::action_t &action) {
+    static std::ostream& operator << (std::ostream& os, const tic_tac_toe_t::action_t &action) {
         
-        using action_t = tic_tac_toes_t::action_t;
+        using action_t = tic_tac_toe_t::action_t;
 
         if (action == action_t::fill_1) {
           os << '1';
@@ -377,7 +377,7 @@ namespace oz {
         return os;
     }
 
-    auto tic_tac_toes_t::infoset_t::str() const -> std::string {
+    auto tic_tac_toe_t::infoset_t::str() const -> std::string {
         stringstream ss;
 
         if (!history.empty()) {
@@ -392,7 +392,7 @@ namespace oz {
     }
       
       
-    auto tic_tac_toes_t::str() const -> std::string {
+    auto tic_tac_toe_t::str() const -> std::string {
         stringstream ss;
 
         if (!history().empty()) {
@@ -407,9 +407,9 @@ namespace oz {
     }
 
 
-    bool tic_tac_toes_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
+    bool tic_tac_toe_t::infoset_t::is_equal(const infoset_t::concept_t &that) const {
         if (typeid(*this) == typeid(that)) {
-          auto that_ = static_cast<const tic_tac_toes_t::infoset_t &>(that);
+          auto that_ = static_cast<const tic_tac_toe_t::infoset_t &>(that);
 
           return player == that_.player &&
                  pieces_P1 == that_.pieces_P1 &&
@@ -421,7 +421,7 @@ namespace oz {
         }
     }
 
-    size_t tic_tac_toes_t::infoset_t::hash() const {
+    size_t tic_tac_toe_t::infoset_t::hash() const {
         
         size_t seed = 0;
         hash_combine(seed, player);

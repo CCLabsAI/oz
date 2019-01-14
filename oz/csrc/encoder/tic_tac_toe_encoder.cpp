@@ -5,38 +5,38 @@
 #include <cassert>
 
 #include "util.h"
-#include "tic_tac_toes_encoder.h"
+#include "tic_tac_toe_encoder.h"
 
 namespace oz {
 
   using namespace std;
   using namespace at;
 
-  static auto cast_infoset(const infoset_t &infoset) -> const tic_tac_toes_t::infoset_t & {
-    return infoset.cast<tic_tac_toes_t::infoset_t>();
+  static auto cast_infoset(const infoset_t &infoset) -> const tic_tac_toe_t::infoset_t & {
+    return infoset.cast<tic_tac_toe_t::infoset_t>();
   }
 
   
     
-  int action_to_idx(const tic_tac_toes_t::action_t a){
+  int action_to_idx(const tic_tac_toe_t::action_t a){
       switch(a){
-          case tic_tac_toes_t::action_t::fill_1 :
+          case tic_tac_toe_t::action_t::fill_1 :
               return 0;
-          case tic_tac_toes_t::action_t::fill_2 :
+          case tic_tac_toe_t::action_t::fill_2 :
               return 1;
-          case tic_tac_toes_t::action_t::fill_3 :
+          case tic_tac_toe_t::action_t::fill_3 :
               return 2;
-          case tic_tac_toes_t::action_t::fill_4 :
+          case tic_tac_toe_t::action_t::fill_4 :
               return 3;
-          case tic_tac_toes_t::action_t::fill_5 :
+          case tic_tac_toe_t::action_t::fill_5 :
               return 4;
-          case tic_tac_toes_t::action_t::fill_6 :
+          case tic_tac_toe_t::action_t::fill_6 :
               return 5;
-          case tic_tac_toes_t::action_t::fill_7 :
+          case tic_tac_toe_t::action_t::fill_7 :
               return 6;
-          case tic_tac_toes_t::action_t::fill_8 :
+          case tic_tac_toe_t::action_t::fill_8 :
               return 7;
-          case tic_tac_toes_t::action_t::fill_9 :
+          case tic_tac_toe_t::action_t::fill_9 :
               return 8;
           default: assert(false);
               return -1;
@@ -44,16 +44,16 @@ namespace oz {
           }
     }
     
-  void tic_tac_toes_encoder_t::action_one_hot(action_t action, ta_t &x_a, int i) {
+  void tic_tac_toe_encoder_t::action_one_hot(action_t action, ta_t &x_a, int i) {
     x_a[action_to_idx(action)] = 1.0;
     
   }
    
 
-  void tic_tac_toes_encoder_t::rounds_one_hot(const tic_tac_toes_t::action_vector_t &actions, ta_t &x_a, int i){
+  void tic_tac_toe_encoder_t::rounds_one_hot(const tic_tac_toe_t::action_vector_t &actions, ta_t &x_a, int i){
         
       int round_n = 0, action_n = 0;
-      tic_tac_toes_t::action_vector_t round_actions;
+      tic_tac_toe_t::action_vector_t round_actions;
         
       for (const auto &a : actions) {
             switch (a) {
@@ -87,7 +87,7 @@ namespace oz {
   }
     
     
-  void tic_tac_toes_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
+  void tic_tac_toe_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
     
     Expects(x.size(0) == encoding_size());
     
@@ -112,7 +112,7 @@ namespace oz {
   }
 
 
-  void tic_tac_toes_encoder_t::encode_sigma(infoset_t infoset, sigma_t sigma, Tensor x) {
+  void tic_tac_toe_encoder_t::encode_sigma(infoset_t infoset, sigma_t sigma, Tensor x) {
 
     
     const auto actions = infoset.actions();
@@ -120,8 +120,8 @@ namespace oz {
     auto x_a = x.accessor<nn_real_t, 1>();
       
     for (const auto &action : actions) {
-      const auto a_tic_tac_toes = action.cast<tic_tac_toes_encoder_t::action_t>();
-      int i = action_to_idx(a_tic_tac_toes);
+      const auto a_tic_tac_toe = action.cast<tic_tac_toe_encoder_t::action_t>();
+      int i = action_to_idx(a_tic_tac_toe);
       x_a[i] = sigma.pr(infoset, action);
     }
     
@@ -129,7 +129,7 @@ namespace oz {
   }
 
 
-  auto tic_tac_toes_encoder_t::decode(oz::infoset_t infoset, Tensor x)
+  auto tic_tac_toe_encoder_t::decode(oz::infoset_t infoset, Tensor x)
   -> map<oz::action_t, real_t>
   {
 
@@ -139,8 +139,8 @@ namespace oz {
     auto x_a = x.accessor<nn_real_t, 1>();
 
     for (const auto &action : actions) {
-      const auto a_tic_tac_toes = action.cast<tic_tac_toes_encoder_t::action_t>();
-      int i = action_to_idx(a_tic_tac_toes);
+      const auto a_tic_tac_toe = action.cast<tic_tac_toe_encoder_t::action_t>();
+      int i = action_to_idx(a_tic_tac_toe);
       m[action] = x_a[i];
     }
 
@@ -148,7 +148,7 @@ namespace oz {
     return m;
   }
 
-  auto tic_tac_toes_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &rng)
+  auto tic_tac_toe_encoder_t::decode_and_sample(oz::infoset_t infoset, Tensor x, rng_t &rng)
   -> action_prob_t
   {
 
@@ -163,8 +163,8 @@ namespace oz {
 
     transform(begin(actions), end(actions), begin(weights),
               [&](const oz::action_t &action) -> prob_t {
-                const auto a_tic_tac_toes = action.cast<tic_tac_toes_encoder_t::action_t>();
-                switch (a_tic_tac_toes) {
+                const auto a_tic_tac_toe = action.cast<tic_tac_toe_encoder_t::action_t>();
+                switch (a_tic_tac_toe) {
                   case action_t::fill_1:
                     return x_a[0];
                   case action_t::fill_2:

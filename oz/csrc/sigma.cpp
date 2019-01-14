@@ -11,7 +11,7 @@ auto sigma_t::concept_t::sample_pr(infoset_t infoset, rng_t& rng) const
   auto probs = prob_vector(actions.size());
 
   transform(begin(actions), end(actions), begin(probs),
-            [&](const auto& a) { return pr(infoset, a); });
+            [&](const auto& a) { return this->pr(infoset, a); });
 
   auto a_dist = discrete_distribution<>(begin(probs), end(probs));
   auto i = a_dist(rng);

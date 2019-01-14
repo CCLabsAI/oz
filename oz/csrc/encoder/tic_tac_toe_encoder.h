@@ -14,7 +14,7 @@
 #include "game.h"
 #include "oos.h"
 
-#include "games/tic_tac_toes.h"
+#include "games/tic_tac_toe.h"
 
 namespace oz {
 
@@ -23,9 +23,9 @@ namespace oz {
   using std::array;
   using at::Tensor;
 
-  class tic_tac_toes_encoder_t final : public encoder_t {
+  class tic_tac_toe_encoder_t final : public encoder_t {
   public:
-    using action_t = tic_tac_toes_t::action_t;
+    using action_t = tic_tac_toe_t::action_t;
 
     int encoding_size() override { return ENCODING_SIZE; };
     int max_actions() override { return MAX_ACTIONS; };
@@ -40,7 +40,7 @@ namespace oz {
     
 
     static void action_one_hot(action_t action, ta_t &x_a, int i);
-    static void rounds_one_hot(const tic_tac_toes_t::action_vector_t &actions, ta_t &x_a, int i);
+    static void rounds_one_hot(const tic_tac_toe_t::action_vector_t &actions, ta_t &x_a, int i);
     static constexpr int N_ROUNDS = 5;
     
     static constexpr int ACTION_SIZE = 9 ;

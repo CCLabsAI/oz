@@ -1,5 +1,5 @@
-#ifndef OZ_LEDUK_H
-#define OZ_LEDUK_H
+#ifndef OZ_LEDUC_H
+#define OZ_LEDUC_H
 
 #include "game.h"
 
@@ -17,7 +17,7 @@ using std::vector;
 
 using boost::container::static_vector;
 
-class leduk_poker_t final : public game_t {
+class leduc_poker_t final : public game_t {
  public:
 
   enum class action_t {
@@ -78,7 +78,7 @@ class leduk_poker_t final : public game_t {
   action_prob_map_t chance_actions() const override;
 
   std::unique_ptr<game_t> clone() const override {
-    return std::make_unique<leduk_poker_t>(*this);
+    return std::make_unique<leduc_poker_t>(*this);
   }
 
   oz::infoset_t infoset(oz::infoset_t::allocator_t alloc) const override;
@@ -116,7 +116,7 @@ class leduk_poker_t final : public game_t {
     switch (p) {
       case P1: return 0;
       case P2: return 1;
-      default: return 0; // should not be reachable
+      default: return 0; // NB not reachable
     }
   }
 
@@ -143,4 +143,4 @@ class leduk_poker_t final : public game_t {
 
 } // namespace oz
 
-#endif // OZ_LEDUK_H
+#endif // OZ_LEDUC_H

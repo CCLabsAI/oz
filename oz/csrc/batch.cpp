@@ -82,7 +82,7 @@ static auto count_needs_eval(const search_list_t &searches_) {
 auto batch_search_t::generate_batch() -> Tensor {
   const auto N = count_needs_eval(searches_);
   const auto D = encoder_->encoding_size();
-  Tensor d = zeros(torch::CPU(kFloat), { N, D });
+  Tensor d = zeros({ N, D }, at::kFloat);
 
   int i = 0;
   for (const auto &search : searches_) {
@@ -113,16 +113,18 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
       case state_t::CREATE:
         {
           Expects(search_needs_eval(search));
-          const int n = i++;
-          const auto infoset = search.infoset();
+          i++; // NB remove this when uncommenting the code below
 
-          const auto average_strategy = encoder_->decode(infoset, probs[n]);
+          // const int n = i++;
+          // const auto infoset = search.infoset();
 
-          const auto avg_map = action_prob_map_t(begin(average_strategy),
-                                                 end(average_strategy));
+          // const auto average_strategy = encoder_->decode(infoset, probs[n]);
 
-          // search.create(tree_, rng);
-          search.create_prior(tree_, avg_map, rng);
+          // const auto avg_map = action_prob_map_t(begin(average_strategy),
+          //                                        end(average_strategy));
+
+          // search.create_prior(tree_, avg_map, rng);
+          search.create(tree_, rng);
         }
         break;
 
@@ -165,7 +167,7 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
 }
 
 void batch_search_t::step(rng_t &rng) {
-  step(torch::CPU(kFloat).tensor(), rng);
+  step(Tensor(), rng);
 }
 
 } // namespace oz

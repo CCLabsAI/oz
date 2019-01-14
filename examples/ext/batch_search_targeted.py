@@ -24,9 +24,9 @@ n_cards = 6
 # encoder = oz.make_goofspiel2_encoder(n_cards)
 # target  = oz.make_goofspiel2_target()
 
-# history = oz.make_leduk_history()
-# encoder = oz.make_leduk_encoder()
-# target  = oz.make_leduk_target()
+# history = oz.make_leduc_history()
+# encoder = oz.make_leduc_encoder()
+# target  = oz.make_leduc_target()
 
 history = oz.make_liars_dice_history()
 encoder = oz.make_liars_dice_encoder()

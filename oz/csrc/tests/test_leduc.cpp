@@ -1,18 +1,18 @@
 #include <catch.hpp>
 
 #include "game.h"
-#include "games/leduk.h"
+#include "games/leduc.h"
 
-using oz::leduk_poker_t;
+using oz::leduc_poker_t;
 using oz::CHANCE;
 using oz::P1;
 using oz::P2;
 
-using card_t = leduk_poker_t::card_t;
-using action_t = leduk_poker_t::action_t;
+using card_t = leduc_poker_t::card_t;
+using action_t = leduc_poker_t::action_t;
 
-TEST_CASE("leduk poker basic actions", "[leduk]") {
-  leduk_poker_t g;
+TEST_CASE("leduc poker basic actions", "[leduc]") {
+  leduc_poker_t g;
 
   CHECK(g.player() == CHANCE);
   g.act_(action_t::J1);
@@ -25,15 +25,15 @@ TEST_CASE("leduk poker basic actions", "[leduk]") {
   CHECK(g.player() == CHANCE);
 }
 
-leduk_poker_t _leduk_after_deal() {
-  auto g = leduk_poker_t();
+leduc_poker_t _leduc_after_deal() {
+  auto g = leduc_poker_t();
   g.act_(action_t::J1);
   g.act_(action_t::Q2);
   return g;
 }
 
-TEST_CASE("leduk poker bet", "[leduk]") {
-  leduk_poker_t g = _leduk_after_deal();
+TEST_CASE("leduc poker bet", "[leduc]") {
+  leduc_poker_t g = _leduc_after_deal();
 
   g.act_(action_t::Raise);
   g.act_(action_t::Call);
@@ -43,8 +43,8 @@ TEST_CASE("leduk poker bet", "[leduk]") {
   CHECK(g.round() == 1);
 }
 
-TEST_CASE("leduk poker check", "[leduk]") {
-  leduk_poker_t g = _leduk_after_deal();
+TEST_CASE("leduc poker check", "[leduc]") {
+  leduc_poker_t g = _leduc_after_deal();
 
   g.act_(action_t::Call);
   g.act_(action_t::Call);
@@ -55,8 +55,8 @@ TEST_CASE("leduk poker check", "[leduk]") {
   CHECK(g.board() == card_t::NA);
 }
 
-TEST_CASE("leduk poker fold", "[leduk]") {
-  leduk_poker_t g = _leduk_after_deal();
+TEST_CASE("leduc poker fold", "[leduc]") {
+  leduc_poker_t g = _leduc_after_deal();
 
   g.act_(action_t::Raise);
   g.act_(action_t::Fold);
@@ -67,8 +67,8 @@ TEST_CASE("leduk poker fold", "[leduk]") {
   CHECK(g.utility(P1) == 1);
 }
 
-TEST_CASE("leduk poker reraise", "[leduk]") {
-  leduk_poker_t g = _leduk_after_deal();
+TEST_CASE("leduc poker reraise", "[leduc]") {
+  leduc_poker_t g = _leduc_after_deal();
 
   g.act_(action_t::Raise);
   g.act_(action_t::Raise);
@@ -76,8 +76,8 @@ TEST_CASE("leduk poker reraise", "[leduk]") {
   // TODO
 }
 
-TEST_CASE("leduk poker bet rounds", "[leduk]") {
-  leduk_poker_t g = _leduk_after_deal();
+TEST_CASE("leduc poker bet rounds", "[leduc]") {
+  leduc_poker_t g = _leduc_after_deal();
 
   g.act_(action_t::Raise);
   g.act_(action_t::Raise);
@@ -93,8 +93,8 @@ TEST_CASE("leduk poker bet rounds", "[leduk]") {
   CHECK(g.is_terminal());
 }
 
-TEST_CASE("leduk poker bet reward", "[leduk]") {
-  leduk_poker_t g = leduk_poker_t();
+TEST_CASE("leduc poker bet reward", "[leduc]") {
+  leduc_poker_t g = leduc_poker_t();
 
   g.act_(action_t::K1);
   g.act_(action_t::Q2);
@@ -110,7 +110,7 @@ TEST_CASE("leduk poker bet reward", "[leduk]") {
   CHECK(g.is_terminal());
   CHECK(g.utility(P1) == 7);
 
-  g = leduk_poker_t();
+  g = leduc_poker_t();
 
   g.act_(action_t::K1);
   g.act_(action_t::Q2);
@@ -128,7 +128,7 @@ TEST_CASE("leduk poker bet reward", "[leduk]") {
   CHECK(g.is_terminal());
   CHECK(g.utility(P1) == -13);
 
-  g = leduk_poker_t();
+  g = leduc_poker_t();
 
   g.act_(action_t::Q1);
   g.act_(action_t::Q2);

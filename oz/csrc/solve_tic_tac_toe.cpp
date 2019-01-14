@@ -5,7 +5,7 @@
 #include "oos.h"
 #include "tree.h"
 #include "best_response.h"
-#include "games/tic_tac_toes.h"
+#include "games/tic_tac_toe.h"
 
 #include <limits>
 #include <iostream>
@@ -15,7 +15,7 @@ using namespace oz;
 using namespace std;
 
 int main(int argc, char **argv) {
-  history_t h = make_history<tic_tac_toes_t>();
+  history_t h = make_history<tic_tac_toe_t>();
   oos_t s;
   tree_t tree;
   rng_t rng(1);

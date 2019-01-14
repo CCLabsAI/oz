@@ -1,19 +1,24 @@
 unset(PYTORCH_VERSION)
-unset(PYTORCH_INCLUDE_DIR)
+unset(PYTORCH_INCLUDE_DIRS)
+unset(PYTORCH_HOME)
 unset(__result)
 unset(__output)
 unset(__ver_check)
 
 if(PYTHONINTERP_FOUND)
   execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-    "import os, torch; print(';'.join([torch.__version__, os.path.abspath(os.path.join(os.path.dirname(torch.__file__), 'lib', 'include'))]))"
+    "import os, torch; print(';'.join([torch.__version__, os.path.abspath(os.path.join(os.path.dirname(torch.__file__)))]))"
     RESULT_VARIABLE __result
     OUTPUT_VARIABLE __output
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   if(__result MATCHES 0)
     list(GET __output 0 PYTORCH_VERSION)
-    list(GET __output 1 PYTORCH_INCLUDE_DIR)
+    list(GET __output 1 PYTORCH_HOME)
+
+    set(PYTORCH_INCLUDE_DIRS "")
+    list(APPEND PYTORCH_INCLUDE_DIRS ${PYTORCH_HOME}/lib/include)
+    # list(APPEND PYTORCH_INCLUDE_DIRS ${PYTORCH_HOME}/lib/include/torch/csrc/api/include)
 
     string(REGEX MATCH "^([0-9])+\\.([0-9])+\\.([0-9])+" __ver_check "${PYTORCH_VERSION}")
     if(NOT "${__ver_check}" STREQUAL "")
@@ -36,7 +41,7 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PyTorch
-  REQUIRED_VARS PYTORCH_VERSION PYTORCH_INCLUDE_DIR
+  REQUIRED_VARS PYTORCH_VERSION PYTORCH_INCLUDE_DIRS PYTORCH_HOME
   VERSION_VAR PYTORCH_VERSION)
 
 

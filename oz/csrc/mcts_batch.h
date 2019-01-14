@@ -4,7 +4,7 @@
 #include "mcts.h"
 #include "encoder.h"
 
-#include <torch/torch.h>
+#include <ATen/ATen.h>
 
 #include <vector>
 

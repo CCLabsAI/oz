@@ -1,11 +1,11 @@
 #include <catch.hpp>
 
 #include "game.h"
-#include "games/tic_tac_toes.h"
+#include "games/tic_tac_toe.h"
 
 
 #include "target.h"
-#include "target/tic_tac_toes_target.h"
+#include "target/tic_tac_toe_target.h"
 
 #include "oos.h"
 #include "tree.h"
@@ -14,7 +14,7 @@ using namespace std;
 using namespace oz;
 
 TEST_CASE("Tic Tac Toe basic actions", "[TicTacToe]") {
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
 
   CHECK(!game.is_terminal());
 
@@ -35,7 +35,7 @@ TEST_CASE("Tic Tac Toe basic actions", "[TicTacToe]") {
 }
 
 TEST_CASE("Tic Tac Toe same player after an illegal move", "[TicTacToe]") {
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
 
   CHECK(!game.is_terminal());
 
@@ -52,7 +52,7 @@ TEST_CASE("Tic Tac Toe same player after an illegal move", "[TicTacToe]") {
 }
 
 TEST_CASE("tic_tac_toe utility P1 wins", "[tic_tac_toe]") {
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
 
   game.act(make_action(0));
   game.act(make_action(4));
@@ -67,7 +67,7 @@ TEST_CASE("tic_tac_toe utility P1 wins", "[tic_tac_toe]") {
 }
 
 TEST_CASE("tic_tac_toe utility P1 wins2", "[tic_tac_toe]") {
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
   
   game.act(make_action(3));
   game.act(make_action(7));
@@ -82,7 +82,7 @@ TEST_CASE("tic_tac_toe utility P1 wins2", "[tic_tac_toe]") {
 }
 
 TEST_CASE("tic_tac_toe utility P2 wins", "[tic_tac_toe]") {
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
 
   game.act(make_action(0));
   game.act(make_action(3));
@@ -98,7 +98,7 @@ TEST_CASE("tic_tac_toe utility P2 wins", "[tic_tac_toe]") {
 }
 
 TEST_CASE("tic_tac_toe utility draw", "[tic_tac_toe]") {
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
 
   game.act(make_action(0));
   game.act(make_action(2));
@@ -124,27 +124,19 @@ TEST_CASE("tic_tac_toe utility draw", "[tic_tac_toe]") {
 
 
 TEST_CASE("tic tac toe pieces_P1 and pieces_P2 first element", "[tic tac toe]") {
-  
-  using action_vector_t = tic_tac_toes_t::action_vector_t;
-
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
   game.act(make_action(1));
   
   // Now in the history of P1 there will be the legal move and the NextTurn action
-  CHECK(game.pieces_P1()[0] == tic_tac_toes_t::action_t::fill_2);
+  CHECK(game.pieces_P1()[0] == tic_tac_toe_t::action_t::fill_2);
   
   game.act(make_action(2));
-  CHECK(game.pieces_P2()[0] == tic_tac_toes_t::action_t::fill_3);
-  
-  
+  CHECK(game.pieces_P2()[0] == tic_tac_toe_t::action_t::fill_3);
 }
 
 
 TEST_CASE("tic tac toe pieces_P1 and pieces_P2", "[tic tac toe]") {
-  
-  using action_vector_t = tic_tac_toes_t::action_vector_t;
-
-  auto game = tic_tac_toes_t();
+  auto game = tic_tac_toe_t();
 
   CHECK(game.pieces_P1().size() == 0);
   CHECK(game.pieces_P2().size() == 0);
