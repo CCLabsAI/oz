@@ -10,6 +10,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 
 add_compile_options("-Wall")
 
+# NB PyTorch binary releases use GCC 4.9, which uses the old ABI
+add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+
 # NB hide all symbols, we only want to export the _PyInit entry point
 add_compile_options("-fvisibility=hidden")
 
