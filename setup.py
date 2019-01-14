@@ -7,7 +7,7 @@ from cmake.setuptools import CMakeExtension, CMakeBuild
 
 setup(
     name='oz',
-    version='0.0.1',
+    version='0.2.0',
     author='Andy Kitchen',
     author_email='kitchen.andy@gmail.com',
     description=__doc__,
