@@ -3,7 +3,7 @@
 namespace oz { namespace mcts {
 
 using namespace std;
-using namespace at;
+using namespace torch;
 
 using search_t = batch_search_t::search_t;
 using search_list_t = batch_search_t::search_list_t;
@@ -47,7 +47,7 @@ static auto count_needs_eval(const search_list_t &searches_) {
 auto batch_search_t::generate_batch() -> Tensor {
   const auto N = count_needs_eval(searches_);
   const auto D = encoder_->encoding_size();
-  Tensor d = zeros({ N, D }, at::kFloat);
+  Tensor d = torch::zeros({ N, D }, torch::kFloat);
 
   int i = 0;
   for (const auto &search : searches_) {

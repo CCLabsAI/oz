@@ -18,7 +18,7 @@ if(PYTHONINTERP_FOUND)
 
     set(PYTORCH_INCLUDE_DIRS "")
     list(APPEND PYTORCH_INCLUDE_DIRS ${PYTORCH_HOME}/lib/include)
-    # list(APPEND PYTORCH_INCLUDE_DIRS ${PYTORCH_HOME}/lib/include/torch/csrc/api/include)
+    list(APPEND PYTORCH_INCLUDE_DIRS ${PYTORCH_HOME}/lib/include/torch/csrc/api/include)
 
     string(REGEX MATCH "^([0-9])+\\.([0-9])+\\.([0-9])+" __ver_check "${PYTORCH_VERSION}")
     if(NOT "${__ver_check}" STREQUAL "")

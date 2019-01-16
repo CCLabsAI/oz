@@ -1,7 +1,7 @@
 #ifndef OZ_LEDUC_ENCODER_H
 #define OZ_LEDUC_ENCODER_H
 
-#include <ATen/ATen.h>
+#include <torch/torch.h>
 
 #include "encoder.h"
 

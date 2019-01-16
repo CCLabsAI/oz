@@ -10,7 +10,7 @@
 namespace oz {
 
   using namespace std;
-  using namespace at;
+  using namespace torch;
 
   static auto cast_infoset(const infoset_t &infoset) -> const tic_tac_toe_t::infoset_t & {
     return infoset.cast<tic_tac_toe_t::infoset_t>();

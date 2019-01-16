@@ -6,7 +6,7 @@
 #include "tree.h"
 #include "games/leduc.h"
 
-#include <ATen/ATen.h>
+#include <torch/torch.h>
 
 #include <vector>
 

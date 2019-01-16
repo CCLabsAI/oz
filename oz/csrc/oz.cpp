@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <ATen/ATen.h>
+#include <torch/torch.h>
 #include <torch/csrc/utils/pybind.h>
 
 #include "game.h"

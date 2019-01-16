@@ -7,7 +7,7 @@
 
 
 
-#include <ATen/ATen.h>
+#include <torch/torch.h>
 
 #include "encoder.h"
 

@@ -5,7 +5,7 @@
 #ifndef OZ_TIC_TAC_TOES_ENCODER_H
 #define OZ_TIC_TAC_TOES_ENCODER_H
 
-#include <ATen/ATen.h>
+#include <torch/torch.h>
 
 #include "encoder.h"
 #include "game.h"
