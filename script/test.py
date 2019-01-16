@@ -243,9 +243,9 @@ def main():
     target = None
 
     if args.game == 'leduk' or args.game == 'leduk_poker':
-        history = oz.make_leduk_history()
-        encoder = oz.make_leduk_encoder()
-        target  = oz.make_leduk_target()
+        history = oz.make_leduc_history()
+        encoder = oz.make_leduc_encoder()
+        target  = oz.make_leduc_target()
     elif args.game == 'goofspiel' or args.game == 'goofspiel2':
         history = oz.make_goofspiel2_history(args.goofcards)
         encoder = oz.make_goofspiel2_encoder(args.goofcards)
