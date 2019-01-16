@@ -1,6 +1,6 @@
 import oz
 
-h = oz.make_leduk_history()
+h = oz.make_leduc_history()
 
 tree = oz.Tree()
 rng = oz.Random(1)

@@ -24,9 +24,9 @@ class Net(nn.Module):
         return x
 
 
-root = oz.make_leduk_history()
+root = oz.make_leduc_history()
 h = copy(root)
-enc = oz.LedukEncoder()
+enc = oz.LeducEncoder()
 rng = oz.Random(1)
 
 search_size = 50

@@ -1,9 +1,9 @@
-from oz.game.leduk import LedukPoker
+from oz.game.leduc import LeducPoker
 from oz.game.match import Match
 from oz.game.agent import BiasedRandomAgent, RandomAgent, CallAgent
 
 players = BiasedRandomAgent(), CallAgent()
-m = Match(LedukPoker, players)
+m = Match(LeducPoker, players)
 
 returns = []
 

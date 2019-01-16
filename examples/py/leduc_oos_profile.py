@@ -1,9 +1,9 @@
-from oz.game.leduk import LedukPoker
+from oz.game.leduc import LeducPoker
 from oz import oos
 from oz import best_response
 import cProfile
 
-h = LedukPoker()
+h = LeducPoker()
 
 context = oos.Context()
 tree = oos.Tree()

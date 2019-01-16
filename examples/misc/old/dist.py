@@ -28,8 +28,8 @@ search_size = 50
 batch_size = 100
 
 def make_simulate():
-    root = oz.make_leduk_history()
-    enc = oz.LedukEncoder()
+    root = oz.make_leduc_history()
+    enc = oz.LeducEncoder()
     rng = oz.Random() # TODO seed based on rank
 
     bs = oz.BatchSearch(root, enc, search_size)
@@ -89,14 +89,14 @@ def train(net, all_data, all_targets, optimizer, criterion):
         m = enc.decode(infoset, sigma_pr.data[0])
         return m[action]
     sigma_nn = oz.make_py_sigma(pr_nn)
-    h = oz.make_leduk_history()
+    h = oz.make_leduc_history()
 
     loss_val = loss.data[0]
     ex_nn = oz.exploitability(h, sigma_nn)
     print("%.3f, %.5f" % (ex_nn, loss_val))
 
 if __name__ == "__main__":
-    enc = oz.LedukEncoder()
+    enc = oz.LeducEncoder()
 
     encoding_size = enc.encoding_size()
     max_actions = enc.max_actions()

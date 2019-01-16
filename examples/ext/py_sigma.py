@@ -1,6 +1,6 @@
 import oz
 
-h = oz.make_leduk_history()
+h = oz.make_leduc_history()
 
 def pr_callback(infoset, action):
     return 1.0 / len(infoset.actions)
