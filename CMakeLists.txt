@@ -10,9 +10,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 
 add_compile_options("-Wall")
 
-# NB PyTorch binary releases use GCC 4.9, which uses the old ABI
-add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
-
 # NB hide all symbols, we only want to export the _PyInit entry point
 add_compile_options("-fvisibility=hidden")
 
@@ -32,6 +29,28 @@ add_compile_options("$<$<CONFIG:RelWithDebInfo>:-march=native>")
 
 find_package(PythonInterp 3.4 REQUIRED)
 find_package(PyTorch 1.0.0 REQUIRED)
+
+# NB PyTorch binary releases use GCC 4.9, which uses the old ABI
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	message(STATUS "Checking if pytorch uses old GNU C++ ABI...")
+
+	try_compile(GNU_CXX_ABI_OLD
+		"${CMAKE_BINARY_DIR}/tmp"
+		"${CMAKE_SOURCE_DIR}/cmake/torch-abi-check.cpp"
+		CMAKE_FLAGS
+			-DINCLUDE_DIRECTORIES:STRING=${PYTORCH_INCLUDE_DIRS}
+			-DLINK_DIRECTORIES:STRING=${PYTORCH_HOME}/lib
+		COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=0
+		LINK_LIBRARIES c10 caffe2 torch)
+
+	if(GNU_CXX_ABI_OLD)
+		message(STATUS "using old GNU C++ ABI")
+		add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+	else()
+		message(STATUS "using default GNU C++ ABI")
+	endif()
+endif()
+
 
 include_directories(SYSTEM "lib/gsl-lite/include")
 include_directories(SYSTEM "lib/boost/include")
