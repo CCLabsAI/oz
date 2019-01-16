@@ -21,7 +21,7 @@ namespace oz {
     enum class action_t {
 
       // actions for P1 and P2 : Raising dice face or number of dice or call
-          Raise_0face = 1,
+      Raise_0face = 1,
       Raise_1face,
       Raise_2face,
       Raise_3face,
@@ -64,8 +64,7 @@ namespace oz {
       face_5,
       face_star,
 
-      // TODO clean this up
-          DEAL1 = -2,
+      DEAL1 = -2,
       DEAL2 = -3,
     };
 
@@ -83,7 +82,7 @@ namespace oz {
       const array<int, 2> bet;    // n. of dice   dice face
       const int raises_face;
       const int raises_dice;
-      const int action_number;  //first one is for the dice face, the second one for the dice numbers
+      const int action_number;  // first one is for the dice face, the second one for the dice numbers
 
 
       infoset_t(player_t player, dice_face_t face1, dice_face_t face2,

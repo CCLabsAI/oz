@@ -32,8 +32,7 @@ auto liars_dice_target_t::target_actions(const infoset_t &target_infoset,
   const auto &target_actions = target_infoset_base.history;
   const auto next_ply_n = current_actions.size();
 
-  // Q: should the history prefix match for targeting to work?
-
+  
   if (current_actions.size() < target_actions.size()) {
     const auto target = target_actions[next_ply_n];
 

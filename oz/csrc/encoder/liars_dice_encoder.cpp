@@ -122,7 +122,6 @@ namespace oz {
   }
 
   void liars_dice_encoder_t::encode(oz::infoset_t infoset, Tensor x) {
-    // TODO write tests
     Expects(x.size(0) == encoding_size());
 
     const auto &game_infoset = cast_infoset(infoset);

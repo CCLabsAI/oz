@@ -92,7 +92,8 @@ namespace oz {
       
     // case current player is Player 2
     else {
-        // calculate opponent past actions 
+      
+        // calculate opponent past actions
         int past_actions[MAX_SQUARES] = {0,0,0,0,0,0,0,0, 0};
         
         for (const auto& a : pieces_P1_){
@@ -150,7 +151,6 @@ namespace oz {
       
     if (show_move == 1){
         cout << "Result " << relative_utility(player, u) <<endl;
-        getchar();
         }
       
     return relative_utility(player, u);;
@@ -270,7 +270,7 @@ namespace oz {
              action_number, is_terminal_flag);
     }
 
-    // Is terminal will return 0 fi the game is not finished, 2 if the game finished with a draw, 1 otherwise
+    // Is terminal will return 0 if the game is not finished, 2 if the game finished with a draw, 1 otherwise
     auto tic_tac_toe_t::is_terminal() const -> bool {
         return is_terminal_flag;
     }
@@ -371,7 +371,6 @@ namespace oz {
         }
         else {
           os << '?';
-          getchar();
         }
 
         return os;

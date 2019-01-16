@@ -9,7 +9,7 @@ import sys
 
 # Script to calculate and print Stats for NIPS paper
 # Files .txt collected in a folder (to be specified as second argument path)
-# Leduk and goofspield games tested
+# Leduc Goofspield and Liar's dice games tested
 
 
 # Example usage for poker

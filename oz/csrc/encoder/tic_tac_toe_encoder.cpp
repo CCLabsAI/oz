@@ -124,8 +124,6 @@ namespace oz {
       int i = action_to_idx(a_tic_tac_toe);
       x_a[i] = sigma.pr(infoset, action);
     }
-    
-
   }
 
 
@@ -205,8 +203,6 @@ namespace oz {
     auto rho1 = pr_a, rho2 = pr_a;
 
     Ensures(pr_a >= 0 && pr_a <= 1);
-
-
 
     return { a, pr_a, rho1, rho2 };
   }

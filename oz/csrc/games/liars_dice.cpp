@@ -19,7 +19,6 @@ namespace oz {
     }
     else {
 
-      std::cout << infoset().str() << std::endl;
       history_.push_back(a);
       if (a == action_t::Call_liar) {
         called(player()) = true;
