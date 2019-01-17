@@ -1,24 +1,24 @@
 import unittest
 # from .context import oz
 
-from oz.game.leduk import LedukPoker, Action, Card
+from oz.game.leduc import LeducPoker, Action, Card
 
 
-class TestLedukPoker(unittest.TestCase):
+class TestLeducPoker(unittest.TestCase):
 
     @staticmethod
-    def _leduk_after_deal():
-        g = LedukPoker()
+    def _leduc_after_deal():
+        g = LeducPoker()
         g.act(g.ChanceAction.J1)
         g.act(g.ChanceAction.Q2)
         return g
 
     def test_init(self):
-        g = LedukPoker()
+        g = LeducPoker()
         self.assertIsNotNone(g)
 
     def test_deal(self):
-        g = LedukPoker()
+        g = LeducPoker()
         self.assertEqual(g.player, g.Player.Chance)
         self.assertEqual(g.infoset().actions, g.ChanceAction.P1_deal)
         g.act(g.ChanceAction.J1)
@@ -31,7 +31,7 @@ class TestLedukPoker(unittest.TestCase):
         self.assertEqual(g.player, g.Player.Chance)
 
     def test_bet(self):
-        g = self._leduk_after_deal()
+        g = self._leduc_after_deal()
         g.act(Action.Bet)
         g.act(Action.Call)
         self.assertEqual(g.pot[0], 3)
@@ -39,7 +39,7 @@ class TestLedukPoker(unittest.TestCase):
         self.assertEqual(g.round, 1)
 
     def test_check(self):
-        g = self._leduk_after_deal()
+        g = self._leduc_after_deal()
         g.act(Action.Check)
         g.act(Action.Call)
         self.assertEqual(g.pot[0], 1)
@@ -48,7 +48,7 @@ class TestLedukPoker(unittest.TestCase):
         self.assertIsNotNone(g.board)
 
     def test_fold(self):
-        g = self._leduk_after_deal()
+        g = self._leduc_after_deal()
         g.act(Action.Bet)
         g.act(Action.Fold)
         self.assertEqual(g.pot[0], 3)
@@ -57,14 +57,14 @@ class TestLedukPoker(unittest.TestCase):
         self.assertEqual(g.utility(), 1)
 
     def test_reraise(self):
-        g = self._leduk_after_deal()
+        g = self._leduc_after_deal()
         g.act(Action.Bet)
         g.act(Action.Bet)
         with self.assertRaises(ValueError):
             g.act(Action.Bet)
 
     def test_bet_rounds(self):
-        g = self._leduk_after_deal()
+        g = self._leduc_after_deal()
         g.act(Action.Bet)
         g.act(Action.Raise)
         g.act(Action.Call)
@@ -78,7 +78,7 @@ class TestLedukPoker(unittest.TestCase):
         self.assertTrue(g.is_terminal())
 
     def test_hand_rank(self):
-        g = LedukPoker()
+        g = LeducPoker()
         self.assertGreater(
             g._rank_hand(card=Card.Jack, board=Card.Jack),
             g._rank_hand(card=Card.King, board=Card.Queen))
@@ -88,7 +88,7 @@ class TestLedukPoker(unittest.TestCase):
 
     def test_reward(self):
         # P1 Win
-        g = LedukPoker()
+        g = LeducPoker()
         g.act(g.ChanceAction.K1)
         g.act(g.ChanceAction.Q2)
         g.act(g.Action.Bet)
@@ -102,7 +102,7 @@ class TestLedukPoker(unittest.TestCase):
         self.assertEqual(g.utility(), 7)
 
         # P2 Win
-        g = LedukPoker()
+        g = LeducPoker()
         g.act(g.ChanceAction.K1)
         g.act(g.ChanceAction.Q2)
         g.act(Action.Bet)
@@ -118,7 +118,7 @@ class TestLedukPoker(unittest.TestCase):
         self.assertEqual(g.utility(), -13)
 
         # Draw
-        g = LedukPoker()
+        g = LeducPoker()
         g.act(g.ChanceAction.Q1)
         g.act(g.ChanceAction.Q2)
         g.act(Action.Bet)
@@ -132,14 +132,14 @@ class TestLedukPoker(unittest.TestCase):
         self.assertEqual(g.utility(), 0)
 
     def test_legal_actions(self):
-        g = self._leduk_after_deal()
+        g = self._leduc_after_deal()
         g.act(Action.Call)
         actions = g.infoset().actions
         self.assertIn(Action.Call, actions)
         self.assertIn(Action.Fold, actions)
         self.assertIn(Action.Raise, actions)
 
-        g = self._leduk_after_deal()
+        g = self._leduc_after_deal()
         g.act(Action.Call)
         g.act(Action.Raise)
         g.act(Action.Raise)
