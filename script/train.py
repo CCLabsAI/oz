@@ -159,9 +159,9 @@ def run(args, checkpoint_data=None):
     game = args.game
     if game == 'leduc' or game == 'leduc_poker' or \
        game == 'leduk' or game == 'leduk_poker':
-        history = oz.make_leduk_history()
-        encoder = oz.make_leduk_encoder()
-        target  = oz.make_leduk_target()
+        history = oz.make_leduc_history()
+        encoder = oz.make_leduc_encoder()
+        target  = oz.make_leduc_target()
     elif game == 'goofspiel' or game == 'goofspiel2':
         n_cards = args.goofcards
         history = oz.make_goofspiel2_history(n_cards)
