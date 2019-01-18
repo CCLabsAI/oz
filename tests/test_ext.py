@@ -8,12 +8,12 @@ class TestExt(unittest.TestCase):
         self.assertIsNotNone(oz._ext)
 
     def test_batch_segfault_regression(self):
-        root = oz.make_leduk_history()
-        enc = oz.LedukEncoder()
+        root = oz.make_leduc_history()
+        enc = oz.make_leduc_encoder()
         rng = oz.Random()
 
-        search_size = 50
-        bs = oz.BatchSearch(root, enc, search_size)
+        batch_size = 50
+        bs = oz.BatchSearch(batch_size, root, enc)
 
         batch = bs.generate_batch()
         self.assertIsNotNone(batch)

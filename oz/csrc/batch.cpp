@@ -100,7 +100,7 @@ void batch_search_t::step(Tensor probs, rng_t &rng) {
   using state_t = search_t::state_t;
 
   auto N = count_needs_eval(searches_);
-  Expects(N == probs.size(0));
+  Expects(probs.defined() ? N == probs.size(0) : N == 0);
 
   int i = 0;
   for (auto &search : searches_) {

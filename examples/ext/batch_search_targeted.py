@@ -37,7 +37,8 @@ model = Net(input_size=encoder.encoding_size(),
             output_size=encoder.max_actions())
 
 bs = oz.BatchSearch(80, history, encoder, target,
-                    eps=0.2, delta=.9, gamma=0.01)
+                    eps=0.2, delta=.9, gamma=0.01,
+                    beta=0.99, eta=0.9)
 
 while not history.is_terminal():
     if history.player == oz.Chance:

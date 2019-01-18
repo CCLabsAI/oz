@@ -22,7 +22,7 @@ setup(
       'oz.deuces'
     ],
     install_requires=[
-      'torch>=0.4.0',
+      'torch>=1.0.0',
       'numpy>=1.9.0',
       'termcolor'
     ],
