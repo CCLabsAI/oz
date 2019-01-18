@@ -1,6 +1,7 @@
-# Project Name : ExIt-OOS
+# Project Name 
+ExIt-OOS
 
-# Description : 
+# Description 
 ExIt-OOS is a learning algorithm that enables the computer to learn how to play a variety of imperfect information games through self-play. Please find full description of the algorithm at https://arxiv.org/abs/1808.10120
 
 
@@ -23,14 +24,21 @@ You will need to install pytorch 1.0
 
 
 # Usage 
+
 To train the model run :
 
-python python script/train.py --game [name of the game] --checkpoint_dir [name of the dir]
-
+```shell
+$ python python script/train.py --game [name of the game] --checkpoint_dir [name of the dir]
+```
 
 
 To see the agent playing against himself:
-python examples/misc/test.py --game [name of the game] --p1 [type of player 1 for example random or oos ] --p2 [type of player 2]
+
+```shell
+$ python examples/misc/test.py --game [name of the game] --p1 [type of player 1 for example random or oos ] --p2 [type of player 2]
+```
 
 
-License :
+# License 
+
+See LICENSE file
